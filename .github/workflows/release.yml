@@ -1,4 +1,4 @@
-# master 를 release 브랜치로 합치면 배포 판을 낸다. Split · Prompt 와 같은 방식:
+# master 를 release 브랜치로 합치면 배포 판을 낸다(태그 v<버전>). Split · Prompt 와 같은 방식:
 # 1) 버전을 출시일 기준 2.{연도 끝자리}.{MMDD} 로 올려 release 에 커밋한다([skip ci]),
 # 2) macOS(유니버설) · 윈도우 · 리눅스 판을 빌드해 GitHub Releases(태그 v<버전>)에 올린다.
 # Homebrew 는 RUNNERS-IM/homebrew-tap 의 워크플로가 최신 릴리스를 보고 따라 고친다.
