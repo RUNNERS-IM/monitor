@@ -1,0 +1,133 @@
+/* Update question window: the menu look (runners-menu.css) at alert size. The OS draws the menu material behind it
+   on macOS and Windows; Linux gets the solid menu colour from runners-menu.css. */
+:root[data-window="update"] {
+  color: var(--rm-text);
+  font-size: var(--rm-font);
+}
+
+.update {
+  box-sizing: border-box;
+  padding: 20px 20px 16px;
+  /* Why: the window has no title bar, so the whole background moves it. */
+  -webkit-app-region: drag;
+}
+
+.update-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.update-icon {
+  flex: none;
+  width: 52px;
+  height: 52px;
+}
+
+.update-text {
+  min-width: 0;
+  padding-top: 4px;
+}
+
+.update-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.update-ask {
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
+
+.rm-group.update-notes {
+  margin: 16px 0 0;
+}
+
+.update-list {
+  /* Why: five lines show at once; a longer list scrolls inside the box instead of making the window taller. */
+  max-height: calc(5 * 1.45em + 4 * 4px);
+  margin: 0;
+  padding: 0 14px 0 30px;
+  overflow-y: auto;
+  line-height: 1.45;
+  -webkit-app-region: no-drag;
+}
+
+.update-list.more {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
+}
+
+.update-list li + li {
+  margin-top: 4px;
+}
+
+.update-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.update-button {
+  min-width: 84px;
+  height: 28px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 6px;
+  background: var(--rm-hover);
+  color: var(--rm-text);
+  font: inherit;
+  -webkit-app-region: no-drag;
+}
+
+.update-button:hover {
+  background: var(--rm-separator);
+}
+
+.update-button.default {
+  background: var(--rm-accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.update-button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--rm-accent) 50%, transparent);
+  outline-offset: 1px;
+}
+
+.update-button:disabled {
+  opacity: 0.5;
+}
+
+/* While downloading, a bar as tall and round as the buttons stands where they go (shared rule, 1B). */
+.update-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.update-progress-track {
+  flex: 1;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--rm-hover);
+  overflow: hidden;
+}
+
+.update-progress-fill {
+  height: 100%;
+  background: var(--rm-accent);
+  transition: width 0.3s ease;
+}
+
+.update-progress-text {
+  flex: none;
+  min-width: 96px;
+  text-align: right;
+  color: var(--rm-text-secondary);
+  font-variant-numeric: tabular-nums;
+}

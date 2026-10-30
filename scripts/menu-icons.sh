@@ -1,6 +1,6 @@
 #!/bin/bash
-# Makes the tray menu icons in src-tauri/icons/menu/ from the official Lucide SVGs.
-# Each icon comes in black (light menus) and white (dark menus) at 36 px, which is 2x of the 18 pt slot muda draws menu icons in.
+# Makes the tray menu icons in resources/menu/ from the official Lucide SVGs.
+# Each icon comes in black (light menus) and white (dark menus) at 36 px, which is 2x of the 18 pt slot the native menu draws icons in.
 # The status dots are filled circles in the system green, yellow and red.
 # Needs macOS 14 or later (AppKit reads SVG) and network access to unpkg.com.
 set -euo pipefail
@@ -10,7 +10,7 @@ PIXELS=36
 ICONS=(chart-column info refresh-cw settings circle-help square-x square-check square)
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT="$ROOT/src-tauri/icons/menu"
+OUT="$ROOT/resources/menu"
 DRAW="$ROOT/scripts/menu-icons.swift"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT

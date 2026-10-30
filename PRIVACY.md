@@ -14,10 +14,12 @@ Every few seconds Monitor reads CPU use, memory use and the free space on the sy
 
 ## Network
 
-Monitor connects to the network for one thing: automatic updates. A minute after it starts and every six hours after
-that, it downloads `latest.json` from Monitor's GitHub release page to see whether there is a newer version, and if so it
-downloads and installs it. The request carries nothing about you or your computer; like any download, GitHub sees the
-computer's IP address. Choosing **Check for Updates…** does the same check right away. Choosing **Help & Feedback**
+Monitor connects to the network for one thing: updates. A minute after it starts and once a day after that, it reads
+the list of releases and the update file (`latest-mac.yml`, `latest.yml` or `latest-linux.yml`) from Monitor's GitHub
+release page to see whether there is a newer version; if there is, it downloads it, then asks you, and only installs it
+when you choose Install Now. Choosing Later means it does not ask again that day. The requests carry nothing about you or your computer; like any download, GitHub sees the
+computer's IP address. Turning off **Check for Updates Automatically** stops the daily check. Choosing
+**Check for Updates…** does the same check right away. Choosing **Help & Feedback**
 opens the issue page below in your web browser.
 
 When Monitor gains a list of other computers, this policy will be updated first to say what is sent and where.
@@ -44,10 +46,12 @@ Monitor 는 Runners Co., Ltd 가 만드는, 컴퓨터가 얼마나 바쁜지 보
 
 ## 인터넷 연결
 
-Monitor 가 인터넷에 접속하는 일은 자동 업데이트 하나뿐입니다. 켜진 지 1분 뒤와 그 뒤 6시간마다 Monitor 의 GitHub
-릴리스 페이지에서 `latest.json` 을 받아 새 버전이 있는지 보고, 있으면 받아서 설치합니다. 이 요청에는 사용자나 컴퓨터에
-관한 정보가 들어가지 않습니다. 다만 다른 내려받기와 마찬가지로 GitHub 는 컴퓨터의 IP 주소를 봅니다. **업데이트 확인…** 을
-고르면 같은 확인을 바로 합니다. **도움말·피드백** 을 고르면 아래 이슈 페이지가 웹 브라우저에서 열립니다.
+Monitor 가 인터넷에 접속하는 일은 업데이트 하나뿐입니다. 켜진 지 1분 뒤와 그 뒤 하루에 한 번 Monitor 의 GitHub
+릴리스 페이지에서 릴리스 목록과 업데이트 파일(`latest-mac.yml`, `latest.yml`, `latest-linux.yml`)을 받아 새 버전이
+있는지 보고, 있으면 먼저 받아 둔 뒤 물어보고 **지금 설치** 를 고를 때만 설치합니다. **나중에** 를 고르면 그날은 다시
+묻지 않습니다. 이 요청에는 사용자나 컴퓨터에 관한 정보가
+들어가지 않습니다. 다만 다른 내려받기와 마찬가지로 GitHub 는 컴퓨터의 IP 주소를 봅니다. **업데이트 자동 확인** 을 끄면
+하루 한 번 확인을 멈춥니다. **업데이트 확인…** 을 고르면 같은 확인을 바로 합니다. **도움말·피드백** 을 고르면 아래 이슈 페이지가 웹 브라우저에서 열립니다.
 
 다른 컴퓨터 목록이 생기면, 무엇을 어디로 보내는지 이 방침을 먼저 고쳐 적습니다.
 

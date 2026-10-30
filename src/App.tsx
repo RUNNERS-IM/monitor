@@ -1,52 +1,31 @@
+// The tray panel, laid out like Split's macOS menu (src/runners-menu.css): a heading line with the computer's name,
+// the five summary rows (each opens its details in a box below it), "why it is slow" on top while the computer is
+// slow, then the menu commands. It is the one menu people use; the right-click native menu holds the same commands.
 import { useEffect, useRef, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { LogicalSize, getCurrentWindow } from "@tauri-apps/api/window";
 import {
   ChevronDown,
   ChevronRight,
+  CircleHelp,
   Cpu,
-  Gauge,
   HardDrive,
+  Info,
   MemoryStick,
   Recycle,
+  RefreshCw,
+  Square,
+  SquareCheck,
   SquareTerminal,
+  SquareX,
   Workflow,
   X,
   type LucideIcon,
 } from "lucide-react";
 import { t } from "./i18n";
+import * as native from "./native";
+import type { MenuCommand, MenuState } from "./native";
+import type { AppUse, Cleanup, Pressure, Snapshot } from "./types";
+import "./runners-menu.css";
 import "./App.css";
-
-type Pressure = "normal" | "warn" | "critical";
-
-type AppKind = "app" | "build" | "simulator";
-type AppUse = { name: string; cpuPercent: number; memory: number; quittable: boolean; kind: AppKind; folder: string | null };
-type ClaudeSession = { pid: number; name: string | null; runningSecs: number; busy: boolean; human: boolean };
-type Runner = { name: string; busy: boolean; pausedUntil: number | null };
-
-type Snapshot = {
-  host: string;
-  os: string;
-  cpuPercent: number;
-  memoryUsed: number;
-  memoryTotal: number;
-  memoryPressure: Pressure;
-  diskUsed: number;
-  diskTotal: number;
-  swapUsed: number;
-  slowMemory: boolean;
-  slowCpu: boolean;
-  cpuHistory: number[];
-  memoryHistory: number[];
-  topCpu: AppUse[];
-  topMemory: AppUse[];
-  claudeSessions: ClaudeSession[];
-  heavyJob: { name: string; command: string; runningSecs: number } | null;
-  runners: Runner[];
-  popup: boolean;
-};
-
-type Cleanup = { total: number; top: { path: string; bytes: number }[]; measuredAt: number };
 
 type Section = "cpu" | "memory" | "disk" | "work" | "cleanup";
 
@@ -55,10 +34,9 @@ type Level = "ok" | "high" | "full";
 const REFRESH_MS = 3000;
 // Why: the cleanup numbers change only every 30 minutes, so the panel asks for them far less often.
 const CLEANUP_REFRESH_MS = 60_000;
-const PANEL_WIDTH = 380;
 // Why: the same stroke as Prompt and Split so the three apps' icons look equally light.
 const ICON_STROKE = 1.5;
-const ICON_SIZE = 14;
+const ICON_SIZE = 16;
 // Why: apps under this share are noise next to the one actually loading the computer.
 const MIN_TOP_CPU = 1;
 // Why: Spotlight indexing shows up as these processes and is a common cause of a slow Mac with big source folders.
@@ -91,13 +69,8 @@ function level(value: number): Level {
 // Why: macOS fills spare memory with cache, so memory is coloured by pressure; a high "used" with normal pressure is fine.
 const PRESSURE_LEVEL: Record<Pressure, Level> = { normal: "ok", warn: "high", critical: "full" };
 
-function Label({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
-  return (
-    <span className="label">
-      <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} aria-hidden />
-      {text}
-    </span>
-  );
+function Icon({ icon: Glyph }: { icon: LucideIcon }) {
+  return <Glyph size={ICON_SIZE} strokeWidth={ICON_STROKE} aria-hidden />;
 }
 
 /** The last ten minutes as a line, so a short spike and a steady load look different. */
@@ -112,7 +85,7 @@ function Sparkline({ values, tone }: { values: number[]; tone: Level }) {
   );
 }
 
-/** The small bar in front of a summary number, so how full something is reads without opening the line. */
+/** The small bar in front of a summary number, so how full something is reads without opening the row. */
 function MiniBar({ value, tone }: { value: number; tone: Level }) {
   return (
     <span className="mini-track" aria-hidden>
@@ -121,26 +94,7 @@ function MiniBar({ value, tone }: { value: number; tone: Level }) {
   );
 }
 
-/** What opens under a summary line: the graph (or bar) and the detail lines. */
-function Meter({ value, tone, history, details }: { value: number; tone: Level; history?: number[]; details: string[] }) {
-  return (
-    <div className="meter">
-      {history ? (
-        <Sparkline values={history} tone={tone} />
-      ) : (
-        <div className="meter-track">
-          <div className={`meter-fill ${tone}`} style={{ width: `${Math.min(value, 100)}%` }} />
-        </div>
-      )}
-      {details.map((line) => (
-        <div key={line} className="meter-detail">
-          {line}
-        </div>
-      ))}
-    </div>
-  );
-}
-
+/** One line inside an open box: a name, its state, and maybe a button (Quit, Pause). */
 function Row({
   text,
   state,
@@ -160,13 +114,13 @@ function Row({
     setError(null);
     action
       .run()
-      .catch((e) => setError(String(e)))
+      .catch((e) => setError(String(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, "") : e)))
       .finally(() => setPending(false));
   };
   return (
     <>
       <div className="row">
-        <span>{text}</span>
+        <span className="row-text">{text}</span>
         <span className="row-right">
           <span className={`row-state ${tone ?? ""}`}>{state}</span>
           {action && (
@@ -176,12 +130,12 @@ function Row({
           )}
         </span>
       </div>
-      {error && <div className="row-error">{t("action.failed", { error })}</div>}
+      {error && <div className="rm-note rm-full">{t("action.failed", { error })}</div>}
     </>
   );
 }
 
-/** One line of the summary. Clicking it opens its details right below. */
+/** One summary row of the menu. Clicking it opens its details in a box right below. */
 function SummaryRow({
   icon,
   label,
@@ -196,7 +150,7 @@ function SummaryRow({
   icon: LucideIcon;
   label: string;
   value: string;
-  /** Colours the number only when it is high, so a normal line stays plain. */
+  /** Colours the number only when it is high, so a normal row stays plain. */
   tone?: Level;
   gauge?: React.ReactNode;
   badge?: { text: string; tone: Level };
@@ -206,18 +160,19 @@ function SummaryRow({
 }) {
   const Chevron = open ? ChevronDown : ChevronRight;
   return (
-    <div className="summary">
-      <button type="button" className="summary-row" aria-expanded={open} onClick={onToggle}>
-        <Label icon={icon} text={label} />
-        <span className="meter-right">
+    <>
+      <button type="button" className="rm-item summary-row" aria-expanded={open} onClick={onToggle}>
+        <Icon icon={icon} />
+        <span className="rm-label">{label}</span>
+        <span className="rm-trailing">
           {badge && <span className={`badge ${badge.tone}`}>{badge.text}</span>}
           {gauge}
-          <span className={`meter-value ${tone && tone !== "ok" ? tone : ""}`}>{value}</span>
-          <Chevron size={ICON_SIZE} strokeWidth={ICON_STROKE} className="chevron" aria-hidden />
+          <span className={`value ${tone && tone !== "ok" ? `rm-${tone}` : ""}`}>{value}</span>
+          <Chevron size={12} strokeWidth={ICON_STROKE} className="chevron" aria-hidden />
         </span>
       </button>
-      {open && <div className="summary-body">{children}</div>}
-    </div>
+      {open && <div className="rm-group details">{children}</div>}
+    </>
   );
 }
 
@@ -232,90 +187,187 @@ function formatClock(unixSecs: number): string {
   return new Date(unixSecs * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-/** Shown only while the computer is slow: what is behind it and a Quit button for each app. */
-function SlowCard({ snap }: { snap: Snapshot }) {
-  const apps = snap.slowMemory ? snap.topMemory : snap.topCpu;
-  const spotlightBusy = snap.topCpu.some((app) => SPOTLIGHT.test(app.name) && app.cpuPercent >= MIN_TOP_CPU);
+// Why: one colour per app in the "who uses it" bar; claude keeps purple so it reads the same every time.
+const APP_COLOURS = ["#ff9f0a", "#bf5af2", "#64d2ff", "#30d158"];
+const CLAUDE_COLOUR = "#bf5af2";
+
+type Part = { key: string; label: string; amount: string; size: number; colour: string; app?: AppUse };
+
+/** Colours for the apps in order: claude always purple, the others take the next free colour. */
+function appParts(apps: AppUse[], size: (app: AppUse) => number, amount: (app: AppUse) => string): Part[] {
+  const claudeShown = apps.some((app) => app.sessions !== null);
+  const palette = claudeShown ? APP_COLOURS.filter((colour) => colour !== CLAUDE_COLOUR) : APP_COLOURS;
+  let next = 0;
+  return apps.map((app) => ({
+    key: `app-${app.name}`,
+    label: app.sessions !== null ? t("slow.claudeSessions", { count: app.sessions }) : app.name,
+    amount: appState(app, amount(app)),
+    size: size(app),
+    colour: app.sessions !== null ? CLAUDE_COLOUR : palette[next++ % palette.length],
+    app,
+  }));
+}
+
+/** The parts of memory, adding up to the total: top apps, system, cache, other apps and the free part (left empty). */
+function memoryParts(snap: Snapshot): { parts: Part[]; total: number } {
+  const apps = appParts(snap.topMemory, (app) => app.memory, (app) => formatGb(app.memory));
+  const system = snap.memoryWired + snap.memoryCompressed;
+  const known = apps.reduce((sum, part) => sum + part.size, 0) + system + snap.memoryCache + snap.memoryFree;
+  const other = Math.max(0, snap.memoryTotal - known);
+  const parts: Part[] = [
+    ...apps,
+    { key: "system", label: t("slow.system"), amount: formatGb(system), size: system, colour: "#8e8e93" },
+    { key: "cache", label: t("slow.cache"), amount: formatGb(snap.memoryCache), size: snap.memoryCache, colour: "#c7c7cc" },
+    { key: "other", label: t("slow.other"), amount: formatGb(other), size: other, colour: "var(--other-apps)" },
+  ];
+  // Why: apps' sizes count shared pages more than once, so the parts can add up past the total; the bar then scales down.
+  return { parts: parts.filter((part) => part.size > 0), total: Math.max(snap.memoryTotal, known + other) };
+}
+
+/** The parts of the CPU in percent of the whole computer: top apps, other apps and the idle part (left empty). */
+function cpuParts(snap: Snapshot): { parts: Part[]; total: number } {
+  const shown = snap.topCpu.filter((app) => app.cpuPercent >= MIN_TOP_CPU);
+  const apps = appParts(shown, (app) => app.cpuPercent, (app) => `${Math.round(app.cpuPercent)}%`);
+  const used = apps.reduce((sum, part) => sum + part.size, 0);
+  const other = Math.max(0, snap.cpuPercent - used);
+  const parts: Part[] = [
+    ...apps,
+    { key: "other", label: t("slow.other"), amount: `${Math.round(other)}%`, size: other, colour: "var(--other-apps)" },
+  ];
+  return { parts: parts.filter((part) => part.size > 0), total: Math.max(100, used + other) };
+}
+
+/** One line under the bar: colour square, name, amount, and Quit for an app that can be quit. */
+function Legend({ part }: { part: Part }) {
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const app = part.app;
+  const quit = () => {
+    if (!app) return;
+    setPending(true);
+    setError(null);
+    native
+      .quitApp(app.name)
+      .catch((e) => setError(String(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, "") : e)))
+      .finally(() => setPending(false));
+  };
+  const note = app?.sessions != null ? t("slow.claudeNote") : null;
   return (
-    <section>
-      <h2 className="section-head">{t("slow.title")}</h2>
-      <div className="card slow">
-        <div className="group">
-          {snap.slowMemory && <Label icon={Gauge} text={t("slow.memory")} />}
-          {snap.slowCpu && <Label icon={Gauge} text={t("slow.cpu")} />}
-          {apps.map((app) => (
-            <Row
-              key={app.name}
-              text={app.name}
-              state={appState(app, snap.slowMemory ? formatGb(app.memory) : `${Math.round(app.cpuPercent)}%`)}
-              tone="quiet"
-              action={app.quittable ? { label: t("slow.quit"), run: () => invoke("quit_app", { name: app.name }) } : undefined}
-            />
-          ))}
-          {snap.swapUsed > 0 && <div className="meter-detail">{t("slow.swap", { size: formatGb(snap.swapUsed) })}</div>}
-          {spotlightBusy && <div className="meter-detail">{t("slow.spotlight")}</div>}
-          {apps.some((app) => app.quittable) && <div className="meter-detail">{t("slow.quitNote")}</div>}
-        </div>
+    <>
+      <div className="legend">
+        <span className="swatch" style={{ background: part.colour }} aria-hidden />
+        <span className="legend-label">{part.label}</span>
+        <span className="legend-amount">{part.amount}</span>
+        {app?.quittable && (
+          <button type="button" className="row-button" disabled={pending} onClick={quit}>
+            {t("slow.quit")}
+          </button>
+        )}
       </div>
-    </section>
+      {note && <div className="rm-note legend-note">{note}</div>}
+      {error && <div className="rm-note rm-full">{t("action.failed", { error })}</div>}
+    </>
   );
 }
 
-// Why: the OS blur only shows through a transparent page, so the solid background is dropped when blur is on.
-function useTranslucent() {
-  useEffect(() => {
-    invoke<boolean>("translucent").then((on) => {
-      document.documentElement.dataset.translucent = String(on);
-    });
-  }, []);
+/** Shown only while the computer is slow: who uses the memory (or the CPU) as one bar, and Quit for each app. */
+function SlowBox({ snap }: { snap: Snapshot }) {
+  const { parts, total } = snap.slowMemory ? memoryParts(snap) : cpuParts(snap);
+  const title = snap.slowMemory ? t("slow.memoryTitle", { size: `${Math.round(snap.memoryTotal / 1024 ** 3)} GB` }) : t("slow.cpuTitle");
+  const spotlightBusy = snap.topCpu.some((app) => SPOTLIGHT.test(app.name) && app.cpuPercent >= MIN_TOP_CPU);
+  return (
+    <div className="rm-group slow">
+      <div className="rm-heading">{title}</div>
+      <div className="stack" role="img" aria-label={title}>
+        {parts.map((part) => (
+          <span key={part.key} style={{ width: `${(part.size * 100) / total}%`, background: part.colour }} />
+        ))}
+      </div>
+      {parts.map((part) => (
+        <Legend key={part.key} part={part} />
+      ))}
+      {snap.slowMemory && snap.slowCpu && <div className="rm-note">{t("slow.cpu")}</div>}
+      {snap.swapUsed > 0 && <div className="rm-note">{t("slow.swap", { size: formatGb(snap.swapUsed) })}</div>}
+      {spotlightBusy && <div className="rm-note">{t("slow.spotlight")}</div>}
+      {parts.some((part) => part.app?.quittable) && <div className="rm-note">{t("slow.quitNote")}</div>}
+    </div>
+  );
 }
 
-// Why: a fixed window height left empty space under the last card, so the window follows the panel's height.
+/** The menu commands under the readings, the same lines as the right-click menu. */
+function Commands() {
+  const [state, setState] = useState<MenuState | null>(null);
+  useEffect(() => {
+    void native.menuState().then(setState);
+    // Why: the right-click menu can change the same settings while the panel stays loaded.
+    const again = () => void native.menuState().then(setState);
+    window.addEventListener("focus", again);
+    return () => window.removeEventListener("focus", again);
+  }, []);
+  const run = (name: MenuCommand) => void native.command(name).then(setState);
+  const line = (name: MenuCommand, icon: LucideIcon, label: string) => (
+    <button type="button" className="rm-item" onClick={() => run(name)}>
+      <Icon icon={icon} />
+      <span className="rm-label">{label}</span>
+    </button>
+  );
+  return (
+    <>
+      {line("login", state?.openAtLogin ? SquareCheck : Square, t("menu.openAtLogin"))}
+      {line("autoUpdate", state?.autoUpdate ? SquareCheck : Square, t("menu.autoUpdate"))}
+      <div className="rm-separator" />
+      {line("about", Info, t("menu.about"))}
+      {line("updates", RefreshCw, t("menu.checkUpdates"))}
+      {line("help", CircleHelp, t("menu.help"))}
+      <div className="rm-separator" />
+      {line("quit", SquareX, t("menu.quit"))}
+    </>
+  );
+}
+
+// Why: a fixed window height left empty space under the last row, so the window follows the panel's height.
 function useFitWindow(ref: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
-    const observer = new ResizeObserver(() => {
-      getCurrentWindow().setSize(new LogicalSize(PANEL_WIDTH, Math.ceil(node.getBoundingClientRect().height)));
-    });
+    const observer = new ResizeObserver(() => native.fitHeight(Math.ceil(node.getBoundingClientRect().height)));
     observer.observe(node);
     return () => observer.disconnect();
   });
 }
 
-function usePolling<T>(command: string, everyMs: number): T | null {
+function usePolling<T>(load: () => Promise<T | null>, everyMs: number): T | null {
   const [value, setValue] = useState<T | null>(null);
   useEffect(() => {
     let alive = true;
-    const load = () =>
-      invoke<T | null>(command).then((next) => {
+    const read = () =>
+      load().then((next) => {
         if (alive && next) setValue(next);
       });
-    load();
-    const timer = setInterval(load, everyMs);
+    void read();
+    const timer = setInterval(read, everyMs);
     return () => {
       alive = false;
       clearInterval(timer);
     };
-  }, [command, everyMs]);
+  }, [load, everyMs]);
   return value;
 }
 
 function App() {
-  const snap = usePolling<Snapshot>("snapshot", REFRESH_MS);
-  const cleanup = usePolling<Cleanup>("cleanup", CLEANUP_REFRESH_MS);
+  const snap = usePolling<Snapshot>(native.snapshot, REFRESH_MS);
+  const cleanup = usePolling<Cleanup>(native.cleanup, CLEANUP_REFRESH_MS);
   // Why: a debug run can start with a row open (`VITE_MONITOR_EXPAND=work`) so it can be captured without clicking.
   const [open, setOpen] = useState<Section | null>(
     import.meta.env.DEV ? ((import.meta.env.VITE_MONITOR_EXPAND as Section | undefined) ?? null) : null,
   );
   const panelRef = useRef<HTMLElement>(null);
-  useTranslucent();
   useFitWindow(panelRef);
 
   if (!snap) {
     return (
-      <main ref={panelRef} className="panel loading">
-        {t("panel.loading")}
+      <main ref={panelRef} className="panel">
+        <div className="rm-note">{t("panel.loading")}</div>
       </main>
     );
   }
@@ -346,139 +398,120 @@ function App() {
   return (
     <main ref={panelRef} className="panel">
       <header className="head">
-        <div>
-          <div className="host">
-            {snap.host}
-            {/* Why: a "normal" badge on every open said nothing, so the badge shows only when something is wrong. */}
-            {slow && <span className={`badge ${snap.memoryPressure === "critical" ? "full" : "high"}`}>{t(`status.${status}`)}</span>}
-          </div>
-          <div className="os">{snap.os}</div>
-        </div>
+        <span className="host">{snap.host}</span>
+        <span className="os">{snap.os}</span>
+        {/* Why: a "normal" badge on every open said nothing, so the badge shows only when something is wrong. */}
+        {slow && <span className={`badge ${snap.memoryPressure === "critical" ? "full" : "high"}`}>{t(`status.${status}`)}</span>}
         {snap.popup && (
-          <button type="button" className="close" aria-label={t("popup.close")} title={t("popup.close")} onClick={() => invoke("close_popup")}>
-            <X size={ICON_SIZE} strokeWidth={ICON_STROKE} aria-hidden />
+          <button type="button" className="close" aria-label={t("popup.close")} title={t("popup.close")} onClick={() => void native.closePopup()}>
+            <X size={12} strokeWidth={2} aria-hidden />
           </button>
         )}
       </header>
-      {slow && <SlowCard snap={snap} />}
-      <div className="card summary-card">
-        <SummaryRow
-          icon={Cpu}
-          label={t("panel.cpu")}
-          value={`${Math.round(snap.cpuPercent)}%`}
-          tone={cpuTone}
-          gauge={
-            <span className="mini-spark">
-              <Sparkline values={snap.cpuHistory} tone={cpuTone} />
-            </span>
-          }
-          open={open === "cpu"}
-          onToggle={() => toggle("cpu")}
-        >
-          <Meter
-            value={snap.cpuPercent}
-            tone={cpuTone}
-            history={snap.cpuHistory}
-            details={[topCpu ? t("panel.top", { apps: topCpu }) : t("panel.cpuDetail")]}
+      <div className="rm-separator" />
+      {slow && <SlowBox snap={snap} />}
+      <SummaryRow
+        icon={Cpu}
+        label={t("panel.cpu")}
+        value={`${Math.round(snap.cpuPercent)}%`}
+        tone={cpuTone}
+        gauge={
+          <span className="mini-spark">
+            <Sparkline values={snap.cpuHistory} tone={cpuTone} />
+          </span>
+        }
+        open={open === "cpu"}
+        onToggle={() => toggle("cpu")}
+      >
+        <Sparkline values={snap.cpuHistory} tone={cpuTone} />
+        <div className="rm-note">{topCpu ? t("panel.top", { apps: topCpu }) : t("panel.cpuDetail")}</div>
+      </SummaryRow>
+      <SummaryRow
+        icon={MemoryStick}
+        label={t("panel.memory")}
+        value={`${Math.round(memory)}%`}
+        tone={memoryTone}
+        gauge={<MiniBar value={memory} tone={memoryTone} />}
+        badge={snap.memoryPressure === "normal" ? undefined : { text: t(`panel.pressure.${snap.memoryPressure}`), tone: memoryTone }}
+        open={open === "memory"}
+        onToggle={() => toggle("memory")}
+      >
+        <Sparkline values={snap.memoryHistory} tone={memoryTone} />
+        <div className="rm-note">{`${formatGb(snap.memoryUsed)} / ${formatGb(snap.memoryTotal)}`}</div>
+        <div className="rm-note">{t("panel.top", { apps: topMemory })}</div>
+      </SummaryRow>
+      <SummaryRow
+        icon={HardDrive}
+        label={t("panel.disk")}
+        value={`${Math.round(disk)}%`}
+        tone={diskTone}
+        gauge={<MiniBar value={disk} tone={diskTone} />}
+        open={open === "disk"}
+        onToggle={() => toggle("disk")}
+      >
+        <div className="meter-track">
+          <div className={`meter-fill ${diskTone}`} style={{ width: `${Math.min(disk, 100)}%` }} />
+        </div>
+        <div className="rm-note">
+          {`${formatGb(snap.diskUsed)} / ${formatGb(snap.diskTotal)} · ${t("panel.diskFree", { free: formatGb(snap.diskTotal - snap.diskUsed) })}`}
+        </div>
+      </SummaryRow>
+      <SummaryRow icon={SquareTerminal} label={t("panel.work")} value={workValue} open={open === "work"} onToggle={() => toggle("work")}>
+        {snap.heavyJob && (
+          <>
+            <Row
+              text={t("panel.heavyRow", { name: snap.heavyJob.name || "claude", command: snap.heavyJob.command })}
+              state={formatDuration(snap.heavyJob.runningSecs)}
+              tone="busy"
+            />
+            <div className="rm-note">{t("panel.heavyNote")}</div>
+            <div className="group-gap" />
+          </>
+        )}
+        {snap.claudeSessions.length === 0 && <div className="rm-note">{t("panel.claudeEmpty")}</div>}
+        {snap.claudeSessions.map((session) => (
+          <Row
+            key={session.pid}
+            text={t("panel.claudeRow", { name: session.name ?? (session.human ? "claude" : t("panel.claudeJob")), time: formatDuration(session.runningSecs) })}
+            state={t(session.busy ? "panel.claudeBusy" : "panel.claudeIdle")}
+            tone={session.busy ? "busy" : "quiet"}
           />
-        </SummaryRow>
-        <SummaryRow
-          icon={MemoryStick}
-          label={t("panel.memory")}
-          value={`${Math.round(memory)}%`}
-          tone={memoryTone}
-          gauge={<MiniBar value={memory} tone={memoryTone} />}
-          badge={snap.memoryPressure === "normal" ? undefined : { text: t(`panel.pressure.${snap.memoryPressure}`), tone: memoryTone }}
-          open={open === "memory"}
-          onToggle={() => toggle("memory")}
-        >
-          <Meter
-            value={memory}
-            tone={memoryTone}
-            history={snap.memoryHistory}
-            details={[`${formatGb(snap.memoryUsed)} / ${formatGb(snap.memoryTotal)}`, t("panel.top", { apps: topMemory })]}
-          />
-        </SummaryRow>
-        <SummaryRow
-          icon={HardDrive}
-          label={t("panel.disk")}
-          value={`${Math.round(disk)}%`}
-          tone={diskTone}
-          gauge={<MiniBar value={disk} tone={diskTone} />}
-          open={open === "disk"}
-          onToggle={() => toggle("disk")}
-        >
-          <Meter
-            value={disk}
-            tone={diskTone}
-            details={[
-              `${formatGb(snap.diskUsed)} / ${formatGb(snap.diskTotal)} · ${t("panel.diskFree", { free: formatGb(snap.diskTotal - snap.diskUsed) })}`,
-            ]}
-          />
-        </SummaryRow>
-        <SummaryRow icon={SquareTerminal} label={t("panel.work")} value={workValue} open={open === "work"} onToggle={() => toggle("work")}>
-          {snap.heavyJob && (
-            <div className="group">
-              <Row
-                text={t("panel.heavyRow", { name: snap.heavyJob.name || "claude", command: snap.heavyJob.command })}
-                state={formatDuration(snap.heavyJob.runningSecs)}
-                tone="busy"
-              />
-              <div className="meter-detail">{t("panel.heavyNote")}</div>
-            </div>
-          )}
-          <div className="group">
-            {snap.claudeSessions.length === 0 && <div className="empty">{t("panel.claudeEmpty")}</div>}
-            {snap.claudeSessions.map((session) => (
-              <Row
-                key={session.pid}
-                text={t("panel.claudeRow", { name: session.name ?? (session.human ? "claude" : t("panel.claudeJob")), time: formatDuration(session.runningSecs) })}
-                state={t(session.busy ? "panel.claudeBusy" : "panel.claudeIdle")}
-                tone={session.busy ? "busy" : "quiet"}
-              />
-            ))}
-          </div>
-          <div className="group">
-            <Label icon={Workflow} text={t("panel.runner")} />
-            {snap.runners.length === 0 && <div className="empty">{t("panel.runnerEmpty")}</div>}
-            {snap.runners.map((runner) =>
-              runner.pausedUntil ? (
-                <Row
-                  key={runner.name}
-                  text={runner.name}
-                  state={t("runner.paused", { time: formatClock(runner.pausedUntil) })}
-                  tone="quiet"
-                />
-              ) : (
-                <Row
-                  key={runner.name}
-                  text={runner.name}
-                  state={t(runner.busy ? "runner.busy" : "runner.idle")}
-                  tone={runner.busy ? "busy" : "quiet"}
-                  action={{ label: t("runner.pause"), run: () => invoke("pause_runner", { name: runner.name }) }}
-                />
-              ),
-            )}
-            {snap.runners.some((runner) => runner.busy && !runner.pausedUntil) && (
-              <div className="meter-detail">{t("runner.pauseBusyNote")}</div>
-            )}
-          </div>
-        </SummaryRow>
-        <SummaryRow
-          icon={Recycle}
-          label={t("panel.cleanup")}
-          value={cleanup ? formatGb(cleanup.total) : t("panel.cleanupMeasuring")}
-          open={open === "cleanup"}
-          onToggle={() => toggle("cleanup")}
-        >
-          <div className="group">
-            {cleanup?.top.map((item) => <Row key={item.path} text={item.path} state={formatGb(item.bytes)} tone="quiet" />)}
-            <div className="meter-detail">
-              {cleanup ? t("panel.cleanupNote", { time: formatClock(cleanup.measuredAt) }) : t("panel.cleanupMeasuringNote")}
-            </div>
-          </div>
-        </SummaryRow>
-      </div>
+        ))}
+        <div className="group-gap" />
+        <div className="rm-heading heading-icon">
+          <Workflow size={12} strokeWidth={ICON_STROKE} aria-hidden />
+          {t("panel.runner")}
+        </div>
+        {snap.runners.length === 0 && <div className="rm-note">{t("panel.runnerEmpty")}</div>}
+        {snap.runners.map((runner) =>
+          runner.pausedUntil ? (
+            <Row key={runner.name} text={runner.name} state={t("runner.paused", { time: formatClock(runner.pausedUntil) })} tone="quiet" />
+          ) : (
+            <Row
+              key={runner.name}
+              text={runner.name}
+              state={t(runner.busy ? "runner.busy" : "runner.idle")}
+              tone={runner.busy ? "busy" : "quiet"}
+              action={{ label: t("runner.pause"), run: () => native.pauseRunner(runner.name) }}
+            />
+          ),
+        )}
+        {snap.runners.some((runner) => runner.busy && !runner.pausedUntil) && <div className="rm-note">{t("runner.pauseBusyNote")}</div>}
+      </SummaryRow>
+      <SummaryRow
+        icon={Recycle}
+        label={t("panel.cleanup")}
+        value={cleanup ? formatGb(cleanup.total) : t("panel.cleanupMeasuring")}
+        open={open === "cleanup"}
+        onToggle={() => toggle("cleanup")}
+      >
+        {cleanup?.top.map((item) => <Row key={item.path} text={item.path} state={formatGb(item.bytes)} tone="quiet" />)}
+        <div className="rm-note">
+          {cleanup ? t("panel.cleanupNote", { time: formatClock(cleanup.measuredAt) }) : t("panel.cleanupMeasuringNote")}
+        </div>
+      </SummaryRow>
+      <div className="rm-separator" />
+      <Commands />
     </main>
   );
 }

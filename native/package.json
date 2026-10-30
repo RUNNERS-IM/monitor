@@ -1,0 +1,16 @@
+{
+  "name": "@monitor/native",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Monitor's native module (napi-rs). Built into monitor-native.<platform>-<arch>[-abi].node in this folder.",
+  "napi": {
+    "binaryName": "monitor-native",
+    "targets": [
+      "aarch64-apple-darwin",
+      "x86_64-apple-darwin",
+      "x86_64-pc-windows-msvc",
+      "x86_64-unknown-linux-gnu"
+    ]
+  },
+  "license": "UNLICENSED"
+}

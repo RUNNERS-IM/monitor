@@ -1,7 +1,8 @@
 # master 를 release 브랜치로 합치면 배포 판을 낸다(태그 v<버전>). Split · Prompt 와 같은 방식:
 # 1) 버전을 출시일 기준 2.{연도 끝자리}.{MMDD} 로 올려 release 에 커밋한다([skip ci]),
-# 2) macOS(유니버설) · 윈도우 · 리눅스 판을 빌드해 GitHub Releases(태그 v<버전>)에 올린다.
-# Homebrew 는 RUNNERS-IM/homebrew-tap 의 워크플로가 최신 릴리스를 보고 따라 고친다.
+# 2) 네이티브 모듈(native/, napi-rs)을 OS · CPU 마다 빌드하고 electron-builder 로 macOS(Apple silicon, Intel) ·
+#    윈도우 · 리눅스 판을 만들어 GitHub Releases(태그 v<버전>)에 올린다. electron-updater 가 읽는
+#    latest-mac.yml · latest.yml · latest-linux.yml 도 같이 올린다.
 #
 # macOS 는 Developer ID 로 서명 · 공증한다. 서명 키는 조직 비밀값에서 이 실행 동안만 쓰는
 # 임시 키체인에 넣고 끝나면 지운다. 윈도우는 코드 서명 인증서가 없어 서명하지 않는다
@@ -39,7 +40,7 @@ jobs:
     outputs:
       version: ${{ steps.bump.outputs.version || steps.current.outputs.version }}
       sha: ${{ steps.bump.outputs.sha || github.sha }}
-      app_version: ${{ steps.bump.outputs.app_version }}
+      app_version: ${{ steps.bump.outputs.app_version || steps.current.outputs.app_version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -55,7 +56,7 @@ jobs:
           VERSION=$(echo "$BUMPED" | sed -n 1p)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json src-tauri/tauri.conf.json src-tauri/Cargo.toml
+          git add package.json native/Cargo.toml
           # 멈춘 배포를 다시 돌리면 버전이 이미 올라가 있다. 바뀐 게 없으면 커밋을 건너뛴다.
           git diff --cached --quiet || git commit -q -m "Monitor $VERSION [skip ci]"
           git push origin HEAD:release
@@ -66,7 +67,10 @@ jobs:
       - name: Pick the version of a test run
         id: current
         if: env.PUBLISH != 'true'
-        run: echo "version=$(jq -r .version src-tauri/tauri.conf.json)-test" >> "$GITHUB_OUTPUT"
+        run: |
+          APP_VERSION=$(jq -r .version package.json)
+          echo "version=$(echo "$APP_VERSION" | tr + .)-test" >> "$GITHUB_OUTPUT"
+          echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
 
   build:
     needs: version
@@ -76,20 +80,20 @@ jobs:
         include:
           - os: macos
             runner: macos-26
-            args: --target universal-apple-darwin
-            bundles: src-tauri/target.noindex/universal-apple-darwin/release/bundle
+            builder: --mac
           - os: windows
             runner: windows-latest
-            args: ""
-            bundles: src-tauri/target.noindex/release/bundle
+            builder: --win
           - os: linux
             runner: ubuntu-22.04  # 오래된 glibc 로 빌드해야 더 많은 배포판에서 켜진다
-            args: ""
-            bundles: src-tauri/target.noindex/release/bundle
+            builder: --linux
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
     env:
       VERSION: ${{ needs.version.outputs.version }}
+      # 파일 이름은 앱 버전(2.6.1030+2) 대신 태그 모양(2.6.1030.2)을 쓴다 (electron-builder.config.cjs)
+      MONITOR_TAG: ${{ needs.version.outputs.version }}
+      CARGO_TARGET_DIR: ${{ github.workspace }}/native/target.noindex
     steps:
       - uses: actions/checkout@v4
         with:
@@ -108,19 +112,31 @@ jobs:
           targets: ${{ matrix.os == 'macos' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
       - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: src-tauri -> target.noindex
+          workspaces: native -> target.noindex
 
-      - name: Install the Linux system packages
+      - name: Install the Linux packaging tools
         if: matrix.os == 'linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev patchelf
+        run: sudo apt-get update && sudo apt-get install -y rpm
 
       - run: pnpm install --frozen-lockfile
 
+      # 네이티브 모듈 하나(native/monitor-native.<OS>-<CPU>.node)를 패키지할 CPU 마다 만든다.
+      # 맥은 Apple silicon 과 Intel 판을 따로 내므로 두 개를 만든다.
+      - name: Build the native module
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ matrix.os }}" = macos ]; then
+            pnpm native --target aarch64-apple-darwin
+            pnpm native --target x86_64-apple-darwin
+          else
+            pnpm native
+          fi
+          ls -la native/*.node
+
+      - run: pnpm build
+
       # Split 과 같은 방식: 이 실행 동안만 쓰는 임시 키체인에 Developer ID 를 넣고, 끝나면 지운다.
-      # Why: Tauri 의 APPLE_CERTIFICATE 가져오기는 첫 시험 실행에서 p12 를 읽지 못했고,
-      # 이 방식은 Split 배포에서 같은 인증서로 돌고 있다.
       - name: Prepare a temporary signing keychain
         if: matrix.os == 'macos'
         env:
@@ -149,52 +165,53 @@ jobs:
           chmod 600 "$SECRETS/"*
           echo "APPLE_API_KEY_PATH=$SECRETS/AuthKey_${ASC_API_KEY_ID}.p8" >> "$GITHUB_ENV"
 
-      # macOS 에서는 tauri.conf.json 의 signingIdentity 로 위 키체인에서 서명하고,
-      # APPLE_API_* 로 앱을 공증한다.
-      - name: Build
+      # macOS 에서는 위 키체인의 Developer ID 로 서명하고(CSC_NAME), APPLE_API_* 로 앱을 공증한다.
+      # 올리기는 publish 작업이 한꺼번에 하므로 여기서는 --publish never.
+      - name: Build the app
         shell: bash
         env:
-          APPLE_API_KEY: ${{ matrix.os == 'macos' && secrets.ASC_API_KEY_ID || '' }}
+          MONITOR_RELEASE: ${{ matrix.os == 'macos' && '1' || '' }}
+          CSC_NAME: ${{ matrix.os == 'macos' && 'Runners Co., Ltd (RGWVXJ8URP)' || '' }}
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ matrix.os == 'macos' && 'true' || 'false' }}
+          APPLE_API_KEY_ID: ${{ matrix.os == 'macos' && secrets.ASC_API_KEY_ID || '' }}
           APPLE_API_ISSUER: ${{ matrix.os == 'macos' && secrets.ASC_API_ISSUER_ID || '' }}
-          # 자동 업데이트 파일(.sig)을 서명하는 열쇠. 비밀번호 없이 만들었다(Split 의 Sparkle 열쇠와 같은 방식).
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
-        run: pnpm tauri build ${{ matrix.args }}
+        run: |
+          set -euo pipefail
+          if [ "${{ matrix.os }}" = macos ]; then export APPLE_API_KEY="$APPLE_API_KEY_PATH"; fi
+          pnpm exec electron-builder --config electron-builder.config.cjs ${{ matrix.builder }} --publish never
 
-      # 앱은 Tauri 가 공증했지만 DMG 자체도 공증 · 스테이플해야 오프라인에서도 경고 없이 열린다
-      - name: Notarize the DMG
+      # 앱은 electron-builder 가 공증했지만 DMG 자체도 공증 · 스테이플해야 오프라인에서도 경고 없이 열린다
+      - name: Notarize the DMGs
         if: matrix.os == 'macos'
         env:
           ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
         run: |
           set -euo pipefail
-          DMG=$(ls ${{ matrix.bundles }}/dmg/*.dmg)
-          xcrun notarytool submit "$DMG" --key "$APPLE_API_KEY_PATH" --key-id "$ASC_API_KEY_ID" --issuer "$ASC_API_ISSUER_ID" --wait
-          xcrun stapler staple "$DMG"
+          for DMG in dist.noindex/*.dmg; do
+            xcrun notarytool submit "$DMG" --key "$APPLE_API_KEY_PATH" --key-id "$ASC_API_KEY_ID" --issuer "$ASC_API_ISSUER_ID" --wait
+            xcrun stapler staple "$DMG"
+          done
 
-      # 파일 이름을 Split 과 같은 모양(Monitor-<버전>.dmg, monitor-<버전>-<OS>-<CPU>.<확장자>)으로 맞춘다
+      # 이미 설치된 Tauri 판 Monitor 가 받을 묶음(.app.tar.gz, 심볼릭 링크 그대로). 서명은 publish 작업에서 한다.
+      # Tauri 판이 남아 있지 않게 되면 이 단계와 publish 의 latest.json 단계를 지운다.
+      - name: Pack the app for installed Tauri copies
+        if: matrix.os == 'macos'
+        run: |
+          set -euo pipefail
+          tar -czf "dist.noindex/Monitor-$VERSION-aarch64.app.tar.gz" -C dist.noindex/mac-arm64 Monitor.app
+          tar -czf "dist.noindex/Monitor-$VERSION-x86_64.app.tar.gz" -C dist.noindex/mac Monitor.app
+
       - name: Collect the files
         shell: bash
         run: |
           set -euo pipefail
           OUT=dist-release && mkdir -p $OUT
-          B=${{ matrix.bundles }}
-          case ${{ matrix.os }} in
-            macos)
-              cp $B/dmg/*.dmg "$OUT/Monitor-$VERSION.dmg"
-              cp $B/macos/*.app.tar.gz "$OUT/Monitor-$VERSION.app.tar.gz"
-              cp $B/macos/*.app.tar.gz.sig "$OUT/Monitor-$VERSION.app.tar.gz.sig" ;;
-            windows)
-              cp $B/nsis/*-setup.exe "$OUT/monitor-$VERSION-windows-x64-setup.exe"
-              cp $B/nsis/*-setup.exe.sig "$OUT/monitor-$VERSION-windows-x64-setup.exe.sig"
-              cp $B/msi/*.msi "$OUT/monitor-$VERSION-windows-x64.msi" ;;
-            linux)
-              cp $B/appimage/*.AppImage "$OUT/monitor-$VERSION-linux-x86_64.AppImage"
-              cp $B/appimage/*.AppImage.sig "$OUT/monitor-$VERSION-linux-x86_64.AppImage.sig"
-              cp $B/deb/*.deb "$OUT/monitor-$VERSION-linux-amd64.deb"
-              cp $B/rpm/*.rpm "$OUT/monitor-$VERSION-linux-x86_64.rpm" ;;
-          esac
+          shopt -s nullglob
+          for f in dist.noindex/*.{dmg,zip,exe,AppImage,deb,rpm,blockmap,yml,tar.gz}; do
+            case "$(basename "$f")" in builder-debug.yml|builder-effective-config.yaml) continue ;; esac
+            cp "$f" "$OUT/"
+          done
           ls -la $OUT
 
       - uses: actions/upload-artifact@v4
@@ -219,41 +236,77 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       VERSION: ${{ needs.version.outputs.version }}
-      # 설치된 Monitor 는 latest.json 의 버전을 semver 로 읽어 자기 버전과 비교한다. 그래서 태그 모양(2.6.1030.2)이
-      # 아니라 앱 안에 넣은 모양(2.6.1030+2)을 적는다. 태그 모양은 semver 가 아니라 읽지 못한다.
+      # Tauri 판은 latest.json 의 버전을 semver 로 읽어 자기 버전과 비교한다. 그래서 태그 모양(2.6.1030.2)이
+      # 아니라 앱 안에 넣은 모양(2.6.1030+2)을 적는다.
       APP_VERSION: ${{ needs.version.outputs.app_version }}
       GH_TOKEN: ${{ github.token }}
     steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - uses: actions/download-artifact@v4
         with:
           path: files
           merge-multiple: true
-      # 설치된 Monitor 가 releases/latest/download/latest.json 을 읽어 새 판을 찾는다(src-tauri/src/update.rs).
-      # 맥은 universal 하나라 Apple silicon · Intel 이 같은 파일을 받는다.
-      - name: Write latest.json for the updater
+
+      # 다리: 이 사무실 맥 8대에는 Tauri 판(2.6.1030.2)이 깔려 있고, 그 판은
+      # releases/latest/download/latest.json 을 읽어 minisign 서명(공개 키는 예전 src-tauri/tauri.conf.json)을
+      # 확인한 뒤 새 판을 설치한다. 그래서 Electron 판도 같은 모양의 latest.json 으로 내놓는다:
+      # 맥은 Electron Monitor.app 의 tar.gz, 윈도우는 NSIS 설치 파일, 리눅스는 AppImage 를 같은 열쇠
+      # (TAURI_SIGNING_PRIVATE_KEY, 비밀번호 없음)로 서명한다.
+      # Tauri 판이 하나도 남지 않으면(모두 Electron 판으로 넘어오면) 이 단계와 위의 tar.gz 단계를 지워도 된다.
+      - name: Sign the bridge files for installed Tauri copies
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+        run: |
+          set -euo pipefail
+          for f in "files/Monitor-$VERSION-aarch64.app.tar.gz" "files/Monitor-$VERSION-x86_64.app.tar.gz" \
+                   "files/monitor-$VERSION-windows-x64-setup.exe" "files/monitor-$VERSION-linux-x86_64.AppImage"; do
+            npx --yes @tauri-apps/cli@2 signer sign --password "" "$f"
+          done
+          ls -la files/*.sig
+
+      - name: Write latest.json for installed Tauri copies
         run: |
           set -euo pipefail
           BASE="https://github.com/$GITHUB_REPOSITORY/releases/download/v$VERSION"
-          MAC="Monitor-$VERSION.app.tar.gz"
+          ARM="Monitor-$VERSION-aarch64.app.tar.gz"
+          INTEL="Monitor-$VERSION-x86_64.app.tar.gz"
           WIN="monitor-$VERSION-windows-x64-setup.exe"
           LINUX="monitor-$VERSION-linux-x86_64.AppImage"
           jq -n --arg v "$APP_VERSION" --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --arg mac "$BASE/$MAC" --rawfile macsig "files/$MAC.sig" \
+            --arg arm "$BASE/$ARM" --rawfile armsig "files/$ARM.sig" \
+            --arg intel "$BASE/$INTEL" --rawfile intelsig "files/$INTEL.sig" \
             --arg win "$BASE/$WIN" --rawfile winsig "files/$WIN.sig" \
             --arg linux "$BASE/$LINUX" --rawfile linuxsig "files/$LINUX.sig" \
             '{version: $v, pub_date: $date, platforms: {
-              "darwin-aarch64": {url: $mac, signature: $macsig},
-              "darwin-x86_64": {url: $mac, signature: $macsig},
+              "darwin-aarch64": {url: $arm, signature: $armsig},
+              "darwin-x86_64": {url: $intel, signature: $intelsig},
               "windows-x86_64": {url: $win, signature: $winsig},
               "linux-x86_64": {url: $linux, signature: $linuxsig}}}' > files/latest.json
-          cat files/latest.json | jq '.platforms | keys'
+          jq '.platforms | keys' files/latest.json
+
+      # 릴리스 본문은 저장소의 RELEASE_NOTES.md("## 한국어" · "## English" 두 칸의 "- " 목록)다. 앱의 업데이트 창이
+      # 이 본문에서 자기 언어 칸의 목록만 읽어 "바뀐 점"으로 보여 준다. 설치 안내는 그 뒤 다른 칸에 붙여서 목록에
+      # 섞이지 않게 한다. 버전 올리기(scripts/bump-release.sh)가 비었거나 지난 판 그대로인 파일을 막는다.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.version.outputs.sha }}
+          path: repo
+          sparse-checkout: RELEASE_NOTES.md
+          sparse-checkout-cone-mode: false
 
       - name: Publish the GitHub release
         run: |
           set -euo pipefail
+          {
+            cat repo/RELEASE_NOTES.md
+            printf '\n## Downloads\n\nmacOS (Apple silicon, Intel), Windows, Linux. The Windows installer is not code signed yet, so Windows shows a SmartScreen warning the first time.\n'
+          } > body.md
           ls -la files
           gh release create "v$VERSION" files/* \
             --repo "$GITHUB_REPOSITORY" \
             --target "${{ needs.version.outputs.sha }}" \
             --title "Monitor $VERSION" \
-            --notes "macOS (Apple silicon, Intel), Windows, Linux. The Windows installer is not code signed yet, so Windows shows a SmartScreen warning the first time."
+            --notes-file body.md

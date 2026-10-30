@@ -1,4 +1,5 @@
-// Writes THIRD_PARTY_NOTICES.md: the license notices of every Rust crate and npm package that ships inside Monitor.
+// Writes THIRD_PARTY_NOTICES.md: the license notices of every Rust crate (the native module in native/) and npm package
+// (Electron, and the production dependencies) that ships inside Monitor.
 // Why: Monitor is RUNNERS' own software, but the open source parts it is built from ask for their notices to travel
 // with the app; the About window shows this file ("Open Source Notices"), like Split's.
 // Run after changing dependencies: node scripts/third-party-notices.mjs (needs cargo and pnpm on PATH).
@@ -39,8 +40,8 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER I
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`;
 const entries = [];
 
-// Rust: everything the app links, following normal dependencies only (build tools are not shipped).
-const meta = JSON.parse(run("cargo", ["metadata", "--format-version", "1", "--locked"], join(root, "src-tauri")));
+// Rust: everything the native module links, following normal dependencies only (build tools are not shipped).
+const meta = JSON.parse(run("cargo", ["metadata", "--format-version", "1"], join(root, "native")));
 const byId = new Map(meta.packages.map((p) => [p.id, p]));
 const nodes = new Map(meta.resolve.nodes.map((n) => [n.id, n]));
 const seen = new Set();
@@ -63,13 +64,27 @@ for (const id of seen) {
   entries.push({ name: p.name, version: p.version, license: p.license ?? "see file", text, source });
 }
 
-// npm: the packages bundled into the panel and About window.
+// npm: the packages bundled into the page and the main process, and the ones the app loads at run time.
 const npm = JSON.parse(run("pnpm", ["licenses", "list", "--prod", "--json"], root));
 for (const [license, packages] of Object.entries(npm)) {
   for (const p of packages) {
     entries.push({ name: p.name, version: p.versions.join(", "), license, text: licenseText(p.paths[0], license) });
   }
 }
+
+// Electron is the app's runtime. Why: it is a build tool in package.json (electron-builder copies it in), so the
+// --prod list above leaves it out.
+const electronDir = join(root, "node_modules", "electron");
+const electronPkg = JSON.parse(readFileSync(join(electronDir, "package.json"), "utf8"));
+entries.push({
+  name: "electron",
+  version: electronPkg.version,
+  license: electronPkg.license,
+  text:
+    licenseText(electronDir, electronPkg.license) +
+    `\n\nElectron includes Chromium and other open source software; their notices are in LICENSES.chromium.html, ` +
+    `published with Electron ${electronPkg.version} at https://github.com/electron/electron/releases/tag/v${electronPkg.version}.`,
+});
 
 entries.sort((a, b) => a.name.localeCompare(b.name));
 let apacheUsed = false;
