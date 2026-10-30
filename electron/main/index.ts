@@ -20,6 +20,9 @@ const CLEANUP_FILE = "cleanup.json";
 const CLEANUP_PROGRESS_FILE = "cleanup-progress.json";
 // Why: a slow computer stays slow for a while, so the same warning is repeated at most this often.
 const SLOW_NOTICE_EVERY_MS = 30 * 60 * 1000;
+// Why: memory pressure flips to warning and back within seconds on a busy Mac, so the popup waits until it has stayed
+// short this long. The native CPU flag already means a full minute above the limit.
+const SLOW_MEMORY_FOR_MS = 60 * 1000;
 const NOTICE_APPS = 2;
 // Why: the tray click that opens the panel can also send it a focus-lost event right away, so blur is ignored this long after opening.
 const BLUR_GRACE_MS = 400;
@@ -56,8 +59,10 @@ const popup = {
   /** Reasons the open popup is about, so closing it silences exactly those. */
   showing: new Set<Reason>(),
   lastShown: new Map<Reason, number>(),
-  /** Closed by the user; not shown again until that reason has cleared once. */
-  dismissed: new Set<Reason>(),
+  /** Closed by the user, with the day it was closed on; not shown again for that reason that day. */
+  dismissed: new Map<Reason, string>(),
+  /** When each reason turned slow, cleared when it recovers. */
+  slowSince: new Map<Reason, number>(),
 };
 const noticed = new Map<Reason, number>();
 
@@ -69,6 +74,8 @@ function reasons(snap: Snapshot): [Reason, boolean][] {
     ["cpu", snap.slowCpu],
   ];
 }
+
+const today = () => new Date().toDateString();
 
 function recently(at: number | undefined): boolean {
   return at !== undefined && Date.now() - at < SLOW_NOTICE_EVERY_MS;
@@ -86,12 +93,24 @@ function showWithoutFocus(): void {
  *  Returns false when there is no panel to open, so the caller can fall back to a notification. */
 function popupIfSlow(snap: Snapshot): boolean {
   if (!panel || panel.isDestroyed()) return false;
-  for (const [reason, slow] of reasons(snap)) if (!slow) popup.dismissed.delete(reason);
-  const due = reasons(snap)
-    .filter(([reason, slow]) => slow && !popup.dismissed.has(reason) && !recently(popup.lastShown.get(reason)))
-    .map(([reason]) => reason);
+  const now = Date.now();
+  const slowNow = new Set(reasons(snap).filter(([, slow]) => slow).map(([reason]) => reason));
+  for (const reason of ["memory", "cpu"] as Reason[]) {
+    if (!slowNow.has(reason)) popup.slowSince.delete(reason);
+    else if (!popup.slowSince.has(reason)) popup.slowSince.set(reason, now);
+  }
+  // Why: once the computer has recovered the popup has nothing left to say, so it closes itself.
+  if (popup.open && ![...popup.showing].some((reason) => slowNow.has(reason))) {
+    popup.open = false;
+    popup.showing.clear();
+    hidePanel();
+  }
+  const longEnough = (reason: Reason) => reason === "cpu" || now - (popup.slowSince.get(reason) ?? now) >= SLOW_MEMORY_FOR_MS;
+  const due = [...slowNow].filter(
+    (reason) => longEnough(reason) && popup.dismissed.get(reason) !== today() && !recently(popup.lastShown.get(reason)),
+  );
   if (due.length === 0) return true;
-  for (const reason of due) popup.lastShown.set(reason, Date.now());
+  for (const reason of due) popup.lastShown.set(reason, now);
   // Why: when the user already has the panel open they see the reasons there; nothing more to pop up.
   if (panel.isVisible()) return true;
   popup.showing = new Set(due);
@@ -100,11 +119,11 @@ function popupIfSlow(snap: Snapshot): boolean {
   return true;
 }
 
-/** Closes a popup and keeps it closed until the computer has recovered from the same reason. */
+/** Closes a popup and keeps it closed for the same reason for the rest of the day. */
 function dismissPopup(): void {
   if (!popup.open) return;
   popup.open = false;
-  for (const reason of popup.showing) popup.dismissed.add(reason);
+  for (const reason of popup.showing) popup.dismissed.set(reason, today());
   popup.showing.clear();
 }
 
