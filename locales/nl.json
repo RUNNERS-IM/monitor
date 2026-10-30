@@ -78,12 +78,11 @@
   "about.notices": "Opensource-vermeldingen",
   "about.close": "Sluit",
   "about.get": "Ophalen",
-  "update.latest": "Monitor {{version}} is up-to-date.",
-  "update.installing": "Versie {{version}} wordt geïnstalleerd en Monitor wordt opnieuw gestart.",
+  "update.latest": "Monitor is up-to-date",
   "update.failed": "Kan niet op updates controleren: {{error}}",
   "menu.autoUpdate": "Automatisch op updates controleren",
-  "update.ask": "Monitor {{version}} is beschikbaar. Nu installeren?",
-  "update.askDetail": "Monitor start opnieuw na het installeren.",
-  "update.install": "Installeren",
+  "update.title": "Er is een nieuwe versie beschikbaar",
+  "update.ask": "Monitor {{version}} installeren? Monitor wordt na de installatie opnieuw gestart.",
+  "update.install": "Nu installeren",
   "update.later": "Later"
 }

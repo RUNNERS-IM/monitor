@@ -78,12 +78,11 @@
   "about.notices": "ओपन सोर्स सूचनाएँ",
   "about.close": "बंद करें",
   "about.get": "पाएं",
-  "update.latest": "Monitor {{version}} नवीनतम है।",
-  "update.installing": "संस्करण {{version}} इंस्टॉल करके Monitor फिर से शुरू हो रहा है।",
+  "update.latest": "Monitor अप टू डेट है",
   "update.failed": "अपडेट की जाँच नहीं हो सकी: {{error}}",
   "menu.autoUpdate": "अपडेट अपने आप जाँचें",
-  "update.ask": "Monitor {{version}} उपलब्ध है। क्या अभी इंस्टॉल करें?",
-  "update.askDetail": "इंस्टॉल करने के बाद Monitor फिर से शुरू होगा।",
-  "update.install": "इंस्टॉल करें",
+  "update.title": "नया संस्करण उपलब्ध है",
+  "update.ask": "Monitor {{version}} इंस्टॉल करें? इंस्टॉल करने के बाद Monitor फिर से शुरू होगा।",
+  "update.install": "अभी इंस्टॉल करें",
   "update.later": "बाद में"
 }

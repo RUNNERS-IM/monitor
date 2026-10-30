@@ -78,12 +78,11 @@
   "about.notices": "ประกาศโอเพนซอร์ส",
   "about.close": "ปิด",
   "about.get": "รับ",
-  "update.latest": "Monitor {{version}} เป็นเวอร์ชันล่าสุดแล้ว",
-  "update.installing": "กำลังติดตั้งเวอร์ชัน {{version}} และเปิด Monitor ใหม่",
+  "update.latest": "Monitor เป็นเวอร์ชันล่าสุดแล้ว",
   "update.failed": "ตรวจสอบการอัปเดตไม่ได้: {{error}}",
   "menu.autoUpdate": "ตรวจหาอัปเดตโดยอัตโนมัติ",
-  "update.ask": "มี Monitor {{version}} แล้ว ติดตั้งตอนนี้เลยไหม",
-  "update.askDetail": "Monitor จะเริ่มใหม่หลังติดตั้ง",
-  "update.install": "ติดตั้ง",
+  "update.title": "มีเวอร์ชันใหม่",
+  "update.ask": "ติดตั้ง Monitor {{version}} หรือไม่ Monitor จะเริ่มใหม่หลังจากติดตั้ง",
+  "update.install": "ติดตั้งเลย",
   "update.later": "ภายหลัง"
 }

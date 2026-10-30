@@ -6,9 +6,11 @@ import { join } from "node:path";
 export type Settings = {
   /** Check GitHub for a new release once a day. On by default. */
   autoUpdate: boolean;
+  /** The day (`2026-10-30`) "Later" was chosen in the update dialog, so the daily check does not ask again that day. */
+  updateLaterOn: string | null;
 };
 
-const DEFAULTS: Settings = { autoUpdate: true };
+const DEFAULTS: Settings = { autoUpdate: true, updateLaterOn: null };
 
 function file(): string {
   return join(app.getPath("userData"), "settings.json");

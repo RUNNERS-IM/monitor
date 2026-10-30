@@ -78,12 +78,11 @@
   "about.notices": "오픈소스 고지",
   "about.close": "닫기",
   "about.get": "받기",
-  "update.latest": "최신 버전입니다 (Monitor {{version}}).",
-  "update.installing": "새 버전({{version}})을 설치하고 Monitor를 다시 켭니다.",
+  "update.latest": "최신 버전을 사용 중입니다.",
   "update.failed": "업데이트를 확인하지 못했습니다: {{error}}",
   "menu.autoUpdate": "업데이트 자동 확인",
-  "update.ask": "새 버전(Monitor {{version}})이 나왔어요. 지금 설치할까요?",
-  "update.askDetail": "설치하면 Monitor가 다시 켜집니다.",
-  "update.install": "설치",
+  "update.title": "새 버전이 있습니다",
+  "update.ask": "Monitor {{version}}을(를) 설치할까요? 설치하면 Monitor가 다시 시작됩니다.",
+  "update.install": "지금 설치",
   "update.later": "나중에"
 }

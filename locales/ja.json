@@ -78,12 +78,11 @@
   "about.notices": "オープンソースの表記",
   "about.close": "閉じる",
   "about.get": "入手",
-  "update.latest": "Monitor {{version}} は最新です。",
-  "update.installing": "バージョン {{version}} をインストールして Monitor を再起動します。",
+  "update.latest": "Monitor は最新です",
   "update.failed": "アップデートを確認できませんでした: {{error}}",
   "menu.autoUpdate": "アップデートを自動的に確認",
-  "update.ask": "Monitor {{version}} が利用できます。今すぐインストールしますか？",
-  "update.askDetail": "インストール後に Monitor が再起動します。",
-  "update.install": "インストール",
-  "update.later": "後で"
+  "update.title": "新しいバージョンがあります",
+  "update.ask": "Monitor {{version}} をインストールしますか？インストールすると Monitor が再起動します。",
+  "update.install": "今すぐインストール",
+  "update.later": "あとで"
 }

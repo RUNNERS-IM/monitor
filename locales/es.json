@@ -78,12 +78,11 @@
   "about.notices": "Avisos de código abierto",
   "about.close": "Cerrar",
   "about.get": "Obtener",
-  "update.latest": "Monitor {{version}} está actualizado.",
-  "update.installing": "Instalando la versión {{version}} y reiniciando Monitor.",
+  "update.latest": "Monitor está actualizado",
   "update.failed": "No se pudieron buscar actualizaciones: {{error}}",
   "menu.autoUpdate": "Buscar actualizaciones automáticamente",
-  "update.ask": "Monitor {{version}} está disponible. ¿Instalarlo ahora?",
-  "update.askDetail": "Monitor se reiniciará después de instalarlo.",
-  "update.install": "Instalar",
+  "update.title": "Hay una nueva versión disponible",
+  "update.ask": "¿Instalar Monitor {{version}}? Monitor se reiniciará después de la instalación.",
+  "update.install": "Instalar ahora",
   "update.later": "Más tarde"
 }

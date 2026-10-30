@@ -78,12 +78,11 @@
   "about.notices": "开源声明",
   "about.close": "关闭",
   "about.get": "获取",
-  "update.latest": "Monitor {{version}} 已是最新版本。",
-  "update.installing": "正在安装版本 {{version}} 并重新启动 Monitor。",
+  "update.latest": "Monitor 已是最新版本",
   "update.failed": "无法检查更新：{{error}}",
   "menu.autoUpdate": "自动检查更新",
-  "update.ask": "Monitor {{version}} 已推出。现在安装吗？",
-  "update.askDetail": "安装后 Monitor 会重新启动。",
-  "update.install": "安装",
-  "update.later": "稍后"
+  "update.title": "有新版本可用",
+  "update.ask": "要安装 Monitor {{version}} 吗？安装后 Monitor 将重新启动。",
+  "update.install": "立即安装",
+  "update.later": "以后"
 }

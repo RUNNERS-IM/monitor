@@ -78,12 +78,11 @@
   "about.notices": "Open-Source-Hinweise",
   "about.close": "Schließen",
   "about.get": "Laden",
-  "update.latest": "Monitor {{version}} ist auf dem neuesten Stand.",
-  "update.installing": "Version {{version}} wird installiert und Monitor neu gestartet.",
+  "update.latest": "Monitor ist auf dem neuesten Stand",
   "update.failed": "Updates konnten nicht geprüft werden: {{error}}",
   "menu.autoUpdate": "Automatisch nach Updates suchen",
-  "update.ask": "Monitor {{version}} ist verfügbar. Jetzt installieren?",
-  "update.askDetail": "Monitor startet nach der Installation neu.",
-  "update.install": "Installieren",
+  "update.title": "Eine neue Version ist verfügbar",
+  "update.ask": "Monitor {{version}} installieren? Monitor wird nach der Installation neu gestartet.",
+  "update.install": "Jetzt installieren",
   "update.later": "Später"
 }

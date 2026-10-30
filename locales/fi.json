@@ -78,12 +78,11 @@
   "about.notices": "Avoimen lähdekoodin ilmoitukset",
   "about.close": "Sulje",
   "about.get": "Hae",
-  "update.latest": "Monitor {{version}} on ajan tasalla.",
-  "update.installing": "Asennetaan versio {{version}} ja käynnistetään Monitor uudelleen.",
+  "update.latest": "Monitor on ajan tasalla",
   "update.failed": "Päivityksiä ei voitu tarkistaa: {{error}}",
   "menu.autoUpdate": "Tarkista päivitykset automaattisesti",
-  "update.ask": "Monitor {{version}} on saatavilla. Asennetaanko nyt?",
-  "update.askDetail": "Monitor käynnistyy uudelleen asennuksen jälkeen.",
-  "update.install": "Asenna",
+  "update.title": "Uusi versio on saatavilla",
+  "update.ask": "Asennetaanko Monitor {{version}}? Monitor käynnistyy uudelleen asennuksen jälkeen.",
+  "update.install": "Asenna nyt",
   "update.later": "Myöhemmin"
 }

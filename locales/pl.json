@@ -78,12 +78,11 @@
   "about.notices": "Informacje o otwartym oprogramowaniu",
   "about.close": "Zamknij",
   "about.get": "Pobierz",
-  "update.latest": "Monitor {{version}} jest aktualny.",
-  "update.installing": "Instalowanie wersji {{version}} i ponowne uruchamianie Monitor.",
+  "update.latest": "Monitor jest aktualny",
   "update.failed": "Nie udało się sprawdzić aktualizacji: {{error}}",
   "menu.autoUpdate": "Automatycznie sprawdzaj uaktualnienia",
-  "update.ask": "Dostępny jest Monitor {{version}}. Zainstalować teraz?",
-  "update.askDetail": "Po instalacji Monitor uruchomi się ponownie.",
-  "update.install": "Zainstaluj",
+  "update.title": "Dostępna jest nowa wersja",
+  "update.ask": "Zainstalować Monitor {{version}}? Po instalacji Monitor uruchomi się ponownie.",
+  "update.install": "Zainstaluj teraz",
   "update.later": "Później"
 }

@@ -78,12 +78,11 @@
   "about.notices": "Pemberitahuan sumber terbuka",
   "about.close": "Tutup",
   "about.get": "Dapatkan",
-  "update.latest": "Monitor {{version}} sudah versi terbaru.",
-  "update.installing": "Memasang versi {{version}} dan memulai ulang Monitor.",
+  "update.latest": "Monitor sudah versi terbaru",
   "update.failed": "Tidak dapat memeriksa pembaruan: {{error}}",
   "menu.autoUpdate": "Periksa Pembaruan Secara Otomatis",
-  "update.ask": "Monitor {{version}} tersedia. Pasang sekarang?",
-  "update.askDetail": "Monitor akan dimulai ulang setelah dipasang.",
-  "update.install": "Pasang",
+  "update.title": "Versi baru tersedia",
+  "update.ask": "Instal Monitor {{version}}? Monitor akan dimulai ulang setelah diinstal.",
+  "update.install": "Instal Sekarang",
   "update.later": "Nanti"
 }

@@ -78,12 +78,11 @@
   "about.notices": "Thông báo mã nguồn mở",
   "about.close": "Đóng",
   "about.get": "Nhận",
-  "update.latest": "Monitor {{version}} đã là bản mới nhất.",
-  "update.installing": "Đang cài phiên bản {{version}} và khởi động lại Monitor.",
+  "update.latest": "Monitor đã là bản mới nhất",
   "update.failed": "Không thể kiểm tra cập nhật: {{error}}",
   "menu.autoUpdate": "Tự động kiểm tra cập nhật",
-  "update.ask": "Đã có Monitor {{version}}. Cài đặt ngay?",
-  "update.askDetail": "Monitor sẽ khởi động lại sau khi cài đặt.",
-  "update.install": "Cài đặt",
+  "update.title": "Có phiên bản mới",
+  "update.ask": "Cài đặt Monitor {{version}}? Monitor sẽ khởi động lại sau khi cài đặt.",
+  "update.install": "Cài đặt ngay",
   "update.later": "Để sau"
 }
