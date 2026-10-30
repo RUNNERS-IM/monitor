@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { LogicalSize, getCurrentWindow } from "@tauri-apps/api/window";
 import { Cpu, HardDrive, MemoryStick, SquareTerminal, Workflow, type LucideIcon } from "lucide-react";
 import "./App.css";
 
@@ -18,6 +19,7 @@ type Snapshot = {
 };
 
 const REFRESH_MS = 3000;
+const PANEL_WIDTH = 340;
 // Why: the same stroke as Prompt and Split so the three apps' icons look equally light.
 const ICON_STROKE = 1.5;
 const ICON_SIZE = 14;
@@ -67,8 +69,33 @@ function Meter({ icon, label, value, detail }: { icon: LucideIcon; label: string
   );
 }
 
+// Why: the OS blur only shows through a transparent page, so the solid background is dropped when blur is on.
+function useTranslucent() {
+  useEffect(() => {
+    invoke<boolean>("translucent").then((on) => {
+      document.documentElement.dataset.translucent = String(on);
+    });
+  }, []);
+}
+
+// Why: a fixed window height left empty space under the last card, so the window follows the panel's height.
+function useFitWindow(ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const observer = new ResizeObserver(() => {
+      getCurrentWindow().setSize(new LogicalSize(PANEL_WIDTH, Math.ceil(node.getBoundingClientRect().height)));
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  });
+}
+
 function App() {
   const [snap, setSnap] = useState<Snapshot | null>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  useTranslucent();
+  useFitWindow(panelRef);
 
   useEffect(() => {
     let alive = true;
@@ -85,14 +112,18 @@ function App() {
   }, []);
 
   if (!snap) {
-    return <main className="panel loading">불러오는 중</main>;
+    return (
+      <main ref={panelRef} className="panel loading">
+        불러오는 중
+      </main>
+    );
   }
 
   const memory = percent(snap.memoryUsed, snap.memoryTotal);
   const disk = percent(snap.diskUsed, snap.diskTotal);
 
   return (
-    <main className="panel">
+    <main ref={panelRef} className="panel">
       <header>
         <div className="host">{snap.host}</div>
         <div className="os">{snap.os}</div>

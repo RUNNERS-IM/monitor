@@ -1,7 +1,7 @@
 /* Design standard A shared with Split and Prompt: macOS system look, values in px. */
 :root {
   --accent: #007aff;
-  --panel: rgba(246, 246, 246, 0.94);
+  --panel: #f6f6f6;
   --card: rgba(255, 255, 255, 0.85);
   --ink: #1d1d1f;
   --sub: #6e6e73;
@@ -18,7 +18,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --panel: rgba(30, 30, 32, 0.94);
+    --panel: #1e1e20;
     --card: rgba(255, 255, 255, 0.05);
     --ink: #f5f5f7;
     --sub: #98989d;
@@ -34,7 +34,6 @@ html,
 body,
 #root {
   margin: 0;
-  height: 100%;
   background: transparent;
   overflow: hidden;
   user-select: none;
@@ -42,7 +41,6 @@ body,
 
 .panel {
   box-sizing: border-box;
-  height: 100%;
   padding: 20px;
   background: var(--panel);
   border-radius: 14px;
@@ -52,9 +50,12 @@ body,
   gap: 16px;
 }
 
+:root[data-translucent="true"] .panel {
+  background: transparent;
+}
+
 .panel.loading {
   align-items: center;
-  justify-content: center;
   color: var(--sub);
 }
 

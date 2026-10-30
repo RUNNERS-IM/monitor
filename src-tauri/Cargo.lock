@@ -1792,6 +1792,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-positioner",
+ "window-vibrancy",
 ]
 
 [[package]]

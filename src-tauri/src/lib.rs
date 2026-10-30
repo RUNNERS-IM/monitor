@@ -17,6 +17,38 @@ const BLUR_GRACE: Duration = Duration::from_millis(400);
 #[derive(Default)]
 struct PanelShownAt(Mutex<Option<Instant>>);
 
+/// Whether the OS blurs what is behind the panel; the page draws a solid background when it does not.
+struct Translucent(bool);
+
+#[tauri::command]
+fn translucent(state: State<'_, Translucent>) -> bool {
+    state.0
+}
+
+/// macOS gets the same blur as Control Center, Windows gets Acrylic, Linux has no blur and stays solid.
+fn apply_blur(window: &tauri::WebviewWindow) -> bool {
+    #[cfg(target_os = "macos")]
+    {
+        use window_vibrancy::{NSVisualEffectMaterial, NSVisualEffectState};
+        return window_vibrancy::apply_vibrancy(
+            window,
+            NSVisualEffectMaterial::Popover,
+            Some(NSVisualEffectState::Active),
+            Some(14.0),
+        )
+        .is_ok();
+    }
+    #[cfg(target_os = "windows")]
+    {
+        return window_vibrancy::apply_acrylic(window, None).is_ok();
+    }
+    #[allow(unreachable_code)]
+    {
+        let _ = window;
+        false
+    }
+}
+
 #[tauri::command]
 fn snapshot(sampler: State<'_, Mutex<Sampler>>) -> Snapshot {
     sampler.lock().unwrap().sample()
@@ -43,11 +75,14 @@ pub fn run() {
         .plugin(tauri_plugin_positioner::init())
         .manage(PanelShownAt::default())
         .manage(Mutex::new(Sampler::new().expect("failed to open system counters")))
-        .invoke_handler(tauri::generate_handler![snapshot])
+        .invoke_handler(tauri::generate_handler![snapshot, translucent])
         .setup(|app| {
             // Why: Monitor lives in the tray only, so it should not take a Dock slot on macOS.
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+
+            let panel = app.get_webview_window("main").expect("main window is declared in tauri.conf.json");
+            app.manage(Translucent(apply_blur(&panel)));
 
             let quit = MenuItem::with_id(app, "quit", "Monitor 끝내기", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&quit])?;
