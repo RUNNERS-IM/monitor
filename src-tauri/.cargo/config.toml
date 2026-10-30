@@ -1,0 +1,3 @@
+# Why: a folder ending in .noindex is skipped by Spotlight, so test builds never show up in Launchpad.
+[build]
+target-dir = "target.noindex"
