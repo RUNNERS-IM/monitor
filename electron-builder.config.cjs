@@ -18,6 +18,9 @@ const tag = process.env.MONITOR_TAG || "${version}";
 const version = require("./package.json").version;
 const [base, sameDay = "0"] = version.split("+");
 const buildVersion = `${base}.${sameDay}`;
+// The version people see in Finder and brew: the release tag (2.6.1030.3, or 2.6.1030 for the first of the day),
+// the same form Split shows. electron-updater compares app.getVersion() (package.json), not this.
+const shownVersion = sameDay === "0" ? base : buildVersion;
 
 /** @type {import('electron-builder').Configuration} */
 module.exports = {
@@ -58,6 +61,7 @@ module.exports = {
     extendInfo: {
       // Monitor lives in the menu bar only: no Dock icon, no app menu.
       LSUIElement: true,
+      CFBundleShortVersionString: shownVersion,
       NSAppleEventsUsageDescription: "Monitor asks an app to quit, like ⌘Q, when you press Quit in its panel.",
     },
   },
