@@ -376,6 +376,16 @@ body,
   cursor: pointer;
 }
 
+/* Why: a long value (work row) must wrap itself instead of squeezing the label into one letter per line. */
+.summary-row {
+  gap: 12px;
+}
+
+.summary-row .label {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .chevron {
   color: var(--sub);
 }
