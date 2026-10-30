@@ -1,18 +1,30 @@
-/* About window, design standard A with Split's roomier values: 28 outer padding, 96 icon, 28 below the header,
-   24 between card sections. Colours come from App.css; the window is see-through over the macOS blur, and
-   draws the solid panel colour where the OS has no blur (Linux). */
+/* About window: the shared window values (runners-window.css, design standard A) with a 96 icon and 28 below the
+   header. The window is see-through over the macOS blur, and draws the solid window colour where the OS has no blur
+   (Linux). */
 /* Why: Vite puts every stylesheet into one file for both windows, so these rules name the About window. */
 :root[data-window="about"] body {
-  background: var(--panel);
+  background: var(--rw-window-bg);
 }
 
 :root[data-window="about"][data-translucent="true"] body {
   background: transparent;
 }
 
+/* Why: grey text all but vanished over the blurred desktop, so secondary text is a little stronger over the blur. */
+:root[data-window="about"][data-translucent="true"] {
+  --rw-text-secondary: rgba(0, 0, 0, 0.62);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-window="about"][data-translucent="true"] {
+    --rw-text-secondary: rgba(255, 255, 255, 0.7);
+  }
+}
+
 .about {
   box-sizing: border-box;
-  padding: 40px 28px 28px;
+  /* Why: 12 more on top for the title bar's traffic lights. */
+  padding: calc(var(--rw-pad) + 12px) var(--rw-pad) var(--rw-pad);
 }
 
 .about-header {
@@ -40,7 +52,7 @@
   margin: 6px 0 0;
   font-size: 12px;
   line-height: 15px;
-  color: var(--sub);
+  color: var(--rw-text-secondary);
 }
 
 /* Why: same pair of push buttons as Split's About window, so the four apps lead to their page and code the same way. */
@@ -53,21 +65,21 @@
 .about-link {
   height: 24px;
   padding: 0 14px;
-  border: 0.5px solid var(--line);
-  border-radius: 6px;
-  background: var(--card);
-  color: var(--ink);
+  border: var(--rw-border) solid var(--rw-separator);
+  border-radius: var(--rw-small-radius);
+  background: var(--rw-box-bg);
+  color: var(--rw-text);
   font: inherit;
   font-size: 13px;
   cursor: default;
 }
 
 .about-link:hover {
-  background: var(--track);
+  background: var(--rw-control-bg);
 }
 
 .about-link:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--rw-accent);
   outline-offset: 1px;
 }
 
@@ -76,14 +88,14 @@
   text-align: center;
   font-size: 10px;
   line-height: 13px;
-  color: var(--sub);
+  color: var(--rw-text-secondary);
 }
 
 .about-notices-link {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--accent);
+  color: var(--rw-accent);
   font: inherit;
   text-decoration: underline;
   cursor: default;
@@ -108,8 +120,8 @@
   height: 420px;
   padding: 20px;
   border-radius: 12px;
-  border: 0.5px solid var(--line);
-  background: var(--panel);
+  border: 0.5px solid var(--rw-separator);
+  background: var(--rw-window-bg);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 
@@ -125,14 +137,14 @@
   user-select: text;
   font-size: 11px;
   line-height: 15px;
-  color: var(--sub);
+  color: var(--rw-text-secondary);
 }
 
 .notices-block h3 {
   margin: 12px 0 4px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--ink);
+  color: var(--rw-text);
 }
 
 .notices-block p {
@@ -152,7 +164,7 @@
   padding: 0 16px;
   border: 0;
   border-radius: 6px;
-  background: var(--accent);
+  background: var(--rw-accent);
   color: #fff;
   font: inherit;
   font-size: 13px;

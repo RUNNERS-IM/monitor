@@ -8,6 +8,7 @@ import { locale, t } from "./i18n";
 import { closeWindow, fitHeight, openExternal, version as appVersion } from "./native";
 import appIcon from "./assets/app-icon.png";
 import "./App.css";
+import "./runners-window.css";
 import "./About.css";
 
 // The window is 520 wide (electron/main/windows.ts); the height follows the content.

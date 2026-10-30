@@ -42,6 +42,9 @@ export function applyWindowLook(): void {
   void api()
     .accentColor()
     .then((color) => {
-      if (color) document.documentElement.style.setProperty("--rm-accent", color);
+      if (!color) return;
+      // Why: the menu look (runners-menu.css) and the window look (runners-window.css) both follow the OS accent.
+      document.documentElement.style.setProperty("--rm-accent", color);
+      document.documentElement.style.setProperty("--rw-accent", color);
     });
 }
