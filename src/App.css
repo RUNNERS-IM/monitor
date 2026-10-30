@@ -304,17 +304,62 @@ body,
   gap: 4px;
 }
 
-/* "Why it is slow" box: each reason with an orange gauge in front. */
-.reason {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  margin: 2px 14px 4px;
-  line-height: 1.35;
+/* "Who uses memory" box: one bar split into parts that add up to the whole, then one line per part. */
+:root {
+  --other-apps: #d1d1d6;
 }
 
-.reason svg {
+@media (prefers-color-scheme: dark) {
+  :root {
+    --other-apps: #636366;
+  }
+}
+
+.stack {
+  display: flex;
+  height: 14px;
+  margin: 4px 14px 6px;
+  border-radius: 4px;
+  /* Why: the free part is left empty, so the track shows where the bar ends. */
+  background: var(--rm-separator);
+  overflow: hidden;
+}
+
+.stack span {
   flex: none;
-  margin-top: 1px;
-  color: var(--rm-high);
+  height: 100%;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 22px;
+  margin: 0 14px;
+}
+
+.swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.legend-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legend-amount {
+  flex: none;
+  color: var(--rm-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Why: the note sits under its name, past the colour square. */
+.rm-group .legend-note {
+  margin: -3px 14px 2px 30px;
 }

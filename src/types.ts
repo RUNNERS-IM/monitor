@@ -2,7 +2,10 @@
 export type Pressure = "normal" | "warn" | "critical";
 
 export type AppKind = "app" | "build" | "simulator";
-export type AppUse = { name: string; cpuPercent: number; memory: number; quittable: boolean; kind: AppKind; folder: string | null };
+export type AppUse = { name: string; cpuPercent: number; memory: number; quittable: boolean; kind: AppKind; folder: string | null;
+  /** For the "claude" entry: how many claude processes it adds up. */
+  sessions: number | null;
+};
 export type ClaudeSession = { pid: number; name: string | null; runningSecs: number; busy: boolean; human: boolean };
 export type Runner = { name: string; busy: boolean; pausedUntil: number | null };
 
@@ -12,6 +15,11 @@ export type Snapshot = {
   cpuPercent: number;
   memoryUsed: number;
   memoryTotal: number;
+  /** Bytes the panel's memory map shows besides apps (0 where the OS does not report one). */
+  memoryWired: number;
+  memoryCompressed: number;
+  memoryCache: number;
+  memoryFree: number;
   memoryPressure: Pressure;
   diskUsed: number;
   diskTotal: number;

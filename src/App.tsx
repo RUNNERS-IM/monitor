@@ -7,7 +7,6 @@ import {
   ChevronRight,
   CircleHelp,
   Cpu,
-  Gauge,
   HardDrive,
   Info,
   MemoryStick,
@@ -188,37 +187,109 @@ function formatClock(unixSecs: number): string {
   return new Date(unixSecs * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-/** Shown only while the computer is slow: what is behind it and a Quit button for each app. */
+// Why: one colour per app in the "who uses it" bar; claude keeps purple so it reads the same every time.
+const APP_COLOURS = ["#ff9f0a", "#bf5af2", "#64d2ff", "#30d158"];
+const CLAUDE_COLOUR = "#bf5af2";
+
+type Part = { key: string; label: string; amount: string; size: number; colour: string; app?: AppUse };
+
+/** Colours for the apps in order: claude always purple, the others take the next free colour. */
+function appParts(apps: AppUse[], size: (app: AppUse) => number, amount: (app: AppUse) => string): Part[] {
+  const claudeShown = apps.some((app) => app.sessions !== null);
+  const palette = claudeShown ? APP_COLOURS.filter((colour) => colour !== CLAUDE_COLOUR) : APP_COLOURS;
+  let next = 0;
+  return apps.map((app) => ({
+    key: `app-${app.name}`,
+    label: app.sessions !== null ? t("slow.claudeSessions", { count: app.sessions }) : app.name,
+    amount: appState(app, amount(app)),
+    size: size(app),
+    colour: app.sessions !== null ? CLAUDE_COLOUR : palette[next++ % palette.length],
+    app,
+  }));
+}
+
+/** The parts of memory, adding up to the total: top apps, system, cache, other apps and the free part (left empty). */
+function memoryParts(snap: Snapshot): { parts: Part[]; total: number } {
+  const apps = appParts(snap.topMemory, (app) => app.memory, (app) => formatGb(app.memory));
+  const system = snap.memoryWired + snap.memoryCompressed;
+  const known = apps.reduce((sum, part) => sum + part.size, 0) + system + snap.memoryCache + snap.memoryFree;
+  const other = Math.max(0, snap.memoryTotal - known);
+  const parts: Part[] = [
+    ...apps,
+    { key: "system", label: t("slow.system"), amount: formatGb(system), size: system, colour: "#8e8e93" },
+    { key: "cache", label: t("slow.cache"), amount: formatGb(snap.memoryCache), size: snap.memoryCache, colour: "#c7c7cc" },
+    { key: "other", label: t("slow.other"), amount: formatGb(other), size: other, colour: "var(--other-apps)" },
+  ];
+  // Why: apps' sizes count shared pages more than once, so the parts can add up past the total; the bar then scales down.
+  return { parts: parts.filter((part) => part.size > 0), total: Math.max(snap.memoryTotal, known + other) };
+}
+
+/** The parts of the CPU in percent of the whole computer: top apps, other apps and the idle part (left empty). */
+function cpuParts(snap: Snapshot): { parts: Part[]; total: number } {
+  const shown = snap.topCpu.filter((app) => app.cpuPercent >= MIN_TOP_CPU);
+  const apps = appParts(shown, (app) => app.cpuPercent, (app) => `${Math.round(app.cpuPercent)}%`);
+  const used = apps.reduce((sum, part) => sum + part.size, 0);
+  const other = Math.max(0, snap.cpuPercent - used);
+  const parts: Part[] = [
+    ...apps,
+    { key: "other", label: t("slow.other"), amount: `${Math.round(other)}%`, size: other, colour: "var(--other-apps)" },
+  ];
+  return { parts: parts.filter((part) => part.size > 0), total: Math.max(100, used + other) };
+}
+
+/** One line under the bar: colour square, name, amount, and Quit for an app that can be quit. */
+function Legend({ part }: { part: Part }) {
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const app = part.app;
+  const quit = () => {
+    if (!app) return;
+    setPending(true);
+    setError(null);
+    native
+      .quitApp(app.name)
+      .catch((e) => setError(String(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, "") : e)))
+      .finally(() => setPending(false));
+  };
+  const note = app?.sessions != null ? t("slow.claudeNote") : null;
+  return (
+    <>
+      <div className="legend">
+        <span className="swatch" style={{ background: part.colour }} aria-hidden />
+        <span className="legend-label">{part.label}</span>
+        <span className="legend-amount">{part.amount}</span>
+        {app?.quittable && (
+          <button type="button" className="row-button" disabled={pending} onClick={quit}>
+            {t("slow.quit")}
+          </button>
+        )}
+      </div>
+      {note && <div className="rm-note legend-note">{note}</div>}
+      {error && <div className="rm-note rm-full">{t("action.failed", { error })}</div>}
+    </>
+  );
+}
+
+/** Shown only while the computer is slow: who uses the memory (or the CPU) as one bar, and Quit for each app. */
 function SlowBox({ snap }: { snap: Snapshot }) {
-  const apps = snap.slowMemory ? snap.topMemory : snap.topCpu;
+  const { parts, total } = snap.slowMemory ? memoryParts(snap) : cpuParts(snap);
+  const title = snap.slowMemory ? t("slow.memoryTitle", { size: `${Math.round(snap.memoryTotal / 1024 ** 3)} GB` }) : t("slow.cpuTitle");
   const spotlightBusy = snap.topCpu.some((app) => SPOTLIGHT.test(app.name) && app.cpuPercent >= MIN_TOP_CPU);
   return (
     <div className="rm-group slow">
-      <div className="rm-heading">{t("slow.title")}</div>
-      {snap.slowMemory && (
-        <div className="reason">
-          <Gauge size={14} strokeWidth={ICON_STROKE} aria-hidden />
-          {t("slow.memory")}
-        </div>
-      )}
-      {snap.slowCpu && (
-        <div className="reason">
-          <Gauge size={14} strokeWidth={ICON_STROKE} aria-hidden />
-          {t("slow.cpu")}
-        </div>
-      )}
-      {apps.map((app) => (
-        <Row
-          key={app.name}
-          text={app.name}
-          state={appState(app, snap.slowMemory ? formatGb(app.memory) : `${Math.round(app.cpuPercent)}%`)}
-          tone="quiet"
-          action={app.quittable ? { label: t("slow.quit"), run: () => native.quitApp(app.name) } : undefined}
-        />
+      <div className="rm-heading">{title}</div>
+      <div className="stack" role="img" aria-label={title}>
+        {parts.map((part) => (
+          <span key={part.key} style={{ width: `${(part.size * 100) / total}%`, background: part.colour }} />
+        ))}
+      </div>
+      {parts.map((part) => (
+        <Legend key={part.key} part={part} />
       ))}
+      {snap.slowMemory && snap.slowCpu && <div className="rm-note">{t("slow.cpu")}</div>}
       {snap.swapUsed > 0 && <div className="rm-note">{t("slow.swap", { size: formatGb(snap.swapUsed) })}</div>}
       {spotlightBusy && <div className="rm-note">{t("slow.spotlight")}</div>}
-      {apps.some((app) => app.quittable) && <div className="rm-note">{t("slow.quitNote")}</div>}
+      {parts.some((part) => part.app?.quittable) && <div className="rm-note">{t("slow.quitNote")}</div>}
     </div>
   );
 }
