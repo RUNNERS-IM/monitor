@@ -24,9 +24,15 @@ Monitor 는 RUNNERS-IM 이 사무실 컴퓨터를 보려고 만드는 앱입니�
 
 ## 설치
 
-아직 배포하지 않았습니다. 첫 배포 전까지는 아래 "소스에서 빌드하기"로 직접 빌드합니다.
+macOS(애플 실리콘·인텔)는 Homebrew 로 설치합니다:
 
-배포는 Split·Prompt 와 같은 규칙을 따릅니다. 버전은 `2.6.1030` 같은 모양이고, 파일은 [GitHub Releases](https://github.com/RUNNERS-IM/monitor/releases) 에 올리며, macOS 는 `runners-im/tap` 의 Homebrew cask 로도 설치할 수 있게 할 예정입니다.
+```sh
+brew install --cask runners-im/tap/monitor
+```
+
+또는 [GitHub Releases](https://github.com/RUNNERS-IM/monitor/releases/latest) 에서 받습니다. macOS 는 `Monitor-<버전>.dmg`, 윈도우는 `-setup.exe` 나 `.msi`, 리눅스는 `.AppImage`·`.deb`·`.rpm` 입니다. 윈도우 설치 파일은 아직 코드 서명이 없어서 처음 열 때 SmartScreen 경고가 뜹니다.
+
+Monitor 는 메뉴 막대에만 있고 Dock 아이콘이 없습니다. 설치한 뒤 한 번 열어 주세요. 아직 로그인할 때 저절로 켜지거나 스스로 업데이트하지 않습니다.
 
 ## 계획
 

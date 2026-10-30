@@ -24,9 +24,15 @@ The panel and menu follow the language set for your computer. Monitor speaks 18 
 
 ## Install
 
-Monitor has not been released yet. Until the first release, build it from source (below).
+macOS (Apple silicon and Intel), with Homebrew:
 
-Releases will follow the same rules as Split and Prompt: a version like `2.6.1030`, files on [GitHub Releases](https://github.com/RUNNERS-IM/monitor/releases) and a Homebrew cask in `runners-im/tap` for macOS.
+```sh
+brew install --cask runners-im/tap/monitor
+```
+
+Or download from [GitHub Releases](https://github.com/RUNNERS-IM/monitor/releases/latest): `Monitor-<version>.dmg` for macOS, `-setup.exe` or `.msi` for Windows, `.AppImage`, `.deb` or `.rpm` for Linux. The Windows installer is not code signed yet, so Windows shows a SmartScreen warning the first time.
+
+Monitor lives only in the menu bar (no Dock icon). Open it once after installing; it does not start at login or update itself yet.
 
 ## Roadmap
 
