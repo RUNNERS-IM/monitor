@@ -39,6 +39,7 @@ jobs:
     outputs:
       version: ${{ steps.bump.outputs.version || steps.current.outputs.version }}
       sha: ${{ steps.bump.outputs.sha || github.sha }}
+      app_version: ${{ steps.bump.outputs.app_version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,7 +51,8 @@ jobs:
         if: env.PUBLISH == 'true'
         run: |
           set -euo pipefail
-          VERSION=$(scripts/bump-release.sh | head -1)
+          BUMPED=$(scripts/bump-release.sh)
+          VERSION=$(echo "$BUMPED" | sed -n 1p)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add package.json src-tauri/tauri.conf.json src-tauri/Cargo.toml
@@ -58,6 +60,7 @@ jobs:
           git diff --cached --quiet || git commit -q -m "Monitor $VERSION [skip ci]"
           git push origin HEAD:release
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "app_version=$(echo "$BUMPED" | sed -n 2p)" >> "$GITHUB_OUTPUT"
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Pick the version of a test run
@@ -216,6 +219,9 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       VERSION: ${{ needs.version.outputs.version }}
+      # 설치된 Monitor 는 latest.json 의 버전을 semver 로 읽어 자기 버전과 비교한다. 그래서 태그 모양(2.6.1030.2)이
+      # 아니라 앱 안에 넣은 모양(2.6.1030-2)을 적는다. 태그 모양은 semver 가 아니라 읽지 못한다.
+      APP_VERSION: ${{ needs.version.outputs.app_version }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/download-artifact@v4
@@ -231,7 +237,7 @@ jobs:
           MAC="Monitor-$VERSION.app.tar.gz"
           WIN="monitor-$VERSION-windows-x64-setup.exe"
           LINUX="monitor-$VERSION-linux-x86_64.AppImage"
-          jq -n --arg v "$VERSION" --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+          jq -n --arg v "$APP_VERSION" --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --arg mac "$BASE/$MAC" --rawfile macsig "files/$MAC.sig" \
             --arg win "$BASE/$WIN" --rawfile winsig "files/$WIN.sig" \
             --arg linux "$BASE/$LINUX" --rawfile linuxsig "files/$LINUX.sig" \
