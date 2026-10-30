@@ -521,7 +521,8 @@ fn memory_breakdown(_system: &System) -> MemoryBreakdown {
         wired: bytes(info.wire_count),
         compressed: bytes(info.compressor_page_count),
         cache: bytes(info.external_page_count) + bytes(info.purgeable_count),
-        free: bytes(info.free_count) + bytes(info.speculative_count),
+        // Why: free_count already holds the speculative pages; vm_stat prints "Pages free" as free minus speculative.
+        free: bytes(info.free_count),
     }
 }
 
