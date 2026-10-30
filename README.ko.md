@@ -65,4 +65,4 @@ Monitor 는 아무것도 모으거나 보내지 않습니다. [PRIVACY.md](PRIVA
 
 ## 라이선스
 
-아직 정하지 않았습니다.
+Monitor 는 MIT 라이선스로 배포합니다. [LICENSE.md](LICENSE.md) 를 보세요.

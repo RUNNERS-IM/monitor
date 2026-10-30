@@ -65,4 +65,4 @@ Monitor collects nothing and sends nothing. See [PRIVACY.md](PRIVACY.md).
 
 ## License
 
-Not chosen yet.
+Monitor is distributed under the MIT License. See [LICENSE.md](LICENSE.md).
