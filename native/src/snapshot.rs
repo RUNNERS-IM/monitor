@@ -59,22 +59,6 @@ pub struct Snapshot {
     pub popup: bool,
 }
 
-impl Snapshot {
-    pub fn memory_percent(&self) -> f64 {
-        if self.memory_total == 0 {
-            return 0.0;
-        }
-        self.memory_used as f64 * 100.0 / self.memory_total as f64
-    }
-
-    pub fn disk_percent(&self) -> f64 {
-        if self.disk_total == 0 {
-            return 0.0;
-        }
-        self.disk_used as f64 * 100.0 / self.disk_total as f64
-    }
-}
-
 /// Whether memory is really short. macOS fills spare memory with cache, so "used" alone looks alarming when it is not.
 #[derive(Clone, Copy, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]

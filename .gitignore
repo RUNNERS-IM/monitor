@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Electron build output
+out
+dist.noindex
+*.noindex
+
+# Native module build output (pnpm native)
+native/target.noindex
+native/*.node

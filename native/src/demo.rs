@@ -1,13 +1,9 @@
-//! Debug runs only: `MONITOR_DEMO=1` swaps this computer's names for made-up ones, so screenshots for the public
+//! Debug runs only (the app passes `demo` to `Sampler.sample` only when not packaged): `MONITOR_DEMO=1` swaps this computer's names for made-up ones, so screenshots for the public
 //! homepage show no real session names, runner names, folders or host name. The numbers stay real.
 
 use crate::snapshot::{AppKind, AppUse, ClaudeSession, HeavyJob, Pressure, Runner, Snapshot};
 
 const GB: u64 = 1024 * 1024 * 1024;
-
-pub fn enabled() -> bool {
-    std::env::var_os("MONITOR_DEMO").is_some()
-}
 
 pub fn apply(snap: &mut Snapshot) {
     snap.host = "MacBook Pro".into();

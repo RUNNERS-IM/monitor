@@ -33,7 +33,19 @@ pub fn bar_height(fraction: f32) -> f32 {
 
 /// Draws the picture with bars at the given heights (grid units, from [`bar_height`]) as RGBA pixels in `color`.
 /// macOS reads it as a template image (only the alpha counts), other systems show the colour as is.
+/// Only the tests read raw pixels; the app takes the PNG from [`png`].
+#[cfg(test)]
 pub fn render(heights: [f32; 3], color: [u8; 3]) -> Vec<u8> {
+    // Why: tiny-skia keeps premultiplied colour; plain RGBA is what an image API wants.
+    draw(heights, color).take_demultiplied()
+}
+
+/// The same picture as a PNG file, which Electron's `nativeImage.createFromBuffer` reads.
+pub fn png(heights: [f32; 3], color: [u8; 3]) -> Vec<u8> {
+    draw(heights, color).encode_png().unwrap_or_default()
+}
+
+fn draw(heights: [f32; 3], color: [u8; 3]) -> Pixmap {
     let mut pixmap = Pixmap::new(SIZE, SIZE).expect("tray picture size");
     let mut paint = Paint::default();
     paint.set_color_rgba8(color[0], color[1], color[2], 255);
@@ -51,8 +63,7 @@ pub fn render(heights: [f32; 3], color: [u8; 3]) -> Vec<u8> {
             pixmap.fill_path(&bar, &paint, FillRule::Winding, grid, None);
         }
     }
-    // Why: tiny-skia keeps premultiplied colour, and Tauri's Image wants plain RGBA.
-    pixmap.take_demultiplied()
+    pixmap
 }
 
 /// A rounded rectangle; corners are cubic curves, the usual circle approximation (0.5523 of the radius).
