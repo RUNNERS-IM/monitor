@@ -55,6 +55,11 @@
   -webkit-app-region: no-drag;
 }
 
+.update-list.more {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
+}
+
 .update-list li + li {
   margin-top: 4px;
 }

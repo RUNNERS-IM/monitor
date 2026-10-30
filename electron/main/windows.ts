@@ -8,6 +8,8 @@ const ABOUT_WIDTH = 520;
 /** First height only; the page then fits the window to its content. */
 const ABOUT_HEIGHT = 560;
 const UPDATE_WIDTH = 400;
+/** Buttons and keys in the update window do nothing this long after it appears. */
+const UPDATE_GUARD_MS = 1000;
 /** Space between the menu bar (or taskbar) and the panel. */
 const GAP = 4;
 
@@ -159,7 +161,11 @@ export function askUpdate(offer: UpdateOffer, focus: boolean): UpdatePrompt {
   });
   const current = { window, offer: { ...offer }, answer: (_: UpdateAnswer) => {} };
   let answered = false;
+  let shownAt = Number.POSITIVE_INFINITY;
   current.answer = (value: UpdateAnswer) => {
+    // Why: a Return or click meant for something else must not answer a window that just appeared (a test window
+    // was answered Install Now this way while someone was typing). Closing the window is still Later at any time.
+    if (Date.now() - shownAt < UPDATE_GUARD_MS) return;
     // Why: Install Now cannot be chosen before the download is done; the button is off then, this guards Return too.
     if (answered || (value === "install" && current.offer.downloading)) return;
     answered = true;
@@ -171,6 +177,7 @@ export function askUpdate(offer: UpdateOffer, focus: boolean): UpdatePrompt {
   window.on("page-title-updated", (event) => event.preventDefault());
   window.once("ready-to-show", () => {
     window.center();
+    shownAt = Date.now();
     if (!focus) {
       window.showInactive();
       return;
@@ -181,8 +188,7 @@ export function askUpdate(offer: UpdateOffer, focus: boolean): UpdatePrompt {
   });
   window.on("closed", () => {
     if (update === current) update = null;
-    current.answer("later");
-    // Why: closing while still downloading is Later as well.
+    // Why: closing is Later, also within the first second and while still downloading.
     if (!answered) {
       answered = true;
       resolve("later");

@@ -16,6 +16,13 @@ export default function Update() {
   const [installing, setInstalling] = useState(false);
   const root = useRef<HTMLElement>(null);
   const installButton = useRef<HTMLButtonElement>(null);
+  const list = useRef<HTMLUListElement>(null);
+  // Why: a list that goes on below the box fades out at the bottom, so the cut line reads as "scrolls", not as cut text.
+  const [more, setMore] = useState(false);
+  const measure = () => {
+    const node = list.current;
+    setMore(node !== null && node.scrollHeight - node.scrollTop - node.clientHeight > 1);
+  };
   // Why: the key handler is set up once, so it reads the latest state through refs.
   const ready = useRef(false);
   ready.current = offer !== null && !offer.downloading && !installing;
@@ -59,6 +66,16 @@ export default function Update() {
     return () => observer.disconnect();
   }, []);
 
+  const notes = offer?.notes;
+  useEffect(() => {
+    const node = list.current;
+    if (!node) return;
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [notes]);
+
   const percent = Math.max(0, Math.min(100, Math.floor(offer?.percent ?? 0)));
   return (
     <main className="update" ref={root}>
@@ -72,7 +89,7 @@ export default function Update() {
       {offer?.notes && (
         <section className="rm-group update-notes">
           <div className="rm-heading">{t("update.notes")}</div>
-          <ul className="update-list">
+          <ul ref={list} className={`update-list${more ? " more" : ""}`} onScroll={measure}>
             {offer.notes.map((line, index) => (
               <li key={index}>{line}</li>
             ))}
