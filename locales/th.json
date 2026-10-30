@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · ช้า",
   "menu.checkUpdates": "ตรวจหาอัปเดต…",
   "menu.showUsage": "ดูการใช้งาน",
+  "menu.openAtLogin": "เปิดเมื่อเข้าสู่ระบบ",
   "menu.settings": "การตั้งค่า…",
   "menu.help": "ความช่วยเหลือและคำติชม",
   "menu.quit": "ออกจาก Monitor",

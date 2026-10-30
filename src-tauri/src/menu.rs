@@ -64,6 +64,10 @@ fn icon(name: &str, dark: bool) -> Image<'static> {
         ("circle-help", false) => tauri::include_image!("icons/menu/circle-help-black.png"),
         ("circle-help", true) => tauri::include_image!("icons/menu/circle-help-white.png"),
         ("square-x", false) => tauri::include_image!("icons/menu/square-x-black.png"),
+        ("square-check", false) => tauri::include_image!("icons/menu/square-check-black.png"),
+        ("square-check", true) => tauri::include_image!("icons/menu/square-check-white.png"),
+        ("square", false) => tauri::include_image!("icons/menu/square-black.png"),
+        ("square", true) => tauri::include_image!("icons/menu/square-white.png"),
         _ => tauri::include_image!("icons/menu/square-x-white.png"),
     }
 }
@@ -77,14 +81,23 @@ pub struct TrayMenu {
     shown: Mutex<Option<Status>>,
     /// Lines with a Lucide icon, and the icon's name.
     icons: Vec<(IconMenuItem<Wry>, &'static str)>,
+    /// "Open at login", whose Lucide box is checked or empty; kept apart from `icons` because its icon changes.
+    login: IconMenuItem<Wry>,
+    login_on: Mutex<bool>,
     dark: Mutex<bool>,
+}
+
+/// Why: muda's check items cannot carry an icon, and every line has a Lucide icon (shared spec), so a checked or
+/// empty Lucide square stands in for the check mark.
+fn login_icon(on: bool) -> &'static str {
+    if on { "square-check" } else { "square" }
 }
 
 fn is_dark(app: &AppHandle) -> bool {
     app.get_webview_window("main").and_then(|w| w.theme().ok()).is_some_and(|theme| theme == Theme::Dark)
 }
 
-pub fn build(app: &App) -> tauri::Result<Menu<Wry>> {
+pub fn build(app: &App, open_at_login: bool) -> tauri::Result<Menu<Wry>> {
     let dark = is_dark(app.handle());
     let line = |id: &str, key: &str, name: &'static str, enabled: bool, accelerator: Option<&str>| {
         IconMenuItem::with_id(app, id, t(key, &[]), enabled, Some(icon(name, dark)), accelerator).map(|item| (item, name))
@@ -106,6 +119,7 @@ pub fn build(app: &App) -> tauri::Result<Menu<Wry>> {
         None::<&str>,
     )?;
     let usage = line("usage", "menu.showUsage", "chart-column", true, None)?;
+    let login = line("login", "menu.openAtLogin", login_icon(open_at_login), true, None)?.0;
     // Why: opens Monitor's own About window (src/about.rs) on every OS, which also holds the RUNNERS app cards.
     let about = line("about", "menu.about", "info", true, None)?;
     let updates = line("updates", "menu.checkUpdates", "refresh-cw", true, None)?;
@@ -121,6 +135,7 @@ pub fn build(app: &App) -> tauri::Result<Menu<Wry>> {
             &status,
             &PredefinedMenuItem::separator(app)?,
             &usage.0,
+            &login,
             &PredefinedMenuItem::separator(app)?,
             &about.0,
             &updates.0,
@@ -137,6 +152,8 @@ pub fn build(app: &App) -> tauri::Result<Menu<Wry>> {
         status,
         shown: Mutex::new(Some(Status::Fine)),
         icons: vec![readout, usage, about, updates, settings, help, quit],
+        login,
+        login_on: Mutex::new(open_at_login),
         dark: Mutex::new(dark),
     });
     Ok(menu)
@@ -188,5 +205,13 @@ pub fn follow_theme(app: &AppHandle) {
     for (item, name) in &menu.icons {
         let _ = item.set_icon(Some(icon(name, dark)));
     }
+    let _ = menu.login.set_icon(Some(icon(login_icon(*menu.login_on.lock().unwrap()), dark)));
     *current = dark;
+}
+
+/// Checks or empties the "Open at login" box after the menu line was used.
+pub fn show_login(app: &AppHandle, on: bool) {
+    let menu = app.state::<TrayMenu>();
+    *menu.login_on.lock().unwrap() = on;
+    let _ = menu.login.set_icon(Some(icon(login_icon(on), *menu.dark.lock().unwrap())));
 }

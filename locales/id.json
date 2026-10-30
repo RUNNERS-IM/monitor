@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · Lambat",
   "menu.checkUpdates": "Periksa Pembaruan…",
   "menu.showUsage": "Lihat Penggunaan",
+  "menu.openAtLogin": "Buka saat masuk",
   "menu.settings": "Pengaturan…",
   "menu.help": "Bantuan & Masukan",
   "menu.quit": "Keluar dari Monitor",

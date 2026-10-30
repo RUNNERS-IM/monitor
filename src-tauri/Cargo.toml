@@ -33,6 +33,7 @@ tauri-plugin-notification = "2.8.0"
 # Pinned to the same version as Remote so every RUNNERS app renders the shared frame with the same pixels.
 tiny-skia = { version = "=0.12.0", default-features = false, features = ["std", "simd"] }
 tauri-plugin-updater = "2"
+tauri-plugin-autostart = "2"
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
 [profile.release]

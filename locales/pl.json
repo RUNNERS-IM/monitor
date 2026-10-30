@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · Wolno",
   "menu.checkUpdates": "Sprawdź uaktualnienia…",
   "menu.showUsage": "Pokaż użycie",
+  "menu.openAtLogin": "Otwieraj po zalogowaniu",
   "menu.settings": "Ustawienia…",
   "menu.help": "Pomoc i opinie",
   "menu.quit": "Zakończ Monitor",

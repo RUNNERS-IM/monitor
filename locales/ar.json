@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · بطيء",
   "menu.checkUpdates": "التحقق من وجود تحديثات…",
   "menu.showUsage": "عرض الاستخدام",
+  "menu.openAtLogin": "الفتح عند تسجيل الدخول",
   "menu.settings": "الإعدادات…",
   "menu.help": "المساعدة والملاحظات",
   "menu.quit": "إنهاء Monitor",

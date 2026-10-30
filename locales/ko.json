@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · 느림",
   "menu.checkUpdates": "업데이트 확인…",
   "menu.showUsage": "사용량 보기",
+  "menu.openAtLogin": "로그인할 때 열기",
   "menu.settings": "설정…",
   "menu.help": "도움말 · 피드백",
   "menu.quit": "Monitor 종료",

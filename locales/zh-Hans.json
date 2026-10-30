@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · 缓慢",
   "menu.checkUpdates": "检查更新…",
   "menu.showUsage": "查看用量",
+  "menu.openAtLogin": "登录时打开",
   "menu.settings": "设置…",
   "menu.help": "帮助与反馈",
   "menu.quit": "退出 Monitor",

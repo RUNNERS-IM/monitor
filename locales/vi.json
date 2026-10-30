@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · Chậm",
   "menu.checkUpdates": "Kiểm tra bản cập nhật…",
   "menu.showUsage": "Xem mức sử dụng",
+  "menu.openAtLogin": "Mở khi đăng nhập",
   "menu.settings": "Cài đặt…",
   "menu.help": "Trợ giúp và phản hồi",
   "menu.quit": "Thoát Monitor",

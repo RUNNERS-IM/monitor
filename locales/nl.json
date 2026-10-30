@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · Traag",
   "menu.checkUpdates": "Zoek naar updates…",
   "menu.showUsage": "Toon gebruik",
+  "menu.openAtLogin": "Open bij inloggen",
   "menu.settings": "Instellingen…",
   "menu.help": "Help en feedback",
   "menu.quit": "Stop Monitor",

@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · Langsam",
   "menu.checkUpdates": "Nach Updates suchen …",
   "menu.showUsage": "Auslastung anzeigen",
+  "menu.openAtLogin": "Bei der Anmeldung öffnen",
   "menu.settings": "Einstellungen …",
   "menu.help": "Hilfe & Feedback",
   "menu.quit": "Monitor beenden",

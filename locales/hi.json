@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · धीमा",
   "menu.checkUpdates": "अपडेट की जाँच करें…",
   "menu.showUsage": "उपयोग देखें",
+  "menu.openAtLogin": "लॉगिन पर खोलें",
   "menu.settings": "सेटिंग्ज़…",
   "menu.help": "सहायता और फ़ीडबैक",
   "menu.quit": "Monitor बंद करें",

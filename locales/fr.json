@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · Lent",
   "menu.checkUpdates": "Rechercher des mises à jour…",
   "menu.showUsage": "Afficher l’utilisation",
+  "menu.openAtLogin": "Ouvrir à la connexion",
   "menu.settings": "Réglages…",
   "menu.help": "Aide et commentaires",
   "menu.quit": "Quitter Monitor",

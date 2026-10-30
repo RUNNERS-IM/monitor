@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · Lento",
   "menu.checkUpdates": "Buscar actualizaciones…",
   "menu.showUsage": "Ver uso",
+  "menu.openAtLogin": "Abrir al iniciar sesión",
   "menu.settings": "Ajustes…",
   "menu.help": "Ayuda y comentarios",
   "menu.quit": "Salir de Monitor",

@@ -7,7 +7,7 @@ set -euo pipefail
 
 LUCIDE_VERSION=1.63.0
 PIXELS=36
-ICONS=(chart-column info refresh-cw settings circle-help square-x)
+ICONS=(chart-column info refresh-cw settings circle-help square-x square-check square)
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="$ROOT/src-tauri/icons/menu"

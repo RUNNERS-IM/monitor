@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · 低速",
   "menu.checkUpdates": "アップデートを確認…",
   "menu.showUsage": "使用状況を表示",
+  "menu.openAtLogin": "ログイン時に開く",
   "menu.settings": "設定…",
   "menu.help": "ヘルプとフィードバック",
   "menu.quit": "Monitorを終了",

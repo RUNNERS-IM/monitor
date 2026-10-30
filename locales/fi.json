@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · Hidas",
   "menu.checkUpdates": "Tarkista päivitykset…",
   "menu.showUsage": "Näytä käyttö",
+  "menu.openAtLogin": "Avaa kirjauduttaessa",
   "menu.settings": "Asetukset…",
   "menu.help": "Ohje ja palaute",
   "menu.quit": "Lopeta Monitor",

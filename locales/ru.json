@@ -6,6 +6,7 @@
   "menu.status.bad": "{{name}} · Медленно",
   "menu.checkUpdates": "Проверить обновления…",
   "menu.showUsage": "Показать использование",
+  "menu.openAtLogin": "Открывать при входе",
   "menu.settings": "Настройки…",
   "menu.help": "Справка и отзывы",
   "menu.quit": "Завершить Monitor",

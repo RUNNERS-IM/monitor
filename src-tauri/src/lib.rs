@@ -5,6 +5,7 @@ mod cleanup;
 #[cfg(debug_assertions)]
 mod demo;
 mod i18n;
+mod login;
 mod menu;
 mod snapshot;
 mod update;
@@ -362,6 +363,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, None))
         .manage(PanelShownAt::default())
         .manage(Popup::default())
         .manage(Latest::default())
@@ -376,7 +378,8 @@ pub fn run() {
             let panel = app.get_webview_window("main").expect("main window is declared in tauri.conf.json");
             app.manage(Translucent(apply_blur(&panel, Some(14.0))));
 
-            let menu = menu::build(app)?;
+            login::apply_default(app.handle());
+            let menu = menu::build(app, login::is_on(app.handle()))?;
             let start = [bars::bar_height(0.0); 3];
             TrayIconBuilder::with_id(TRAY_ID)
                 .icon(bars_image(start))
@@ -386,6 +389,7 @@ pub fn run() {
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "usage" => toggle_panel(app),
+                    "login" => menu::show_login(app, login::toggle(app)),
                     "about" => about::show(app),
                     "updates" => update::check_now(app),
                     "help" => {
