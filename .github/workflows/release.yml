@@ -115,26 +115,42 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Prepare the notarization key
+      # Split 과 같은 방식: 이 실행 동안만 쓰는 임시 키체인에 Developer ID 를 넣고, 끝나면 지운다.
+      # Why: Tauri 의 APPLE_CERTIFICATE 가져오기는 첫 시험 실행에서 p12 를 읽지 못했고,
+      # 이 방식은 Split 배포에서 같은 인증서로 돌고 있다.
+      - name: Prepare a temporary signing keychain
         if: matrix.os == 'macos'
         env:
+          DEVELOPER_ID_P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
+          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
           ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
           ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
         run: |
           set -euo pipefail
           SECRETS="$RUNNER_TEMP/monitor-secrets"
           mkdir -p "$SECRETS" && chmod 700 "$SECRETS"
+          KEYCHAIN="$RUNNER_TEMP/monitor-signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          # The search list is put back as it was when the run ends.
+          security list-keychains -d user | tr -d '" ' > "$SECRETS/keychains-before"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          echo "$DEVELOPER_ID_P12_BASE64" | base64 --decode > "$SECRETS/developer-id.p12"
+          security import "$SECRETS/developer-id.p12" -k "$KEYCHAIN" -P "$DEVELOPER_ID_P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(cat "$SECRETS/keychains-before")
+          rm "$SECRETS/developer-id.p12"
+          security find-identity -v -p codesigning "$KEYCHAIN"
           printf '%s' "$ASC_API_KEY_P8" > "$SECRETS/AuthKey_${ASC_API_KEY_ID}.p8"
           chmod 600 "$SECRETS/"*
           echo "APPLE_API_KEY_PATH=$SECRETS/AuthKey_${ASC_API_KEY_ID}.p8" >> "$GITHUB_ENV"
 
-      # macOS 에서는 Tauri 가 APPLE_CERTIFICATE 를 임시 키체인에 넣어 서명하고,
+      # macOS 에서는 tauri.conf.json 의 signingIdentity 로 위 키체인에서 서명하고,
       # APPLE_API_* 로 앱을 공증한다.
       - name: Build
         shell: bash
         env:
-          APPLE_CERTIFICATE: ${{ matrix.os == 'macos' && secrets.DEVELOPER_ID_P12_BASE64 || '' }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ matrix.os == 'macos' && secrets.DEVELOPER_ID_P12_PASSWORD || '' }}
           APPLE_API_KEY: ${{ matrix.os == 'macos' && secrets.ASC_API_KEY_ID || '' }}
           APPLE_API_ISSUER: ${{ matrix.os == 'macos' && secrets.ASC_API_ISSUER_ID || '' }}
         run: pnpm tauri build ${{ matrix.args }}
@@ -177,9 +193,15 @@ jobs:
           path: dist-release/*
           retention-days: 3
 
-      - name: Remove the notarization key
+      - name: Remove the temporary keychain and keys
         if: always() && matrix.os == 'macos'
-        run: rm -rf "$RUNNER_TEMP/monitor-secrets"
+        run: |
+          SECRETS="$RUNNER_TEMP/monitor-secrets"
+          if [ -f "$SECRETS/keychains-before" ]; then
+            security list-keychains -d user -s $(cat "$SECRETS/keychains-before")
+          fi
+          security delete-keychain "$RUNNER_TEMP/monitor-signing.keychain-db" 2>/dev/null || true
+          rm -rf "$SECRETS"
 
   publish:
     needs: [version, build]
