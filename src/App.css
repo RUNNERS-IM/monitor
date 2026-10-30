@@ -247,7 +247,7 @@ body,
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  min-height: 22px;
+  min-height: 28px;
   margin: 0 14px;
 }
 
@@ -318,7 +318,7 @@ body,
 .stack {
   display: flex;
   height: 14px;
-  margin: 4px 14px 6px;
+  margin: 0 14px 10px;
   border-radius: 4px;
   /* Why: the free part is left empty, so the track shows where the bar ends. */
   background: var(--rm-separator);
@@ -333,8 +333,8 @@ body,
 .legend {
   display: flex;
   align-items: center;
-  gap: 6px;
-  min-height: 22px;
+  gap: 8px;
+  min-height: 28px;
   margin: 0 14px;
 }
 
@@ -368,5 +368,5 @@ body,
 
 /* Why: the note sits under its name, past the colour square. */
 .rm-group .legend-note {
-  margin: -3px 14px 2px 30px;
+  margin: -6px 14px 4px 32px;
 }

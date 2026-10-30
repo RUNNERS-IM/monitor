@@ -1,6 +1,7 @@
 /*
  * RUNNERS menu look: the values of the macOS menu-bar menu (NSMenu) that Split shows, measured from Split's menu
- * on macOS 26 (2x screenshot, 2026-10-30). Any RUNNERS window that sits under a menu-bar icon and is drawn in HTML
+ * on macOS 26 (2x screenshot, 2026-10-30), then given more room (rows 24 -> 30, gaps wider) because the
+ * user found the measured spacing too tight (2026-10-30). Any RUNNERS window that sits under a menu-bar icon and is drawn in HTML
  * (Monitor's panel, later Remote's) uses this file so it reads as the same menu as Split's.
  * The source copy lives in the monitor repo (src/runners-menu.css); other apps copy it unchanged.
  * The window itself gets the menu material from the OS (Electron `vibrancy: "menu"` on macOS), so the page stays
@@ -9,19 +10,21 @@
 :root {
   --rm-font: 13px;
   --rm-font-small: 11px;
-  --rm-row: 24px;
+  --rm-row: 30px;
   --rm-icon: 16px;
   --rm-icon-gap: 6px;
   /* Window edge to the start of an icon or label. */
   --rm-inset: 16px;
   /* Space above the first row and below the last. */
-  --rm-pad-y: 6px;
+  --rm-pad-y: 10px;
   --rm-radius: 12px;
   /* A boxed group such as Split's "Monitor" and "Shape". */
   --rm-group-radius: 10px;
   --rm-group-inset: 10px;
+  /* Space inside a boxed group above its first line and below its last. */
+  --rm-group-pad: 10px;
   --rm-highlight-radius: 6px;
-  --rm-sep-gap: 5px;
+  --rm-sep-gap: 8px;
 
   --rm-text: rgba(0, 0, 0, 0.85);
   --rm-text-secondary: rgba(0, 0, 0, 0.5);
@@ -134,8 +137,8 @@ button.rm-item:hover {
 }
 
 .rm-group {
-  margin: 4px var(--rm-group-inset);
-  padding: 4px 0;
+  margin: 8px var(--rm-group-inset);
+  padding: var(--rm-group-pad) 0;
   border-radius: var(--rm-group-radius);
   background: var(--rm-group-bg);
 }
@@ -146,18 +149,18 @@ button.rm-item:hover {
 }
 
 .rm-group .rm-heading {
-  margin: 4px 14px 2px;
+  margin: 0 14px 8px;
 }
 
 .rm-note {
-  margin: 2px var(--rm-inset);
+  margin: 4px var(--rm-inset);
   font-size: var(--rm-font-small);
   color: var(--rm-text-secondary);
   line-height: 1.35;
 }
 
 .rm-group .rm-note {
-  margin: 2px 14px;
+  margin: 4px 14px;
 }
 
 .rm-ok {
