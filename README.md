@@ -4,7 +4,7 @@
 
 See how busy your computers are from the menu bar or system tray: CPU, memory, disk, running claude sessions and GitHub Actions runners.
 
-Monitor is made by RUNNERS-IM for the computers in our office. It is written from scratch with [Tauri 2](https://tauri.app), so one code base builds for macOS (Apple silicon and Intel), Windows and Linux.
+Monitor is made by RUNNERS-IM for the computers in our office. It is built with [Electron](https://www.electronjs.org) and one small native module in Rust (`native/`), the same toolchain as RUNNERS' other desktop apps, so one code base builds for macOS (Apple silicon and Intel), Windows and Linux.
 
 ## What it shows
 
@@ -18,7 +18,7 @@ Click the number in the menu bar (macOS) or the tray icon (Windows, Linux) to op
 | claude sessions | Number of running `claude` processes |
 | GitHub runner | **Building** when a job is running, **Idle** when a runner is waiting, **None** when no runner is installed |
 
-Right-click the menu bar number or tray icon for the menu: a status line (computer name and state), Show Usage, About Monitor, Check for Updates, Settings, Help & Feedback and Quit Monitor.
+The panel is also Monitor's menu: under the readings are Open at login, Check for Updates Automatically, About Monitor, Check for Updates, Help & Feedback and Quit Monitor. Right-clicking the icon opens the same commands as a native menu, with a status line on top.
 
 The panel and menu follow the language set for your computer. Monitor speaks 18 languages: Arabic, Chinese (Simplified), Dutch, English, Finnish, French, German, Hindi, Indonesian, Italian, Japanese, Korean, Polish, Portuguese, Russian, Spanish, Thai and Vietnamese.
 
@@ -30,9 +30,9 @@ macOS (Apple silicon and Intel), with Homebrew:
 brew install --cask runners-im/tap/monitor
 ```
 
-Or download from [GitHub Releases](https://github.com/RUNNERS-IM/monitor/releases/latest): `Monitor-<version>.dmg` for macOS, `-setup.exe` or `.msi` for Windows, `.AppImage`, `.deb` or `.rpm` for Linux. The Windows installer is not code signed yet, so Windows shows a SmartScreen warning the first time.
+Or download from [GitHub Releases](https://github.com/RUNNERS-IM/monitor/releases/latest): `Monitor-<version>-mac-arm64.dmg` (Apple silicon) or `-mac-x64.dmg` (Intel) for macOS, `-setup.exe` for Windows, `.AppImage`, `.deb` or `.rpm` for Linux. The Windows installer is not code signed yet, so Windows shows a SmartScreen warning the first time.
 
-Monitor lives only in the menu bar (no Dock icon). Open it once after installing; it does not start at login or update itself yet.
+Monitor lives only in the menu bar (no Dock icon). Open it once after installing; from then on it opens at login and checks for a new version once a day, asking before it installs one. Both can be turned off in the menu.
 
 ## Roadmap
 
@@ -53,15 +53,21 @@ Issues and pull requests are welcome in this repository.
 
 ## Building from source
 
-Requires [Rust](https://rustup.rs), Node.js 20 or later and pnpm. On Linux, install the [Tauri system packages](https://tauri.app/start/prerequisites/) first.
+Requires [Rust](https://rustup.rs), Node.js 20 or later and pnpm.
 
 ```sh
 pnpm install
-pnpm tauri dev      # run with live reload
-pnpm tauri build    # build an installer for this OS
+pnpm native         # build the native module (native/) for this computer
+pnpm dev            # run with live reload
+pnpm dist           # build an installer for this OS into dist.noindex/
 ```
 
-Screen text lives in `locales/` (`en.json`, `ko.json`). The panel (`src/`) and the tray menu (`src-tauri/`) read the same files.
+For an Intel Mac build on Apple silicon, also run `pnpm native --target x86_64-apple-darwin` (after `rustup target add x86_64-apple-darwin`).
+
+- `electron/main/` is the main process (tray, panel window, sampling loop, updates), `electron/preload/` the bridge the page talks through, `src/` the panel and About window.
+- `native/` is the one native module (napi-rs): system readings, the cleanup scan, quitting an app, pausing a runner and the tray picture.
+- Screen text lives in `locales/`; the page and the main process read the same files. Check them with `pnpm check:locales`.
+- Debug runs take `MONITOR_OPEN=panel|about`, `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1` (made-up names for screenshots) and `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup`.
 
 So far Monitor has been built and checked on macOS (Apple silicon) only. Windows and Linux builds have not been tried yet.
 
