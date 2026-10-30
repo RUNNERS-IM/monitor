@@ -7,8 +7,13 @@
  */
 export declare class Sampler {
   constructor()
-  /** Takes one reading and resolves to its JSON. `demo` swaps real names for made-up ones (debug runs only). */
-  sample(demo?: boolean | undefined | null): Promise<string>
+  /** Takes one reading and resolves to its JSON. */
+  sample(): Promise<string>
+  /**
+   * Debug runs only (`MONITOR_DEMO=1`): the last reading with made-up names, for the panel's screenshots.
+   * The tray and the slow-computer popup keep reading the real one.
+   */
+  demoSnapshot(): string | null
   /** Asks the app named `name` in the last reading to quit, the way ⌘Q does. Never force-kills. */
   quitApp(name: string): Promise<string>
   /** Stops the runner named `name` for an hour; resolves to the Unix time it comes back, as text. */

@@ -1,28 +1,38 @@
 {
   "name": "monitor",
+  "productName": "Monitor",
   "private": true,
-  "version": "2.6.1030-2",
-  "type": "module",
+  "version": "2.6.1030+2",
+  "description": "Watch CPU, memory, disk, claude sessions and runners from the menu bar",
+  "author": "RUNNERS",
+  "homepage": "https://github.com/RUNNERS-IM/monitor",
+  "main": "./out/main/index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
+    "dev": "electron-vite dev",
+    "build": "pnpm typecheck && electron-vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "native": "napi build --manifest-path native/Cargo.toml --package-json-path native/package.json --platform --release --output-dir native --no-js",
+    "check:locales": "node scripts/check-locales.mjs",
+    "notices": "node scripts/third-party-notices.mjs",
+    "dist": "pnpm build && electron-builder --config electron-builder.config.cjs"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2.7.2",
+    "electron-updater": "^6.8.10",
     "lucide-react": "^1.63.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react": "~19.2.8",
+    "react-dom": "~19.2.8"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2",
+    "@napi-rs/cli": "^3.10.9",
+    "@types/node": "^24.19.2",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^6.0.2",
+    "@vitejs/plugin-react": "^6.1.2",
+    "electron": "43.8.1",
+    "electron-builder": "26.15.3",
+    "electron-vite": "^6.0.0",
     "typescript": "^7.0.2",
-    "vite": "^8.0.16"
+    "vite": "^8.3.5"
   },
   "license": "UNLICENSED"
 }

@@ -59,19 +59,25 @@ impl Sampler {
         Ok(Self { inner: Arc::new(Mutex::new(inner)), last: Arc::new(Mutex::new(None)) })
     }
 
-    /// Takes one reading and resolves to its JSON. `demo` swaps real names for made-up ones (debug runs only).
+    /// Takes one reading and resolves to its JSON.
     #[napi(ts_return_type = "Promise<string>")]
-    pub fn sample(&self, demo: Option<bool>) -> AsyncTask<Work> {
+    pub fn sample(&self) -> AsyncTask<Work> {
         let (inner, last) = (self.inner.clone(), self.last.clone());
         Work::new(move || {
             let snap = inner.lock().map_err(|e| e.to_string())?.sample();
-            *last.lock().map_err(|e| e.to_string())? = Some(snap.clone());
-            let mut shown = snap;
-            if demo.unwrap_or(false) {
-                demo::apply(&mut shown);
-            }
-            to_json(&shown)
+            let json = to_json(&snap);
+            *last.lock().map_err(|e| e.to_string())? = Some(snap);
+            json
         })
+    }
+
+    /// Debug runs only (`MONITOR_DEMO=1`): the last reading with made-up names, for the panel's screenshots.
+    /// The tray and the slow-computer popup keep reading the real one.
+    #[napi]
+    pub fn demo_snapshot(&self) -> Option<String> {
+        let mut snap = self.last.lock().ok()?.clone()?;
+        demo::apply(&mut snap);
+        to_json(&snap).ok()
     }
 
     /// Asks the app named `name` in the last reading to quit, the way ⌘Q does. Never force-kills.

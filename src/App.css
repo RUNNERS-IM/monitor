@@ -1,4 +1,4 @@
-/* Design standard A shared with Split and Prompt: macOS system look, values in px. */
+/* Colours shared by the About window (About.css, RunnersApps.css): design standard A, the macOS system look. */
 :root {
   --accent: #007aff;
   --panel: #f6f6f6;
@@ -7,10 +7,7 @@
   --sub: #6e6e73;
   --track: rgba(0, 0, 0, 0.08);
   --line: rgba(0, 0, 0, 0.12);
-  --ok: #34c759;
-  --high: #ff9500;
-  --full: #ff3b30;
-  font-family: -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
   font-size: 13px;
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
@@ -28,35 +25,7 @@
     --sub: #98989d;
     --track: rgba(255, 255, 255, 0.12);
     --line: rgba(255, 255, 255, 0.14);
-    --ok: #30d158;
-    --high: #ff9f0a;
-    --full: #ff453a;
   }
-}
-
-html,
-body,
-#root {
-  margin: 0;
-  background: transparent;
-  overflow: hidden;
-  user-select: none;
-}
-
-.panel {
-  box-sizing: border-box;
-  /* Why: Split's roomier values shared by every RUNNERS app (2026-10-30): 28 outside, 24 between cards. */
-  padding: 28px;
-  background: var(--panel);
-  border-radius: 14px;
-  border: 0.5px solid var(--line);
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-:root[data-translucent="true"] .panel {
-  background: transparent;
 }
 
 /* Why: grey text all but vanished over the blurred desktop, so secondary text is darker (lighter in dark mode) when blur is on. */
@@ -70,330 +39,276 @@ body,
   }
 }
 
-.panel.loading {
-  align-items: center;
-  color: var(--sub);
+html,
+body,
+#root {
+  margin: 0;
+  overflow: hidden;
+  user-select: none;
+  cursor: default;
+}
+
+/* The tray panel: Split's menu values from runners-menu.css (--rm-*). The OS draws the menu material behind it. */
+:root[data-window="panel"] {
+  color: var(--rm-text);
+  font-size: var(--rm-font);
+}
+
+.panel {
+  box-sizing: border-box;
+  padding: var(--rm-pad-y) 0;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-height: var(--rm-row);
+  margin: 0 var(--rm-inset);
+  line-height: var(--rm-row);
 }
 
 .host {
-  font-size: 16px;
-  font-weight: 700;
+  flex: none;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .os {
-  color: var(--sub);
-  font-size: 11px;
+  flex: 1;
+  min-width: 0;
+  font-size: var(--rm-font-small);
+  color: var(--rm-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.section-head {
-  margin: 0 0 8px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--sub);
+.head .badge,
+.head .close {
+  align-self: center;
 }
 
-.card {
-  padding: 13px 16px;
-  border-radius: 12px;
-  border: 0.5px solid var(--line);
-  background: var(--card);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.label {
+/* Why: a small circle at the end of the heading, like the close button of a macOS notification. */
+.close {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--rm-hover);
+  color: var(--rm-text);
 }
 
-.label svg {
-  color: var(--sub);
+.close:hover {
+  background: var(--rm-separator);
 }
 
-.meter-head {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 4px;
+/* Summary rows: the label keeps its width and a long value (the Work row) is cut with an ellipsis instead. */
+.summary-row .rm-label {
+  flex: 1 0 auto;
+  max-width: 50%;
 }
 
-.meter-value {
+.summary-row .rm-trailing {
+  min-width: 0;
+  justify-content: flex-end;
+}
+
+.summary-row .value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.summary-row .chevron {
+  flex: none;
+  opacity: 0.7;
+}
+
+.badge {
+  flex: none;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 10px;
   font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  line-height: 15px;
+  color: #1d1d1f;
 }
 
-.meter-value.high {
-  color: var(--high);
+.badge.ok {
+  background: var(--rm-ok);
 }
 
-.meter-value.full {
-  color: var(--full);
+.badge.high {
+  background: var(--rm-high);
+}
+
+.badge.full {
+  background: var(--rm-full);
+  color: #fff;
 }
 
 .mini-track {
   display: block;
-  width: 60px;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--track);
+  flex: none;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--rm-separator);
   overflow: hidden;
 }
 
 .mini-fill {
   display: block;
   height: 100%;
-  border-radius: 3px;
+  border-radius: 2px;
   transition: width 0.4s ease;
-}
-
-.mini-fill.ok {
-  background: var(--ok);
-}
-
-.mini-fill.high {
-  background: var(--high);
-}
-
-.mini-fill.full {
-  background: var(--full);
 }
 
 .mini-spark {
   display: block;
-  width: 60px;
+  flex: none;
+  width: 40px;
 }
 
 .mini-spark .spark {
-  height: 16px;
-}
-
-.meter-track {
-  height: 6px;
-  border-radius: 6px;
-  background: var(--track);
-  overflow: hidden;
-}
-
-.meter-fill {
-  height: 100%;
-  border-radius: 6px;
-  transition: width 0.4s ease;
-}
-
-.meter-fill.ok {
-  background: var(--ok);
-}
-
-.meter-fill.high {
-  background: var(--high);
-}
-
-.meter-fill.full {
-  background: var(--full);
-}
-
-.meter-detail {
-  margin-top: 3px;
-  /* Why: long notes left one or two characters alone on the last line. */
-  text-wrap: pretty;
-  color: var(--sub);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-}
-
-.meter-right {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.badge {
-  padding: 1px 6px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #1d1d1f;
-}
-
-.badge.ok {
-  background: var(--ok);
-}
-
-.badge.high {
-  background: var(--high);
-}
-
-.badge.full {
-  background: var(--full);
-  color: #fff;
+  height: 14px;
 }
 
 .spark {
   display: block;
   width: 100%;
-  height: 22px;
+  height: 28px;
   fill: none;
   stroke-width: 1.5;
   stroke-linejoin: round;
 }
 
+.details .spark,
+.details .meter-track {
+  width: auto;
+  margin: 2px 14px 4px;
+}
+
+.meter-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--rm-separator);
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.mini-fill.ok,
+.meter-fill.ok {
+  background: var(--rm-ok);
+}
+
+.mini-fill.high,
+.meter-fill.high {
+  background: var(--rm-high);
+}
+
+.mini-fill.full,
+.meter-fill.full {
+  background: var(--rm-full);
+}
+
 .spark.ok {
-  stroke: var(--ok);
+  stroke: var(--rm-ok);
 }
 
 .spark.high {
-  stroke: var(--high);
+  stroke: var(--rm-high);
 }
 
 .spark.full {
-  stroke: var(--full);
+  stroke: var(--rm-full);
 }
 
-.group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
+/* A name and its state inside an open box. */
 .row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
+  min-height: 22px;
+  margin: 0 14px;
 }
 
-.row > span:first-child {
+.row-text {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.row-state {
+.row-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
-  font-weight: 600;
+}
+
+.row-state {
   font-variant-numeric: tabular-nums;
 }
 
 .row-state.busy {
-  color: var(--high);
+  color: var(--rm-high);
+  font-weight: 600;
 }
 
 .row-state.quiet {
-  color: var(--sub);
-  font-weight: 400;
-}
-
-.empty {
-  color: var(--sub);
-  font-size: 11px;
-}
-
-.row-right {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  color: var(--rm-text-secondary);
 }
 
 .row-button {
-  padding: 2px 9px;
-  border-radius: 6px;
+  padding: 1px 8px;
   border: none;
+  border-radius: 5px;
   /* Why: blue text on a pale blue fill was hard to read over the blur, so buttons are filled with white text. */
-  background: var(--accent);
+  background: var(--rm-accent);
   color: #fff;
   font: inherit;
-  font-size: 11px;
+  font-size: var(--rm-font-small);
   font-weight: 600;
-  cursor: pointer;
 }
 
 .row-button:disabled {
   opacity: 0.5;
-  cursor: default;
 }
 
-.row-error {
-  color: var(--full);
-  font-size: 11px;
+.group-gap {
+  height: 6px;
 }
 
-.slow .label svg {
-  color: var(--high);
+.heading-icon {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.slow .label {
+/* "Why it is slow" box: each reason with an orange gauge in front. */
+.reason {
+  display: flex;
   align-items: flex-start;
+  gap: 6px;
+  margin: 2px 14px 4px;
+  line-height: 1.35;
 }
 
-.head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.host {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Why: a 20px circle centred on the two header lines, like the close button of a macOS notification. */
-.close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: var(--track);
-  color: var(--ink);
-  cursor: pointer;
-}
-
-.summary-card {
-  gap: 0;
-  padding: 0 16px;
-}
-
-.summary + .summary {
-  border-top: 0.5px solid var(--line);
-}
-
-.summary-row {
-  display: flex;
-  width: 100%;
-  justify-content: space-between;
-  align-items: center;
-  padding: 13px 0;
-  border: none;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-/* Why: a long value (work row) must wrap itself instead of squeezing the label into one letter per line. */
-.summary-row {
-  gap: 12px;
-}
-
-.summary-row .label {
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.chevron {
-  color: var(--sub);
-}
-
-.summary-body {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-bottom: 10px;
+.reason svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--rm-high);
 }

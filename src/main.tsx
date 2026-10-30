@@ -1,13 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import App from "./App";
 import About from "./About";
+import { applyWindowLook, page } from "./native";
 
-// Why: the tray panel and the About window load the same page; the window label picks what it shows.
-const label = getCurrentWindow().label;
-document.documentElement.dataset.window = label;
-const Page = label === "about" ? About : App;
+// Why: the tray panel and the About window load the same page; the address (#panel or #about) picks what it shows.
+document.documentElement.dataset.window = page;
+applyWindowLook();
+const Page = page === "about" ? About : App;
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

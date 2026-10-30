@@ -1,0 +1,5 @@
+# Only these packages may run install scripts: electron downloads its binary, esbuild picks its native build.
+allowBuilds:
+  electron: true
+  esbuild: true
+  electron-winstaller: false

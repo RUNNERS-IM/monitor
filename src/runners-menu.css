@@ -1,0 +1,173 @@
+/*
+ * RUNNERS menu look: the values of the macOS menu-bar menu (NSMenu) that Split shows, measured from Split's menu
+ * on macOS 26 (2x screenshot, 2026-10-30). Any RUNNERS window that sits under a menu-bar icon and is drawn in HTML
+ * (Monitor's panel, later Remote's) uses this file so it reads as the same menu as Split's.
+ * The source copy lives in the monitor repo (src/runners-menu.css); other apps copy it unchanged.
+ * The window itself gets the menu material from the OS (Electron `vibrancy: "menu"` on macOS), so the page stays
+ * transparent there and only draws a solid background where the OS has no blur (`data-translucent="false"`).
+ */
+:root {
+  --rm-font: 13px;
+  --rm-font-small: 11px;
+  --rm-row: 24px;
+  --rm-icon: 16px;
+  --rm-icon-gap: 6px;
+  /* Window edge to the start of an icon or label. */
+  --rm-inset: 16px;
+  /* Space above the first row and below the last. */
+  --rm-pad-y: 6px;
+  --rm-radius: 12px;
+  /* A boxed group such as Split's "Monitor" and "Shape". */
+  --rm-group-radius: 10px;
+  --rm-group-inset: 10px;
+  --rm-highlight-radius: 6px;
+  --rm-sep-gap: 5px;
+
+  --rm-text: rgba(0, 0, 0, 0.85);
+  --rm-text-secondary: rgba(0, 0, 0, 0.5);
+  --rm-separator: rgba(0, 0, 0, 0.1);
+  --rm-group-bg: rgba(0, 0, 0, 0.04);
+  --rm-hover: rgba(0, 0, 0, 0.06);
+  --rm-solid-bg: #ececec;
+  /* The macOS accent colour is passed in at runtime when the OS gives one. */
+  --rm-accent: #007aff;
+  --rm-selected: color-mix(in srgb, var(--rm-accent) 22%, transparent);
+  --rm-ok: #34c759;
+  --rm-high: #ff9f0a;
+  --rm-full: #ff453a;
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: var(--rm-font);
+  color: var(--rm-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --rm-text: rgba(255, 255, 255, 0.85);
+    --rm-text-secondary: rgba(255, 255, 255, 0.5);
+    --rm-separator: rgba(255, 255, 255, 0.1);
+    --rm-group-bg: rgba(255, 255, 255, 0.05);
+    --rm-hover: rgba(255, 255, 255, 0.08);
+    --rm-solid-bg: #2a2a2a;
+  }
+}
+
+html,
+body {
+  margin: 0;
+  background: transparent;
+}
+
+html[data-translucent="false"] body {
+  background: var(--rm-solid-bg);
+}
+
+/* One menu line: icon, label, then whatever sits at the right edge (a value, a shortcut, a check). */
+.rm-item {
+  display: flex;
+  align-items: center;
+  gap: var(--rm-icon-gap);
+  min-height: var(--rm-row);
+  margin: 0 calc(var(--rm-inset) - 8px);
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--rm-highlight-radius);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  width: calc(100% - 2 * (var(--rm-inset) - 8px));
+  box-sizing: border-box;
+}
+
+button.rm-item:hover {
+  background: var(--rm-hover);
+}
+
+.rm-item[aria-selected="true"] {
+  background: var(--rm-selected);
+}
+
+.rm-item > svg {
+  width: var(--rm-icon);
+  height: var(--rm-icon);
+  flex: none;
+}
+
+.rm-item .rm-label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rm-item .rm-trailing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--rm-text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* A two-line item: title and a smaller grey line under it, like Split's monitor names. */
+.rm-sub {
+  display: block;
+  font-size: var(--rm-font-small);
+  color: var(--rm-text-secondary);
+}
+
+.rm-separator {
+  height: 1px;
+  margin: var(--rm-sep-gap) var(--rm-inset);
+  background: var(--rm-separator);
+}
+
+/* Small grey heading over a block of items, like Split's "Layout". */
+.rm-heading {
+  margin: 4px var(--rm-inset) 2px;
+  font-size: var(--rm-font-small);
+  font-weight: 600;
+  color: var(--rm-text-secondary);
+}
+
+.rm-group {
+  margin: 4px var(--rm-group-inset);
+  padding: 4px 0;
+  border-radius: var(--rm-group-radius);
+  background: var(--rm-group-bg);
+}
+
+.rm-group .rm-item {
+  margin: 0 6px;
+  width: calc(100% - 12px);
+}
+
+.rm-group .rm-heading {
+  margin: 4px 14px 2px;
+}
+
+.rm-note {
+  margin: 2px var(--rm-inset);
+  font-size: var(--rm-font-small);
+  color: var(--rm-text-secondary);
+  line-height: 1.35;
+}
+
+.rm-group .rm-note {
+  margin: 2px 14px;
+}
+
+.rm-ok {
+  color: var(--rm-ok);
+}
+
+.rm-high {
+  color: var(--rm-high);
+}
+
+.rm-full {
+  color: var(--rm-full);
+}

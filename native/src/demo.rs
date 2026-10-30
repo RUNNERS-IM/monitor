@@ -1,4 +1,4 @@
-//! Debug runs only (the app passes `demo` to `Sampler.sample` only when not packaged): `MONITOR_DEMO=1` swaps this computer's names for made-up ones, so screenshots for the public
+//! Debug runs only (the app reads `Sampler.demoSnapshot` only when not packaged): `MONITOR_DEMO=1` swaps this computer's names for made-up ones, so screenshots for the public
 //! homepage show no real session names, runner names, folders or host name. The numbers stay real.
 
 use crate::snapshot::{AppKind, AppUse, ClaudeSession, HeavyJob, Pressure, Runner, Snapshot};
