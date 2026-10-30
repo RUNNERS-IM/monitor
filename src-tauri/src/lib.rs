@@ -2,6 +2,8 @@ mod about;
 mod actions;
 mod bars;
 mod cleanup;
+#[cfg(debug_assertions)]
+mod demo;
 mod i18n;
 mod menu;
 mod snapshot;
@@ -162,6 +164,10 @@ fn snapshot(app: tauri::AppHandle, latest: State<'_, Latest>, paused: State<'_, 
         }
     }
     snap.runners.sort_by(|a, b| a.name.cmp(&b.name));
+    #[cfg(debug_assertions)]
+    if demo::enabled() {
+        demo::apply(&mut snap);
+    }
     Some(snap)
 }
 
