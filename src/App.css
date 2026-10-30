@@ -345,6 +345,13 @@ body,
   border-radius: 3px;
 }
 
+/* Why: the grey squares (other apps, cache) sit close to the dark box colour, so an edge keeps them visible. */
+@media (prefers-color-scheme: dark) {
+  .swatch {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  }
+}
+
 .legend-label {
   flex: 1;
   min-width: 0;
