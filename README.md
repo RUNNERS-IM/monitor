@@ -20,7 +20,7 @@ Click the number in the menu bar (macOS) or the tray icon (Windows, Linux) to op
 
 The panel is also Monitor's menu: under the readings are Open at login, Check for Updates Automatically, About Monitor, Check for Updates, Help & Feedback and Quit Monitor. Right-clicking the icon opens the same commands as a native menu, with a status line on top.
 
-The panel and menu follow the language set for your computer. Monitor speaks 18 languages: Arabic, Chinese (Simplified), Dutch, English, Finnish, French, German, Hindi, Indonesian, Italian, Japanese, Korean, Polish, Portuguese, Russian, Spanish, Thai and Vietnamese.
+The panel and menu follow the language set for your computer. Monitor speaks 20 languages: Arabic, Chinese (Simplified), Chinese (Traditional), Dutch, English, Finnish, French, German, Hindi, Indonesian, Italian, Japanese, Korean, Polish, Portuguese, Russian, Spanish, Thai, Turkish and Vietnamese.
 
 ## Install
 
@@ -41,7 +41,7 @@ Done:
 - Tray app for this computer: CPU, memory, disk, claude sessions and runner state
 - Panel with the macOS blur (Acrylic on Windows), light and dark mode
 - Shared menu order with Split and Prompt
-- 18 languages (the same set as Split)
+- 20 languages (the same set as Split)
 
 Next:
 

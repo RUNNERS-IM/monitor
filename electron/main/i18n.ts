@@ -14,8 +14,8 @@ export function pickLocale(tag: string): string {
   const exact = Object.keys(tables).find((code) => code.toLowerCase() === tag.toLowerCase());
   if (exact) return exact;
   const language = tag.split(/[-_]/)[0].toLowerCase();
-  // Only simplified Chinese ships, so every Chinese variant (zh-CN, zh-TW, zh-Hant…) reads it.
-  if (language === "zh") return "zh-Hans";
+  // Why: Taiwan, Hong Kong and Macau write traditional characters; every other Chinese tag reads simplified.
+  if (language === "zh") return /-(hant|tw|hk|mo)\b/i.test(tag.replace(/_/g, "-")) ? "zh-Hant" : "zh-Hans";
   return language in tables ? language : "en";
 }
 
