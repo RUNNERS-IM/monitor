@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { Cpu, HardDrive, MemoryStick, SquareTerminal, Workflow, type LucideIcon } from "lucide-react";
 import "./App.css";
 
 type RunnerState = "none" | "idle" | "busy";
@@ -17,6 +18,9 @@ type Snapshot = {
 };
 
 const REFRESH_MS = 3000;
+// Why: the same stroke as Prompt and Split so the three apps' icons look equally light.
+const ICON_STROKE = 1.5;
+const ICON_SIZE = 14;
 
 const RUNNER_LABEL: Record<RunnerState, string> = {
   none: "없음",
@@ -39,11 +43,20 @@ function level(value: number): "ok" | "high" | "full" {
   return "ok";
 }
 
-function Meter({ label, value, detail }: { label: string; value: number; detail: string }) {
+function Label({ icon: Icon, text }: { icon: LucideIcon; text: string }) {
+  return (
+    <span className="label">
+      <Icon size={ICON_SIZE} strokeWidth={ICON_STROKE} aria-hidden />
+      {text}
+    </span>
+  );
+}
+
+function Meter({ icon, label, value, detail }: { icon: LucideIcon; label: string; value: number; detail: string }) {
   return (
     <div className="meter">
       <div className="meter-head">
-        <span>{label}</span>
+        <Label icon={icon} text={label} />
         <span className="meter-value">{Math.round(value)}%</span>
       </div>
       <div className="meter-track">
@@ -84,23 +97,30 @@ function App() {
         <div className="host">{snap.host}</div>
         <div className="os">{snap.os}</div>
       </header>
-      <section className="meters">
-        <Meter label="CPU" value={snap.cpuPercent} detail="모든 코어 평균" />
-        <Meter
-          label="메모리"
-          value={memory}
-          detail={`${formatGb(snap.memoryUsed)} / ${formatGb(snap.memoryTotal)}`}
-        />
-        <Meter label="디스크" value={disk} detail={`${formatGb(snap.diskUsed)} / ${formatGb(snap.diskTotal)}`} />
-      </section>
-      <section className="facts">
-        <div className="fact">
-          <span>claude 세션</span>
-          <strong>{snap.claudeSessions}개</strong>
+      <section>
+        <h2 className="section-head">자원</h2>
+        <div className="card">
+          <Meter icon={Cpu} label="CPU" value={snap.cpuPercent} detail="모든 코어 평균" />
+          <Meter
+            icon={MemoryStick}
+            label="메모리"
+            value={memory}
+            detail={`${formatGb(snap.memoryUsed)} / ${formatGb(snap.memoryTotal)}`}
+          />
+          <Meter icon={HardDrive} label="디스크" value={disk} detail={`${formatGb(snap.diskUsed)} / ${formatGb(snap.diskTotal)}`} />
         </div>
-        <div className="fact">
-          <span>GitHub 러너</span>
-          <strong className={`runner ${snap.runner}`}>{RUNNER_LABEL[snap.runner]}</strong>
+      </section>
+      <section>
+        <h2 className="section-head">작업</h2>
+        <div className="card">
+          <div className="fact">
+            <Label icon={SquareTerminal} text="claude 세션" />
+            <strong>{snap.claudeSessions}개</strong>
+          </div>
+          <div className="fact">
+            <Label icon={Workflow} text="GitHub 러너" />
+            <strong className={`runner ${snap.runner}`}>{RUNNER_LABEL[snap.runner]}</strong>
+          </div>
         </div>
       </section>
     </main>
