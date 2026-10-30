@@ -69,5 +69,8 @@
   "about.line": "Monitor {{version}} · miễn phí",
   "about.website": "Trang web",
   "about.license": "© 2026 RUNNERS. All rights reserved.",
-  "about.get": "Nhận"
+  "about.get": "Nhận",
+  "update.latest": "Monitor {{version}} đã là bản mới nhất.",
+  "update.installing": "Đang cài phiên bản {{version}} và khởi động lại Monitor.",
+  "update.failed": "Không thể kiểm tra cập nhật: {{error}}"
 }

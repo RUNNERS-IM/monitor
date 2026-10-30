@@ -69,5 +69,8 @@
   "about.line": "Monitor {{version}} · kostenlos",
   "about.website": "Website",
   "about.license": "© 2026 RUNNERS. All rights reserved.",
-  "about.get": "Laden"
+  "about.get": "Laden",
+  "update.latest": "Monitor {{version}} ist auf dem neuesten Stand.",
+  "update.installing": "Version {{version}} wird installiert und Monitor neu gestartet.",
+  "update.failed": "Updates konnten nicht geprüft werden: {{error}}"
 }

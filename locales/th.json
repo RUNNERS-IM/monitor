@@ -69,5 +69,8 @@
   "about.line": "Monitor {{version}} · ฟรี",
   "about.website": "เว็บไซต์",
   "about.license": "© 2026 RUNNERS. All rights reserved.",
-  "about.get": "รับ"
+  "about.get": "รับ",
+  "update.latest": "Monitor {{version}} เป็นเวอร์ชันล่าสุดแล้ว",
+  "update.installing": "กำลังติดตั้งเวอร์ชัน {{version}} และเปิด Monitor ใหม่",
+  "update.failed": "ตรวจสอบการอัปเดตไม่ได้: {{error}}"
 }

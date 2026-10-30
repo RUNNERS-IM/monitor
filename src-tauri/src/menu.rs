@@ -108,8 +108,8 @@ pub fn build(app: &App) -> tauri::Result<Menu<Wry>> {
     let usage = line("usage", "menu.showUsage", "chart-column", true, None)?;
     // Why: opens Monitor's own About window (src/about.rs) on every OS, which also holds the RUNNERS app cards.
     let about = line("about", "menu.about", "info", true, None)?;
-    // Why: there is no updater or settings screen yet, so these stay visible but disabled to keep the shared order.
-    let updates = line("updates", "menu.checkUpdates", "refresh-cw", false, None)?;
+    let updates = line("updates", "menu.checkUpdates", "refresh-cw", true, None)?;
+    // Why: there is no settings screen yet, so it stays visible but disabled to keep the shared order.
     let settings = line("settings", "menu.settings", "settings", false, Some("CmdOrCtrl+,"))?;
     let help = line("help", "menu.help", "circle-help", true, None)?;
     let quit = line("quit", "menu.quit", "square-x", true, Some("CmdOrCtrl+Q"))?;

@@ -69,5 +69,8 @@
   "about.line": "Monitor {{version}} · gratis",
   "about.website": "Website",
   "about.license": "© 2026 RUNNERS. All rights reserved.",
-  "about.get": "Ophalen"
+  "about.get": "Ophalen",
+  "update.latest": "Monitor {{version}} is up-to-date.",
+  "update.installing": "Versie {{version}} wordt geïnstalleerd en Monitor wordt opnieuw gestart.",
+  "update.failed": "Kan niet op updates controleren: {{error}}"
 }

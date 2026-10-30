@@ -7,6 +7,7 @@ mod demo;
 mod i18n;
 mod menu;
 mod snapshot;
+mod update;
 
 use std::collections::{HashMap, HashSet};
 use std::sync::Mutex;
@@ -360,6 +361,7 @@ pub fn run() {
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(PanelShownAt::default())
         .manage(Popup::default())
         .manage(Latest::default())
@@ -385,6 +387,7 @@ pub fn run() {
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "usage" => toggle_panel(app),
                     "about" => about::show(app),
+                    "updates" => update::check_now(app),
                     "help" => {
                         let _ = app.opener().open_url(ISSUES_URL, None::<&str>);
                     }
@@ -450,6 +453,9 @@ pub fn run() {
                     std::thread::sleep(CLEANUP_EVERY);
                 }
             });
+            // Why: a debug run is not a signed release build, so it has nothing to compare with or install.
+            #[cfg(not(debug_assertions))]
+            update::start(app.handle());
             #[cfg(debug_assertions)]
             debug_open(app.handle());
             Ok(())

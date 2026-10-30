@@ -69,5 +69,8 @@
   "about.line": "Monitor {{version}} · ilmainen",
   "about.website": "Verkkosivusto",
   "about.license": "© 2026 RUNNERS. All rights reserved.",
-  "about.get": "Hae"
+  "about.get": "Hae",
+  "update.latest": "Monitor {{version}} on ajan tasalla.",
+  "update.installing": "Asennetaan versio {{version}} ja käynnistetään Monitor uudelleen.",
+  "update.failed": "Päivityksiä ei voitu tarkistaa: {{error}}"
 }
