@@ -83,6 +83,9 @@
   "menu.autoUpdate": "ตรวจหาอัปเดตโดยอัตโนมัติ",
   "update.title": "มีเวอร์ชันใหม่",
   "update.ask": "ติดตั้ง Monitor {{version}} หรือไม่ Monitor จะเริ่มใหม่หลังจากติดตั้ง",
+  "update.notes": "มีอะไรใหม่",
+  "update.downloading": "กำลังดาวน์โหลด… {{percent}}%",
+  "update.installing": "กำลังติดตั้ง…",
   "update.install": "ติดตั้งเลย",
   "update.later": "ภายหลัง"
 }

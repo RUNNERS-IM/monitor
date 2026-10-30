@@ -83,6 +83,9 @@
   "menu.autoUpdate": "Tự động kiểm tra cập nhật",
   "update.title": "Có phiên bản mới",
   "update.ask": "Cài đặt Monitor {{version}}? Monitor sẽ khởi động lại sau khi cài đặt.",
+  "update.notes": "Có gì mới",
+  "update.downloading": "Đang tải về… {{percent}}%",
+  "update.installing": "Đang cài đặt…",
   "update.install": "Cài đặt ngay",
   "update.later": "Để sau"
 }

@@ -83,6 +83,9 @@
   "menu.autoUpdate": "Rechercher les mises à jour automatiquement",
   "update.title": "Une nouvelle version est disponible",
   "update.ask": "Installer Monitor {{version}} ? Monitor redémarrera après l’installation.",
+  "update.notes": "Nouveautés",
+  "update.downloading": "Téléchargement… {{percent}} %",
+  "update.installing": "Installation…",
   "update.install": "Installer maintenant",
   "update.later": "Plus tard"
 }

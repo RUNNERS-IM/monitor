@@ -83,6 +83,9 @@
   "menu.autoUpdate": "업데이트 자동 확인",
   "update.title": "새 버전이 있습니다",
   "update.ask": "Monitor {{version}}을(를) 설치할까요? 설치하면 Monitor가 다시 시작됩니다.",
+  "update.notes": "바뀐 점",
+  "update.downloading": "받는 중… {{percent}}%",
+  "update.installing": "설치 중…",
   "update.install": "지금 설치",
   "update.later": "나중에"
 }

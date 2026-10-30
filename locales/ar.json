@@ -83,6 +83,9 @@
   "menu.autoUpdate": "التحقق من التحديثات تلقائيًا",
   "update.title": "يتوفر إصدار جديد",
   "update.ask": "هل تريد تثبيت Monitor {{version}}؟ ستتم إعادة تشغيل Monitor بعد التثبيت.",
+  "update.notes": "الجديد",
+  "update.downloading": "جارٍ التنزيل… {{percent}}%",
+  "update.installing": "جارٍ التثبيت…",
   "update.install": "التثبيت الآن",
   "update.later": "لاحقًا"
 }

@@ -83,6 +83,9 @@
   "menu.autoUpdate": "アップデートを自動的に確認",
   "update.title": "新しいバージョンがあります",
   "update.ask": "Monitor {{version}} をインストールしますか？インストールすると Monitor が再起動します。",
+  "update.notes": "変更点",
+  "update.downloading": "ダウンロード中… {{percent}}%",
+  "update.installing": "インストール中…",
   "update.install": "今すぐインストール",
   "update.later": "あとで"
 }

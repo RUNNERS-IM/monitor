@@ -83,6 +83,9 @@
   "menu.autoUpdate": "Check for Updates Automatically",
   "update.title": "A new version is available",
   "update.ask": "Install Monitor {{version}}? Monitor will restart after installing.",
+  "update.notes": "What’s New",
+  "update.downloading": "Downloading… {{percent}}%",
+  "update.installing": "Installing…",
   "update.install": "Install Now",
   "update.later": "Later"
 }

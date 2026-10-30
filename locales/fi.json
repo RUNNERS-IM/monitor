@@ -83,6 +83,9 @@
   "menu.autoUpdate": "Tarkista päivitykset automaattisesti",
   "update.title": "Uusi versio on saatavilla",
   "update.ask": "Asennetaanko Monitor {{version}}? Monitor käynnistyy uudelleen asennuksen jälkeen.",
+  "update.notes": "Uutta",
+  "update.downloading": "Ladataan… {{percent}} %",
+  "update.installing": "Asennetaan…",
   "update.install": "Asenna nyt",
   "update.later": "Myöhemmin"
 }

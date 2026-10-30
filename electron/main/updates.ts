@@ -3,9 +3,11 @@
 // restarts at once (the shared rule for all RUNNERS apps). Release builds only: a dev run is not a signed build,
 // so it has nothing to compare with or install.
 import { app, dialog } from "electron";
-import { autoUpdater } from "electron-updater";
-import { t } from "./i18n";
+import { autoUpdater, type ProgressInfo } from "electron-updater";
+import { currentLocale, t } from "./i18n";
+import { releaseNoteLines } from "./releaseNotes";
 import { readSettings, writeSettings } from "./settings";
+import { askUpdate, type UpdateAnswer } from "./windows";
 
 /** Wait after launch so a login start is not slowed down by the check. */
 const FIRST_CHECK_MS = 60_000;
@@ -16,6 +18,8 @@ let busy = false;
 export function startUpdates(): void {
   if (!app.isPackaged) return;
   autoUpdater.autoDownload = false;
+  // Why: "What's new" shows the offered version's notes only, not those of versions in between.
+  autoUpdater.fullChangelog = false;
   // Why: installing is only ever done after the person says yes, never silently on quit.
   autoUpdater.autoInstallOnAppQuit = false;
   autoUpdater.on("error", (error) => console.error("update:", error));
@@ -42,21 +46,10 @@ async function check(asked: boolean): Promise<void> {
     }
     // Why: "Later" means not again today; only the menu's "Check for Updates…" asks again the same day.
     if (!asked && readSettings().updateLaterOn === today()) return;
-    // Why: asking only after the download means "Install Now" never leaves the person waiting on a progress bar.
-    await autoUpdater.downloadUpdate();
     const version = result.updateInfo.version.replace("+", ".");
-    app.focus({ steal: true });
-    const answer = await dialog.showMessageBox({
-      type: "info",
-      message: t("update.title"),
-      detail: t("update.ask", { version }),
-      // Why: macOS lays buttons out from the right, so this reads [Later] [Install Now] with Install Now as the default;
-      // Windows and Linux read left to right, which puts the default first as their dialogs do.
-      buttons: [t("update.install"), t("update.later")],
-      defaultId: 0,
-      cancelId: 1,
-    });
-    if (answer.response !== 0) {
+    const notes = releaseNoteLines(result.updateInfo.releaseNotes, currentLocale() === "ko" ? "ko" : "en");
+    const answer = asked ? await askWhileDownloading(version, notes) : await askAfterDownload(version, notes);
+    if (answer !== "install") {
       writeSettings({ updateLaterOn: today() });
       return;
     }
@@ -67,6 +60,33 @@ async function check(asked: boolean): Promise<void> {
   } finally {
     busy = false;
   }
+}
+
+/** The daily check: download quietly, and only then show the question (without taking focus). */
+async function askAfterDownload(version: string, notes: string[] | null): Promise<UpdateAnswer> {
+  await autoUpdater.downloadUpdate();
+  return askUpdate({ version, notes, downloading: false, percent: 100 }, false).answer;
+}
+
+/** The menu's "Check for Updates…": the person is waiting, so the window opens at once and shows the download.
+ *  Later closes it while the download carries on, so the next question needs no second download. */
+async function askWhileDownloading(version: string, notes: string[] | null): Promise<UpdateAnswer> {
+  const prompt = askUpdate({ version, notes, downloading: true, percent: 0 }, true);
+  const progress = (info: ProgressInfo) => prompt.set({ percent: info.percent });
+  autoUpdater.on("download-progress", progress);
+  let failed: unknown = null;
+  // Why: electron-updater hands back the download already running, so a second check never downloads twice.
+  autoUpdater
+    .downloadUpdate()
+    .then(() => prompt.set({ downloading: false, percent: 100 }))
+    .catch((error: unknown) => {
+      failed = error;
+      prompt.close();
+    })
+    .finally(() => autoUpdater.off("download-progress", progress));
+  const answer = await prompt.answer;
+  if (failed) throw failed;
+  return answer;
 }
 
 async function tell(message: string): Promise<void> {

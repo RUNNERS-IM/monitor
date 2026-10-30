@@ -83,6 +83,9 @@
   "menu.autoUpdate": "自动检查更新",
   "update.title": "有新版本可用",
   "update.ask": "要安装 Monitor {{version}} 吗？安装后 Monitor 将重新启动。",
+  "update.notes": "新功能",
+  "update.downloading": "正在下载… {{percent}}%",
+  "update.installing": "正在安装…",
   "update.install": "立即安装",
   "update.later": "以后"
 }

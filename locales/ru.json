@@ -83,6 +83,9 @@
   "menu.autoUpdate": "Автоматически проверять обновления",
   "update.title": "Доступна новая версия",
   "update.ask": "Установить Monitor {{version}}? После установки Monitor перезапустится.",
+  "update.notes": "Что нового",
+  "update.downloading": "Загрузка… {{percent}}%",
+  "update.installing": "Установка…",
   "update.install": "Установить сейчас",
   "update.later": "Позже"
 }

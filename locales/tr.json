@@ -83,6 +83,9 @@
   "menu.autoUpdate": "Güncellemeleri otomatik olarak denetle",
   "update.title": "Yeni bir sürüm var",
   "update.ask": "Monitor {{version}} yüklensin mi? Yüklemeden sonra Monitor yeniden başlatılır.",
+  "update.notes": "Yenilikler",
+  "update.downloading": "İndiriliyor… %{{percent}}",
+  "update.installing": "Yükleniyor…",
   "update.install": "Şimdi Yükle",
   "update.later": "Daha sonra"
 }

@@ -83,6 +83,9 @@
   "menu.autoUpdate": "Automatisch op updates controleren",
   "update.title": "Er is een nieuwe versie beschikbaar",
   "update.ask": "Monitor {{version}} installeren? Monitor wordt na de installatie opnieuw gestart.",
+  "update.notes": "Wat is er nieuw",
+  "update.downloading": "Downloaden… {{percent}}%",
+  "update.installing": "Installeren…",
   "update.install": "Nu installeren",
   "update.later": "Later"
 }

@@ -83,6 +83,9 @@
   "menu.autoUpdate": "Periksa Pembaruan Secara Otomatis",
   "update.title": "Versi baru tersedia",
   "update.ask": "Instal Monitor {{version}}? Monitor akan dimulai ulang setelah diinstal.",
+  "update.notes": "Yang Baru",
+  "update.downloading": "Mengunduh… {{percent}}%",
+  "update.installing": "Menginstal…",
   "update.install": "Instal Sekarang",
   "update.later": "Nanti"
 }

@@ -4,6 +4,10 @@ export type MenuCommand = "usage" | "login" | "autoUpdate" | "about" | "updates"
 
 export type MenuState = { openAtLogin: boolean; autoUpdate: boolean };
 
+/** The update window's content: new version as people see it, the "What's new" lines (null hides the box) and the
+ *  download's progress (0–100) while it runs. */
+export type UpdateOffer = { version: string; notes: string[] | null; downloading: boolean; percent: number };
+
 export type MonitorApi = {
   /** The newest reading (JSON shape in src/types.ts), or null before the first one. */
   snapshot: () => Promise<unknown>;
@@ -29,4 +33,10 @@ export type MonitorApi = {
   /** Runs a menu line; resolves to the menu state after it. */
   command: (command: MenuCommand) => Promise<MenuState>;
   closeWindow: () => void;
+  /** What the update window shows, or null when no update is being offered. */
+  updateOffer: () => Promise<UpdateOffer | null>;
+  /** Calls back with the new offer whenever the download moves on; returns a function that stops it. */
+  onUpdateOffer: (listener: (offer: UpdateOffer) => void) => () => void;
+  /** The update window's answer; Later closes the window, Install Now keeps it up until the app quits. */
+  answerUpdate: (answer: "install" | "later") => void;
 };
