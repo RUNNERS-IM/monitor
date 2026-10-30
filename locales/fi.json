@@ -75,5 +75,10 @@
   "about.get": "Hae",
   "update.latest": "Monitor {{version}} on ajan tasalla.",
   "update.installing": "Asennetaan versio {{version}} ja käynnistetään Monitor uudelleen.",
-  "update.failed": "Päivityksiä ei voitu tarkistaa: {{error}}"
+  "update.failed": "Päivityksiä ei voitu tarkistaa: {{error}}",
+  "menu.autoUpdate": "Tarkista päivitykset automaattisesti",
+  "update.ask": "Monitor {{version}} on saatavilla. Asennetaanko nyt?",
+  "update.askDetail": "Monitor käynnistyy uudelleen asennuksen jälkeen.",
+  "update.install": "Asenna",
+  "update.later": "Myöhemmin"
 }

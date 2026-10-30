@@ -75,5 +75,10 @@
   "about.get": "Dapatkan",
   "update.latest": "Monitor {{version}} sudah versi terbaru.",
   "update.installing": "Memasang versi {{version}} dan memulai ulang Monitor.",
-  "update.failed": "Tidak dapat memeriksa pembaruan: {{error}}"
+  "update.failed": "Tidak dapat memeriksa pembaruan: {{error}}",
+  "menu.autoUpdate": "Periksa Pembaruan Secara Otomatis",
+  "update.ask": "Monitor {{version}} tersedia. Pasang sekarang?",
+  "update.askDetail": "Monitor akan dimulai ulang setelah dipasang.",
+  "update.install": "Pasang",
+  "update.later": "Nanti"
 }

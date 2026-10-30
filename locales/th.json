@@ -75,5 +75,10 @@
   "about.get": "รับ",
   "update.latest": "Monitor {{version}} เป็นเวอร์ชันล่าสุดแล้ว",
   "update.installing": "กำลังติดตั้งเวอร์ชัน {{version}} และเปิด Monitor ใหม่",
-  "update.failed": "ตรวจสอบการอัปเดตไม่ได้: {{error}}"
+  "update.failed": "ตรวจสอบการอัปเดตไม่ได้: {{error}}",
+  "menu.autoUpdate": "ตรวจหาอัปเดตโดยอัตโนมัติ",
+  "update.ask": "มี Monitor {{version}} แล้ว ติดตั้งตอนนี้เลยไหม",
+  "update.askDetail": "Monitor จะเริ่มใหม่หลังติดตั้ง",
+  "update.install": "ติดตั้ง",
+  "update.later": "ภายหลัง"
 }

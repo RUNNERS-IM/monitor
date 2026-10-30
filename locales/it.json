@@ -75,5 +75,10 @@
   "about.get": "Ottieni",
   "update.latest": "Monitor {{version}} è aggiornato.",
   "update.installing": "Installazione della versione {{version}} e riavvio di Monitor.",
-  "update.failed": "Impossibile cercare aggiornamenti: {{error}}"
+  "update.failed": "Impossibile cercare aggiornamenti: {{error}}",
+  "menu.autoUpdate": "Controlla aggiornamenti automaticamente",
+  "update.ask": "Monitor {{version}} è disponibile. Installarlo ora?",
+  "update.askDetail": "Monitor si riavvia dopo l’installazione.",
+  "update.install": "Installa",
+  "update.later": "Più tardi"
 }

@@ -75,5 +75,10 @@
   "about.get": "Pobierz",
   "update.latest": "Monitor {{version}} jest aktualny.",
   "update.installing": "Instalowanie wersji {{version}} i ponowne uruchamianie Monitor.",
-  "update.failed": "Nie udało się sprawdzić aktualizacji: {{error}}"
+  "update.failed": "Nie udało się sprawdzić aktualizacji: {{error}}",
+  "menu.autoUpdate": "Automatycznie sprawdzaj uaktualnienia",
+  "update.ask": "Dostępny jest Monitor {{version}}. Zainstalować teraz?",
+  "update.askDetail": "Po instalacji Monitor uruchomi się ponownie.",
+  "update.install": "Zainstaluj",
+  "update.later": "Później"
 }

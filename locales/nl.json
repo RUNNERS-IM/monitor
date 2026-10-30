@@ -75,5 +75,10 @@
   "about.get": "Ophalen",
   "update.latest": "Monitor {{version}} is up-to-date.",
   "update.installing": "Versie {{version}} wordt geïnstalleerd en Monitor wordt opnieuw gestart.",
-  "update.failed": "Kan niet op updates controleren: {{error}}"
+  "update.failed": "Kan niet op updates controleren: {{error}}",
+  "menu.autoUpdate": "Automatisch op updates controleren",
+  "update.ask": "Monitor {{version}} is beschikbaar. Nu installeren?",
+  "update.askDetail": "Monitor start opnieuw na het installeren.",
+  "update.install": "Installeren",
+  "update.later": "Later"
 }

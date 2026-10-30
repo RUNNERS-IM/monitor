@@ -75,5 +75,10 @@
   "about.get": "احصل عليه",
   "update.latest": "Monitor {{version}} هو أحدث إصدار.",
   "update.installing": "جارٍ تثبيت الإصدار {{version}} وإعادة تشغيل Monitor.",
-  "update.failed": "تعذّر التحقق من التحديثات: {{error}}"
+  "update.failed": "تعذّر التحقق من التحديثات: {{error}}",
+  "menu.autoUpdate": "التحقق من التحديثات تلقائيًا",
+  "update.ask": "يتوفر Monitor {{version}}. هل تريد تثبيته الآن؟",
+  "update.askDetail": "يُعاد تشغيل Monitor بعد التثبيت.",
+  "update.install": "تثبيت",
+  "update.later": "لاحقًا"
 }

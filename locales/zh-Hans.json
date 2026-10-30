@@ -75,5 +75,10 @@
   "about.get": "获取",
   "update.latest": "Monitor {{version}} 已是最新版本。",
   "update.installing": "正在安装版本 {{version}} 并重新启动 Monitor。",
-  "update.failed": "无法检查更新：{{error}}"
+  "update.failed": "无法检查更新：{{error}}",
+  "menu.autoUpdate": "自动检查更新",
+  "update.ask": "Monitor {{version}} 已推出。现在安装吗？",
+  "update.askDetail": "安装后 Monitor 会重新启动。",
+  "update.install": "安装",
+  "update.later": "稍后"
 }

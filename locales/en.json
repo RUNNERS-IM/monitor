@@ -75,5 +75,10 @@
   "about.get": "Get",
   "update.latest": "Monitor {{version}} is up to date.",
   "update.installing": "Installing version {{version}} and restarting Monitor.",
-  "update.failed": "Could not check for updates: {{error}}"
+  "update.failed": "Could not check for updates: {{error}}",
+  "menu.autoUpdate": "Check for Updates Automatically",
+  "update.ask": "Monitor {{version}} is available. Install it now?",
+  "update.askDetail": "Monitor restarts after installing.",
+  "update.install": "Install",
+  "update.later": "Later"
 }

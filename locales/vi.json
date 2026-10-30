@@ -75,5 +75,10 @@
   "about.get": "Nhận",
   "update.latest": "Monitor {{version}} đã là bản mới nhất.",
   "update.installing": "Đang cài phiên bản {{version}} và khởi động lại Monitor.",
-  "update.failed": "Không thể kiểm tra cập nhật: {{error}}"
+  "update.failed": "Không thể kiểm tra cập nhật: {{error}}",
+  "menu.autoUpdate": "Tự động kiểm tra cập nhật",
+  "update.ask": "Đã có Monitor {{version}}. Cài đặt ngay?",
+  "update.askDetail": "Monitor sẽ khởi động lại sau khi cài đặt.",
+  "update.install": "Cài đặt",
+  "update.later": "Để sau"
 }

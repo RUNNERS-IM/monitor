@@ -75,5 +75,10 @@
   "about.get": "Laden",
   "update.latest": "Monitor {{version}} ist auf dem neuesten Stand.",
   "update.installing": "Version {{version}} wird installiert und Monitor neu gestartet.",
-  "update.failed": "Updates konnten nicht geprüft werden: {{error}}"
+  "update.failed": "Updates konnten nicht geprüft werden: {{error}}",
+  "menu.autoUpdate": "Automatisch nach Updates suchen",
+  "update.ask": "Monitor {{version}} ist verfügbar. Jetzt installieren?",
+  "update.askDetail": "Monitor startet nach der Installation neu.",
+  "update.install": "Installieren",
+  "update.later": "Später"
 }

@@ -75,5 +75,10 @@
   "about.get": "Загрузить",
   "update.latest": "Monitor {{version}} — последняя версия.",
   "update.installing": "Устанавливается версия {{version}}, Monitor будет перезапущен.",
-  "update.failed": "Не удалось проверить обновления: {{error}}"
+  "update.failed": "Не удалось проверить обновления: {{error}}",
+  "menu.autoUpdate": "Автоматически проверять обновления",
+  "update.ask": "Доступен Monitor {{version}}. Установить сейчас?",
+  "update.askDetail": "После установки Monitor перезапустится.",
+  "update.install": "Установить",
+  "update.later": "Позже"
 }

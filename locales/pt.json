@@ -75,5 +75,10 @@
   "about.get": "Obter",
   "update.latest": "O Monitor {{version}} está atualizado.",
   "update.installing": "Instalando a versão {{version}} e reiniciando o Monitor.",
-  "update.failed": "Não foi possível verificar atualizações: {{error}}"
+  "update.failed": "Não foi possível verificar atualizações: {{error}}",
+  "menu.autoUpdate": "Verificar atualizações automaticamente",
+  "update.ask": "O Monitor {{version}} está disponível. Instalar agora?",
+  "update.askDetail": "O Monitor reinicia após a instalação.",
+  "update.install": "Instalar",
+  "update.later": "Mais tarde"
 }
