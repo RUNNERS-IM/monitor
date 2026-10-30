@@ -30,6 +30,8 @@ const REOPEN_GUARD_MS = 300;
 /** Debug runs only: everything below that reads MONITOR_* is ignored in a packaged app. */
 const DEV = !app.isPackaged;
 const DEMO = DEV && !!process.env.MONITOR_DEMO;
+// Why: the windows read their language from navigator.language, which follows Chromium's --lang switch.
+if (DEV && process.env.MONITOR_LANG) app.commandLine.appendSwitch("lang", process.env.MONITOR_LANG);
 
 type Reason = "memory" | "cpu";
 
@@ -212,12 +214,13 @@ async function sampleLoop(): Promise<void> {
     try {
       const snap = JSON.parse(await sampler!.sample()) as Snapshot;
       if (!popupIfSlow(snap)) notifyIfSlow(snap);
-      if (tray) showReading(tray, snap);
       latest = snap;
       if (DEMO) {
-        const demo = sampler!.demoSnapshot();
+        const demo = sampler!.demoSnapshot(currentLocale() === "ko");
         latestDemo = demo ? (JSON.parse(demo) as Snapshot) : null;
       }
+      // Why: in a demo run the menu-bar icon shows the made-up numbers too, so it matches the panel in a screenshot.
+      if (tray) showReading(tray, latestDemo ?? snap);
       refreshLinuxMenu();
     } catch (error) {
       console.error("sample:", error);
@@ -257,7 +260,7 @@ function accentColor(): string | null {
 
 function registerIpc(): void {
   ipcMain.handle("monitor:snapshot", () => panelSnapshot());
-  ipcMain.handle("monitor:cleanup", () => latestCleanup);
+  ipcMain.handle("monitor:cleanup", () => (DEMO ? JSON.parse(native.demoCleanup() ?? "null") : latestCleanup));
   ipcMain.handle("monitor:quitApp", async (_event, name: string) => {
     await sampler!.quitApp(String(name));
   });

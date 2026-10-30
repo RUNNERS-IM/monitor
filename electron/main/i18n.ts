@@ -24,7 +24,9 @@ let code: string | null = null;
 
 /** The locale code the app speaks (`ko`, `en`, `zh-Hant`, …). */
 export function currentLocale(): string {
-  code ??= pickLocale(app.getPreferredSystemLanguages()[0] ?? app.getLocale());
+  // Why: debug runs take `MONITOR_LANG=en` so the homepage can get English screenshots from a Korean Mac.
+  const forced = app.isPackaged ? undefined : process.env.MONITOR_LANG;
+  code ??= pickLocale(forced || (app.getPreferredSystemLanguages()[0] ?? app.getLocale()));
   return code;
 }
 

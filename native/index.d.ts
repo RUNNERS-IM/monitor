@@ -13,7 +13,7 @@ export declare class Sampler {
    * Debug runs only (`MONITOR_DEMO=1`): the last reading with made-up names, for the panel's screenshots.
    * The tray and the slow-computer popup keep reading the real one.
    */
-  demoSnapshot(): string | null
+  demoSnapshot(korean: boolean): string | null
   /** Asks the app named `name` in the last reading to quit, the way ⌘Q does. Never force-kills. */
   quitApp(name: string): Promise<string>
   /** Stops the runner named `name` for an hour; resolves to the Unix time it comes back, as text. */
@@ -36,6 +36,9 @@ export declare function cleanupLoad(path: string): string | null
 export declare function cleanupMeasure(progressPath?: string | undefined | null): Promise<string>
 
 export declare function cleanupSave(path: string, json: string): void
+
+/** Debug runs only (`MONITOR_DEMO=1`): a made-up cleanup result as JSON, for the panel's screenshots. */
+export declare function demoCleanup(): string | null
 
 export declare function easeOut(t: number): number
 

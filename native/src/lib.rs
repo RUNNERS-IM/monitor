@@ -74,9 +74,9 @@ impl Sampler {
     /// Debug runs only (`MONITOR_DEMO=1`): the last reading with made-up names, for the panel's screenshots.
     /// The tray and the slow-computer popup keep reading the real one.
     #[napi]
-    pub fn demo_snapshot(&self) -> Option<String> {
+    pub fn demo_snapshot(&self, korean: bool) -> Option<String> {
         let mut snap = self.last.lock().ok()?.clone()?;
-        demo::apply(&mut snap);
+        demo::apply(&mut snap, korean);
         to_json(&snap).ok()
     }
 
@@ -137,6 +137,12 @@ pub fn cleanup_save(path: String, json: String) -> Result<()> {
     let found: cleanup::Cleanup = serde_json::from_str(&json).map_err(|e| Error::from_reason(e.to_string()))?;
     cleanup::save(Path::new(&path), &found);
     Ok(())
+}
+
+/// Debug runs only (`MONITOR_DEMO=1`): a made-up cleanup result as JSON, for the panel's screenshots.
+#[napi]
+pub fn demo_cleanup() -> Option<String> {
+    to_json(&demo::cleanup(cleanup::now())).ok()
 }
 
 /// Unix time now, in seconds, from the same clock the cleanup result uses.
