@@ -45,13 +45,14 @@ body,
 
 .panel {
   box-sizing: border-box;
-  padding: 20px;
+  /* Why: Split's roomier values shared by every RUNNERS app (2026-10-30): 28 outside, 24 between cards. */
+  padding: 28px;
   background: var(--panel);
   border-radius: 14px;
   border: 0.5px solid var(--line);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 }
 
 :root[data-translucent="true"] .panel {
@@ -85,15 +86,15 @@ body,
 }
 
 .section-head {
-  margin: 0 0 6px;
+  margin: 0 0 8px;
   font-size: 11px;
   font-weight: 600;
   color: var(--sub);
 }
 
 .card {
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 13px 16px;
+  border-radius: 12px;
   border: 0.5px solid var(--line);
   background: var(--card);
   display: flex;
@@ -355,7 +356,7 @@ body,
 
 .summary-card {
   gap: 0;
-  padding: 4px 14px;
+  padding: 0 16px;
 }
 
 .summary + .summary {
@@ -367,7 +368,7 @@ body,
   width: 100%;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: 13px 0;
   border: none;
   background: none;
   color: inherit;

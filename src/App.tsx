@@ -55,7 +55,7 @@ type Level = "ok" | "high" | "full";
 const REFRESH_MS = 3000;
 // Why: the cleanup numbers change only every 30 minutes, so the panel asks for them far less often.
 const CLEANUP_REFRESH_MS = 60_000;
-const PANEL_WIDTH = 340;
+const PANEL_WIDTH = 380;
 // Why: the same stroke as Prompt and Split so the three apps' icons look equally light.
 const ICON_STROKE = 1.5;
 const ICON_SIZE = 14;
