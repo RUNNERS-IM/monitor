@@ -69,24 +69,33 @@ async function askAfterDownload(version: string, notes: string[] | null): Promis
 }
 
 /** The menu's "Check for Updates…": the person is waiting, so the window opens at once and shows the download.
- *  Later closes it while the download carries on, so the next question needs no second download. */
+ *  Escape or closing it during the download only hides it: the download carries on and the window comes back,
+ *  ready to install, when it is done (shared rule, 1B). */
 async function askWhileDownloading(version: string, notes: string[] | null): Promise<UpdateAnswer> {
   const prompt = askUpdate({ version, notes, downloading: true, percent: 0 }, true);
   const progress = (info: ProgressInfo) => prompt.set({ percent: info.percent });
   autoUpdater.on("download-progress", progress);
+  let done = false;
   let failed: unknown = null;
   // Why: electron-updater hands back the download already running, so a second check never downloads twice.
-  autoUpdater
+  const download = autoUpdater
     .downloadUpdate()
-    .then(() => prompt.set({ downloading: false, percent: 100 }))
+    .then(() => {
+      done = true;
+      prompt.set({ downloading: false, percent: 100 });
+    })
     .catch((error: unknown) => {
       failed = error;
       prompt.close();
     })
     .finally(() => autoUpdater.off("download-progress", progress));
-  const answer = await prompt.answer;
+  const first = await prompt.answer;
   if (failed) throw failed;
-  return answer;
+  if (first === "install" || done) return first;
+  await download;
+  if (failed) throw failed;
+  // Why: shown without focus, so a Return typed elsewhere meanwhile cannot land on it.
+  return askUpdate({ version, notes, downloading: false, percent: 100 }, false).answer;
 }
 
 async function tell(message: string): Promise<void> {

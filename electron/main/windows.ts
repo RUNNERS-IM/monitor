@@ -198,6 +198,8 @@ export function askUpdate(offer: UpdateOffer, focus: boolean): UpdatePrompt {
   return {
     answer: answerPromise,
     set: (change) => {
+      // Why: the buttons appear only when the download is done, so the one-second guard starts again then.
+      if (current.offer.downloading && change.downloading === false) shownAt = Date.now();
       current.offer = { ...current.offer, ...change };
       if (!window.isDestroyed()) window.webContents.send("monitor:updateOffer", current.offer);
     },

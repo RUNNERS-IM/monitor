@@ -1,8 +1,9 @@
 // The update question, drawn like the menu (runners-menu.css): app icon, "A new version is available", the one-line
 // question, a "What's new" box (scrolls past five lines; hidden when the release has no notes in the agreed format),
-// a progress bar while the download runs (menu check only), then [Later] [Install Now]. Enter installs once the
-// download is done, Escape is Later. After Install Now the button reads "Installing…" and both stay off until the
-// app quits. The same title, line and buttons as Split's update box.
+// then [Later] [Install Now]. While a menu check is still downloading, a thick progress bar with "Downloading… 42%"
+// stands where the buttons go, and the buttons take its place when the download is done. Enter installs, Escape is
+// Later (during the download it only closes the window; the window comes back when the download is done). After
+// Install Now the button reads "Installing…" and both stay off until the app quits. The same title, line and buttons as Split's update box.
 import { useEffect, useRef, useState } from "react";
 import { t } from "./i18n";
 import { answerUpdate, fitHeight, onUpdateOffer, updateOffer, type UpdateOffer } from "./native";
@@ -96,28 +97,29 @@ export default function Update() {
           </ul>
         </section>
       )}
-      {offer?.downloading && (
+      {offer?.downloading ? (
         <div className="update-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}>
-          <div className="meter-track">
-            <div className="meter-fill update-fill" style={{ width: `${percent}%` }} />
+          <div className="update-progress-track">
+            <div className="update-progress-fill" style={{ width: `${percent}%` }} />
           </div>
-          <div className="update-progress-text">{t("update.downloading", { percent })}</div>
+          <span className="update-progress-text">{t("update.downloading", { percent })}</span>
+        </div>
+      ) : (
+        <div className="update-buttons">
+          <button type="button" className="update-button" disabled={installing} onClick={() => answerUpdate("later")}>
+            {t("update.later")}
+          </button>
+          <button
+            ref={installButton}
+            type="button"
+            className="update-button default"
+            disabled={!offer || offer.downloading || installing}
+            onClick={install}
+          >
+            {installing ? t("update.installing") : t("update.install")}
+          </button>
         </div>
       )}
-      <div className="update-buttons">
-        <button type="button" className="update-button" disabled={installing} onClick={() => answerUpdate("later")}>
-          {t("update.later")}
-        </button>
-        <button
-          ref={installButton}
-          type="button"
-          className="update-button default"
-          disabled={!offer || offer.downloading || installing}
-          onClick={install}
-        >
-          {installing ? t("update.installing") : t("update.install")}
-        </button>
-      </div>
     </main>
   );
 }

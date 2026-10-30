@@ -102,22 +102,32 @@
   opacity: 0.5;
 }
 
+/* While downloading, a bar as tall and round as the buttons stands where they go (shared rule, 1B). */
 .update-progress {
-  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
 }
 
-/* Why: the bar is the download, not a reading, so it takes the accent colour instead of a level colour. */
-.update-progress .meter-track {
-  margin: 0;
+.update-progress-track {
+  flex: 1;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--rm-hover);
+  overflow: hidden;
 }
 
-.update-fill {
+.update-progress-fill {
+  height: 100%;
   background: var(--rm-accent);
+  transition: width 0.3s ease;
 }
 
 .update-progress-text {
-  margin-top: 6px;
-  font-size: var(--rm-font-small);
+  flex: none;
+  min-width: 96px;
+  text-align: right;
   color: var(--rm-text-secondary);
   font-variant-numeric: tabular-nums;
 }
