@@ -66,8 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "무거운 작업은 한 번에 하나씩 돕니다. 다른 세션은 이게 끝날 때까지 기다립니다.",
   "about.title": "Monitor 정보",
-  "about.line": "Monitor {{version}} · 무료 오픈소스",
+  "about.line": "Monitor {{version}} · 무료",
   "about.website": "웹사이트",
-  "about.license": "MIT 라이선스",
+  "about.license": "© 2026 RUNNERS. All rights reserved.",
   "about.get": "받기"
 }

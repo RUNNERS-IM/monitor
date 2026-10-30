@@ -3,7 +3,7 @@ name = "monitor"
 version = "2.6.1030"
 description = "Watch CPU, memory, disk, claude sessions and runners across computers"
 authors = ["RUNNERS-IM"]
-license = "MIT"
+license-file = "../LICENSE.md"
 edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

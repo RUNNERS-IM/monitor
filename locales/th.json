@@ -66,8 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "งานหนักจะทำทีละงาน เซสชันอื่นจะรอจนงานนี้เสร็จ",
   "about.title": "เกี่ยวกับ Monitor",
-  "about.line": "Monitor {{version}} · ฟรีและเป็นโอเพนซอร์ส",
+  "about.line": "Monitor {{version}} · ฟรี",
   "about.website": "เว็บไซต์",
-  "about.license": "สัญญาอนุญาต MIT",
+  "about.license": "© 2026 RUNNERS. All rights reserved.",
   "about.get": "รับ"
 }

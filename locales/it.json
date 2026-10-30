@@ -66,8 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "I job pesanti vengono eseguiti uno alla volta. Le altre sessioni attendono che questo finisca.",
   "about.title": "Informazioni su Monitor",
-  "about.line": "Monitor {{version}} · gratuito e open source",
+  "about.line": "Monitor {{version}} · gratuito",
   "about.website": "Sito web",
-  "about.license": "Licenza MIT",
+  "about.license": "© 2026 RUNNERS. All rights reserved.",
   "about.get": "Ottieni"
 }

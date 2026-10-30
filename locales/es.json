@@ -66,8 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "Las tareas pesadas se ejecutan de una en una. Las demás sesiones esperan a que termine esta.",
   "about.title": "Acerca de Monitor",
-  "about.line": "Monitor {{version}} · gratuito y de código abierto",
+  "about.line": "Monitor {{version}} · gratuito",
   "about.website": "Sitio web",
-  "about.license": "Licencia MIT",
+  "about.license": "© 2026 RUNNERS. All rights reserved.",
   "about.get": "Obtener"
 }

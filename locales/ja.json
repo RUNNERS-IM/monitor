@@ -66,8 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "重い作業は一度に1つずつ実行されます。ほかのセッションはこれが終わるまで待機します。",
   "about.title": "Monitorについて",
-  "about.line": "Monitor {{version}} · 無料のオープンソース",
+  "about.line": "Monitor {{version}} · 無料",
   "about.website": "Webサイト",
-  "about.license": "MITライセンス",
+  "about.license": "© 2026 RUNNERS. All rights reserved.",
   "about.get": "入手"
 }

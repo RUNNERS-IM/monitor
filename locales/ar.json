@@ -66,8 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "تعمل المهام الثقيلة واحدة تلو الأخرى. تنتظر الجلسات الأخرى حتى تنتهي هذه المهمة.",
   "about.title": "حول Monitor",
-  "about.line": "Monitor {{version}} · مجاني ومفتوح المصدر",
+  "about.line": "Monitor {{version}} · مجاني",
   "about.website": "موقع الويب",
-  "about.license": "ترخيص MIT",
+  "about.license": "© 2026 RUNNERS. All rights reserved.",
   "about.get": "احصل عليه"
 }

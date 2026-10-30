@@ -66,8 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "Тяжёлые задачи выполняются по одной. Остальные сессии ждут, пока эта закончится.",
   "about.title": "О программе Monitor",
-  "about.line": "Monitor {{version}} · бесплатно и с открытым кодом",
+  "about.line": "Monitor {{version}} · бесплатно",
   "about.website": "Веб-сайт",
-  "about.license": "Лицензия MIT",
+  "about.license": "© 2026 RUNNERS. All rights reserved.",
   "about.get": "Загрузить"
 }

@@ -66,8 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "Tác vụ nặng chạy lần lượt từng cái. Các phiên khác chờ đến khi tác vụ này xong.",
   "about.title": "Giới thiệu về Monitor",
-  "about.line": "Monitor {{version}} · miễn phí và mã nguồn mở",
+  "about.line": "Monitor {{version}} · miễn phí",
   "about.website": "Trang web",
-  "about.license": "Giấy phép MIT",
+  "about.license": "© 2026 RUNNERS. All rights reserved.",
   "about.get": "Nhận"
 }

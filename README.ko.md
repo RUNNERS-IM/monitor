@@ -71,4 +71,4 @@ Monitor 는 아무것도 모으거나 보내지 않습니다. [PRIVACY.md](PRIVA
 
 ## 라이선스
 
-Monitor 는 MIT 라이선스로 배포합니다. [LICENSE.md](LICENSE.md) 를 보세요.
+Copyright (c) 2026 Runners Co., Ltd. All rights reserved. 코드는 읽어 볼 수 있게 공개했을 뿐이고, 허락 없이 복사 · 수정 · 재배포할 수 없습니다. [LICENSE.md](LICENSE.md) 를 보세요.

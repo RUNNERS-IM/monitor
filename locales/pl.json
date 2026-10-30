@@ -66,8 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "Ciężkie zadania działają po jednym. Inne sesje czekają, aż to się skończy.",
   "about.title": "Monitor — informacje",
-  "about.line": "Monitor {{version}} · darmowy i otwartoźródłowy",
+  "about.line": "Monitor {{version}} · darmowy",
   "about.website": "Witryna",
-  "about.license": "Licencja MIT",
+  "about.license": "© 2026 RUNNERS. All rights reserved.",
   "about.get": "Pobierz"
 }

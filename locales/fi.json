@@ -66,8 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "Raskaat työt ajetaan yksi kerrallaan. Muut istunnot odottavat, kunnes tämä päättyy.",
   "about.title": "Tietoja Monitorista",
-  "about.line": "Monitor {{version}} · ilmainen ja avointa lähdekoodia",
+  "about.line": "Monitor {{version}} · ilmainen",
   "about.website": "Verkkosivusto",
-  "about.license": "MIT-lisenssi",
+  "about.license": "© 2026 RUNNERS. All rights reserved.",
   "about.get": "Hae"
 }

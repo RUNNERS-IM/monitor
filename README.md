@@ -71,4 +71,4 @@ Monitor collects nothing and sends nothing. See [PRIVACY.md](PRIVACY.md).
 
 ## License
 
-Monitor is distributed under the MIT License. See [LICENSE.md](LICENSE.md).
+Copyright (c) 2026 Runners Co., Ltd. All rights reserved. The source is published for reading only; see [LICENSE.md](LICENSE.md).

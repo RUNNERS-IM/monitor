@@ -66,8 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "Tugas berat berjalan satu per satu. Sesi lain menunggu sampai tugas ini selesai.",
   "about.title": "Tentang Monitor",
-  "about.line": "Monitor {{version}} · gratis dan sumber terbuka",
+  "about.line": "Monitor {{version}} · gratis",
   "about.website": "Situs Web",
-  "about.license": "Lisensi MIT",
+  "about.license": "© 2026 RUNNERS. All rights reserved.",
   "about.get": "Dapatkan"
 }

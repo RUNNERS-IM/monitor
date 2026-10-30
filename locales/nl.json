@@ -66,8 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "Zware taken draaien één voor één. Andere sessies wachten tot deze klaar is.",
   "about.title": "Over Monitor",
-  "about.line": "Monitor {{version}} · gratis en opensource",
+  "about.line": "Monitor {{version}} · gratis",
   "about.website": "Website",
-  "about.license": "MIT-licentie",
+  "about.license": "© 2026 RUNNERS. All rights reserved.",
   "about.get": "Ophalen"
 }

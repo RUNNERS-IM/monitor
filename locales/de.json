@@ -66,8 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "Schwere Jobs laufen nacheinander. Andere Sitzungen warten, bis dieser fertig ist.",
   "about.title": "Über Monitor",
-  "about.line": "Monitor {{version}} · kostenlos und Open Source",
+  "about.line": "Monitor {{version}} · kostenlos",
   "about.website": "Website",
-  "about.license": "MIT-Lizenz",
+  "about.license": "© 2026 RUNNERS. All rights reserved.",
   "about.get": "Laden"
 }
