@@ -1,5 +1,6 @@
 //! Debug runs only (the app reads `Sampler.demoSnapshot` only when not packaged): `MONITOR_DEMO=1` swaps this computer's names for made-up ones, so screenshots for the public
-//! homepage show no real session names, runner names, folders or host name. The numbers stay real.
+//! homepage show no real session names, runner names, folders or host name. The CPU and disk numbers stay real; memory is
+//! made up as a 16 GB Mac running short, so the "who uses memory" card always shows the same believable picture.
 
 use crate::snapshot::{AppKind, AppUse, ClaudeSession, HeavyJob, Pressure, Runner, Snapshot};
 
@@ -10,7 +11,13 @@ pub fn apply(snap: &mut Snapshot) {
     // Why: the "why slow" card only shows when memory is short, and the homepage needs it showing.
     snap.memory_pressure = Pressure::Warn;
     snap.slow_memory = true;
-    snap.memory_used = snap.memory_total / 100 * 86;
+    let gb = |gb: f64| (gb * GB as f64) as u64;
+    snap.memory_total = 16 * GB;
+    snap.memory_used = gb(13.8);
+    snap.memory_wired = gb(2.1);
+    snap.memory_compressed = gb(0.8);
+    snap.memory_cache = gb(4.0);
+    snap.memory_free = gb(0.5);
     snap.swap_used = 6 * GB;
     let app = |name: &str, gb: f64, quittable: bool| AppUse {
         name: name.into(),
@@ -18,11 +25,14 @@ pub fn apply(snap: &mut Snapshot) {
         memory: (gb * GB as f64) as u64,
         quittable,
         kind: AppKind::App,
+        sessions: None,
         folder: None,
         pids: Vec::new(),
         bundle: None,
     };
-    snap.top_memory = vec![app("Google Chrome", 3.2, true), app("Slack", 1.4, true), app("claude", 0.9, false)];
+    let mut claude = app("claude", 2.8, false);
+    claude.sessions = Some(6);
+    snap.top_memory = vec![app("Google Chrome", 3.2, true), claude, app("Slack", 1.4, true), app("Prompt", 0.9, true)];
     snap.top_cpu = snap.top_memory.clone();
     let session = |pid: u32, name: &str, mins: u64, busy: bool| ClaudeSession {
         pid,

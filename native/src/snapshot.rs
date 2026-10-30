@@ -6,7 +6,7 @@ use sysinfo::{Disks, Pid, Process, ProcessRefreshKind, ProcessesToUpdate, Refres
 
 /// About ten minutes of readings at the 3 second interval.
 const HISTORY_LEN: usize = 200;
-const TOP_APPS: usize = 3;
+const TOP_APPS: usize = 4;
 // Why: an idle claude still wakes up now and then, so only a steady average above this (percent of one core)
 // over the last 30 seconds (10 readings) counts as working, when the session file does not say.
 const CLAUDE_BUSY_CPU: f32 = 5.0;
@@ -38,6 +38,14 @@ pub struct Snapshot {
     pub cpu_percent: f32,
     pub memory_used: u64,
     pub memory_total: u64,
+    /// Where memory goes besides apps, in bytes, so the panel can split all of it into one bar.
+    /// Kernel memory that cannot be paged out (0 where the OS does not report it).
+    pub memory_wired: u64,
+    /// Memory squeezed by the macOS compressor (0 elsewhere).
+    pub memory_compressed: u64,
+    /// File copies and purgeable pages the OS drops by itself when an app needs the room.
+    pub memory_cache: u64,
+    pub memory_free: u64,
     pub memory_pressure: Pressure,
     pub disk_used: u64,
     pub disk_total: u64,
@@ -80,6 +88,8 @@ pub struct AppUse {
     /// claude, other users' processes, build tools or simulators.
     pub quittable: bool,
     pub kind: AppKind,
+    /// For the "claude" entry, how many claude processes it adds up; none for other apps.
+    pub sessions: Option<u32>,
     /// For a build tool, the repository it is building (the folder holding `.git` above its working folder).
     pub folder: Option<String>,
     #[serde(skip)]
@@ -200,6 +210,7 @@ impl Sampler {
         push_capped(&mut self.cpu_history, cpu_percent);
         push_capped(&mut self.memory_history, memory_used as f32 * 100.0 / memory_total.max(1) as f32);
         let memory_pressure = memory_pressure(&self.system);
+        let breakdown = memory_breakdown(&self.system);
         let slow_cpu = self.cpu_history.len() >= SLOW_CPU_READINGS
             && self.cpu_history.iter().rev().take(SLOW_CPU_READINGS).all(|&v| v >= SLOW_CPU);
 
@@ -209,6 +220,10 @@ impl Sampler {
             cpu_percent,
             memory_used,
             memory_total,
+            memory_wired: breakdown.wired,
+            memory_compressed: breakdown.compressed,
+            memory_cache: breakdown.cache,
+            memory_free: breakdown.free,
             memory_pressure,
             disk_used,
             disk_total,
@@ -365,6 +380,7 @@ fn top_apps(processes: &HashMap<Pid, Process>, cores: f32) -> (Vec<AppUse>, Vec<
             memory: 0,
             quittable: kind == AppKind::App,
             kind,
+            sessions: None,
             folder: None,
             pids: Vec::new(),
             bundle,
@@ -375,6 +391,11 @@ fn top_apps(processes: &HashMap<Pid, Process>, cores: f32) -> (Vec<AppUse>, Vec<
         // Why: one protected process (say a root helper) makes the whole app unsafe to quit from here.
         entry.quittable &= quittable(process);
         entry.pids.push(*pid);
+    }
+    // Why: every claude process is one session; the panel names the entry "claude 세션 N개" instead of a size alone.
+    if let Some(claude) = apps.get_mut("claude") {
+        claude.sessions = Some(claude.pids.len() as u32);
+        claude.quittable = false;
     }
     let mut by_cpu: Vec<AppUse> = apps.values().cloned().collect();
     by_cpu.sort_by(|a, b| b.cpu_percent.total_cmp(&a.cpu_percent));
@@ -466,5 +487,87 @@ fn memory_pressure(system: &System) -> Pressure {
         Pressure::Warn
     } else {
         Pressure::Normal
+    }
+}
+
+#[derive(Debug, Default, PartialEq)]
+pub struct MemoryBreakdown {
+    pub wired: u64,
+    pub compressed: u64,
+    pub cache: u64,
+    pub free: u64,
+}
+
+/// The same page counts `vm_stat` prints. Why: sysinfo has no wired, compressed or cache figures.
+#[cfg(target_os = "macos")]
+#[allow(deprecated)] // libc points to the mach2 crate for these, but the calls are the same and need no new dependency.
+fn memory_breakdown(_system: &System) -> MemoryBreakdown {
+    let mut info: libc::vm_statistics64 = unsafe { std::mem::zeroed() };
+    let mut count = libc::HOST_VM_INFO64_COUNT;
+    let ok = unsafe {
+        libc::host_statistics64(
+            libc::mach_host_self(),
+            libc::HOST_VM_INFO64,
+            (&mut info as *mut libc::vm_statistics64).cast(),
+            &mut count,
+        )
+    } == libc::KERN_SUCCESS;
+    if !ok {
+        return MemoryBreakdown::default();
+    }
+    let page = unsafe { libc::sysconf(libc::_SC_PAGESIZE) }.max(0) as u64;
+    let bytes = |pages: u32| pages as u64 * page;
+    MemoryBreakdown {
+        wired: bytes(info.wire_count),
+        compressed: bytes(info.compressor_page_count),
+        cache: bytes(info.external_page_count) + bytes(info.purgeable_count),
+        free: bytes(info.free_count) + bytes(info.speculative_count),
+    }
+}
+
+/// `/proc/meminfo`: page cache and buffers are the part Linux gives back on its own. No wired or compressed figures.
+#[cfg(target_os = "linux")]
+fn memory_breakdown(_system: &System) -> MemoryBreakdown {
+    let text = std::fs::read_to_string("/proc/meminfo").unwrap_or_default();
+    parse_meminfo(&text)
+}
+
+#[cfg(any(target_os = "linux", test))]
+fn parse_meminfo(text: &str) -> MemoryBreakdown {
+    let field = |name: &str| {
+        text.lines()
+            .find_map(|line| line.strip_prefix(name)?.strip_prefix(':'))
+            .and_then(|rest| rest.split_whitespace().next()?.parse::<u64>().ok())
+            .map_or(0, |kib| kib * 1024)
+    };
+    MemoryBreakdown { wired: 0, compressed: 0, cache: field("Cached") + field("Buffers"), free: field("MemFree") }
+}
+
+/// Windows: only free memory; standby cache is not reported by sysinfo.
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
+fn memory_breakdown(system: &System) -> MemoryBreakdown {
+    MemoryBreakdown { free: system.free_memory(), ..Default::default() }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn meminfo_cache_and_free() {
+        let text = "MemTotal:       16000000 kB\nMemFree:          100000 kB\nBuffers:           2000 kB\nCached:           30000 kB\nSwapCached:          10 kB\n";
+        let got = parse_meminfo(text);
+        assert_eq!(got.cache, 32000 * 1024);
+        assert_eq!(got.free, 100000 * 1024);
+        assert_eq!(got.wired, 0);
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn mac_breakdown_fits_in_total() {
+        let system = System::new_with_specifics(RefreshKind::nothing().with_memory(sysinfo::MemoryRefreshKind::everything())).unwrap();
+        let got = memory_breakdown(&system);
+        assert!(got.wired > 0 && got.free > 0);
+        assert!(got.wired + got.compressed + got.cache + got.free <= system.total_memory());
     }
 }
