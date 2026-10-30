@@ -220,7 +220,7 @@ jobs:
     env:
       VERSION: ${{ needs.version.outputs.version }}
       # 설치된 Monitor 는 latest.json 의 버전을 semver 로 읽어 자기 버전과 비교한다. 그래서 태그 모양(2.6.1030.2)이
-      # 아니라 앱 안에 넣은 모양(2.6.1030-2)을 적는다. 태그 모양은 semver 가 아니라 읽지 못한다.
+      # 아니라 앱 안에 넣은 모양(2.6.1030+2)을 적는다. 태그 모양은 semver 가 아니라 읽지 못한다.
       APP_VERSION: ${{ needs.version.outputs.app_version }}
       GH_TOKEN: ${{ github.token }}
     steps:
