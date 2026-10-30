@@ -1,5 +1,6 @@
-/* About window, design standard A. Colours come from App.css; the window is see-through over the
-   macOS blur, and draws the solid panel colour where the OS has no blur (Linux). */
+/* About window, design standard A with Split's roomier values: 28 outer padding, 96 icon, 28 below the header,
+   24 between card sections. Colours come from App.css; the window is see-through over the macOS blur, and
+   draws the solid panel colour where the OS has no blur (Linux). */
 /* Why: Vite puts every stylesheet into one file for both windows, so these rules name the About window. */
 :root[data-window="about"] body {
   background: var(--panel);
@@ -11,37 +12,74 @@
 
 .about {
   box-sizing: border-box;
-  padding: 16px 20px 20px;
+  padding: 40px 28px 28px;
 }
 
 .about-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 28px;
   text-align: center;
 }
 
 .about-icon {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 8px;
+  width: 96px;
+  height: 96px;
+  margin-bottom: 12px;
 }
 
 .about-name {
   margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 20px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 24px;
 }
 
 .about-line {
-  margin: 2px 0 0;
-  font-size: 11px;
-  line-height: 14px;
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 15px;
   color: var(--sub);
 }
 
-.about-company {
-  margin-top: 6px;
+/* Why: same pair of push buttons as Split's About window, so the four apps lead to their page and code the same way. */
+.about-links {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.about-link {
+  height: 24px;
+  padding: 0 14px;
+  border: 0.5px solid var(--line);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: default;
+}
+
+.about-link:hover {
+  background: var(--track);
+}
+
+.about-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.about-credit {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 10px;
+  line-height: 13px;
+  color: var(--sub);
+  opacity: 0.8;
+}
+
+.about-credit p {
+  margin: 0;
 }

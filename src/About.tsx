@@ -1,5 +1,5 @@
-// Monitor's About window: app icon, name, version, RUNNERS, one license line, then the RUNNERS app cards.
-// It replaces the native macOS about panel, which cannot hold the cards (shared spec in _docs/작업 가이드/공통.md).
+// Monitor's About window, laid out like Split's: app icon, name, "version · free and open source", Website and
+// GitHub buttons, the RUNNERS app cards, then the license and icon credit lines. It replaces the native macOS about panel, which cannot hold the cards (shared spec in _docs/작업 가이드/공통.md).
 import { useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getVersion } from "@tauri-apps/api/app";
@@ -13,7 +13,9 @@ import "./App.css";
 import "./About.css";
 
 // Same width as the window opened in src-tauri/src/about.rs; the height follows the content.
-const WIDTH = 360;
+const WIDTH = 520;
+const WEBSITE = "https://runners.im/monitor";
+const GITHUB = "https://github.com/RUNNERS-IM/monitor";
 
 export default function About() {
   const [version, setVersion] = useState("");
@@ -58,11 +60,21 @@ export default function About() {
       <header className="about-header">
         <img className="about-icon" src={appIcon} alt="" draggable={false} />
         <h1 className="about-name">Monitor</h1>
-        <p className="about-line">{version ? t("about.version", { version }) : " "}</p>
-        <p className="about-line about-company">RUNNERS</p>
-        <p className="about-line">{t("about.license")}</p>
+        <p className="about-line">{version ? t("about.line", { version }) : " "}</p>
+        <div className="about-links">
+          <button type="button" className="about-link" onClick={() => void openUrl(WEBSITE)}>
+            {t("about.website")}
+          </button>
+          <button type="button" className="about-link" onClick={() => void openUrl(GITHUB)}>
+            GitHub
+          </button>
+        </div>
       </header>
       <RunnersApps groups={groups} locale={locale} onOpen={(url) => void openUrl(url)} />
+      <footer className="about-credit">
+        <p>{t("about.license")}</p>
+        <p>Icons: Lucide (ISC License)</p>
+      </footer>
     </main>
   );
 }

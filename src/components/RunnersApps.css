@@ -1,11 +1,11 @@
-/* RUNNERS app cards, design standard A: card radius 10, 0.5px hairline, row 14/10 padding, 12 gap,
-   section header 11 semibold 6 above the card, 18 between sections. Colours come from App.css
+/* RUNNERS app cards, design standard A (Split's roomier values, 2026-10-30): card radius 12, 0.5px hairline,
+   row 16/13 padding, 12 gap, section header 11 semibold 8 above the card, 24 between sections. Colours come from App.css
    (--card is white 85% light / white 5% dark), so the cards follow dark and light with the rest of Monitor. */
 .runners-apps {
   --runners-apps-accent: var(--accent);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 24px;
   text-align: start;
 }
 
@@ -19,7 +19,7 @@
 .runners-apps-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .runners-apps-title {
@@ -35,7 +35,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 0.5px solid var(--line);
   background: var(--card);
   overflow: hidden;
@@ -46,7 +46,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 13px 16px;
 }
 
 /* Inset separator between rows, starting after the icon like macOS lists. */
@@ -54,7 +54,7 @@
   content: "";
   position: absolute;
   top: 0;
-  inset-inline: 58px 0;
+  inset-inline: 60px 0;
   height: 0.5px;
   background: var(--line);
 }

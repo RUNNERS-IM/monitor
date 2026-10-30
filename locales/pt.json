@@ -66,7 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "Tarefas pesadas rodam uma de cada vez. As outras sessões esperam esta terminar.",
   "about.title": "Sobre o Monitor",
-  "about.version": "Versão {{version}}",
+  "about.line": "Monitor {{version}} · gratuito e de código aberto",
+  "about.website": "Site",
   "about.license": "Licença MIT",
   "about.get": "Obter"
 }

@@ -66,7 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "भारी जॉब एक बार में एक ही चलता है। बाकी सत्र इसके ख़त्म होने तक इंतज़ार करते हैं।",
   "about.title": "Monitor के बारे में",
-  "about.version": "संस्करण {{version}}",
+  "about.line": "Monitor {{version}} · मुफ़्त और ओपन सोर्स",
+  "about.website": "वेबसाइट",
   "about.license": "MIT लाइसेंस",
   "about.get": "पाएं"
 }

@@ -66,7 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "Les tâches lourdes s’exécutent une à la fois. Les autres sessions attendent la fin de celle-ci.",
   "about.title": "À propos de Monitor",
-  "about.version": "Version {{version}}",
+  "about.line": "Monitor {{version}} · gratuit et open source",
+  "about.website": "Site web",
   "about.license": "Licence MIT",
   "about.get": "Obtenir"
 }

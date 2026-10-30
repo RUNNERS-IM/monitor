@@ -1,4 +1,4 @@
-//! The "About Monitor" window: icon, name, version, RUNNERS, license line and the RUNNERS app cards.
+//! The "About Monitor" window: icon, name, version, Website/GitHub buttons, the RUNNERS app cards and credits.
 //! Why: the native macOS about panel cannot hold the cards the shared spec asks for
 //! (`_docs/작업 가이드/공통.md`, "계정 칸과 다른 앱 추천"), so every OS gets this small webview window instead.
 
@@ -7,7 +7,7 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 use crate::i18n::t;
 
 pub const LABEL: &str = "about";
-const WIDTH: f64 = 360.0;
+const WIDTH: f64 = 520.0;
 /// First height only; the page then fits the window to its content (src/About.tsx).
 const HEIGHT: f64 = 560.0;
 

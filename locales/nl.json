@@ -66,7 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "Zware taken draaien één voor één. Andere sessies wachten tot deze klaar is.",
   "about.title": "Over Monitor",
-  "about.version": "Versie {{version}}",
+  "about.line": "Monitor {{version}} · gratis en opensource",
+  "about.website": "Website",
   "about.license": "MIT-licentie",
   "about.get": "Ophalen"
 }

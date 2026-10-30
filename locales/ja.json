@@ -66,7 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "重い作業は一度に1つずつ実行されます。ほかのセッションはこれが終わるまで待機します。",
   "about.title": "Monitorについて",
-  "about.version": "バージョン {{version}}",
+  "about.line": "Monitor {{version}} · 無料のオープンソース",
+  "about.website": "Webサイト",
   "about.license": "MITライセンス",
   "about.get": "入手"
 }

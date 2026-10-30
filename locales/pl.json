@@ -66,7 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "Ciężkie zadania działają po jednym. Inne sesje czekają, aż to się skończy.",
   "about.title": "Monitor — informacje",
-  "about.version": "Wersja {{version}}",
+  "about.line": "Monitor {{version}} · darmowy i otwartoźródłowy",
+  "about.website": "Witryna",
   "about.license": "Licencja MIT",
   "about.get": "Pobierz"
 }

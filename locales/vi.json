@@ -66,7 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "Tác vụ nặng chạy lần lượt từng cái. Các phiên khác chờ đến khi tác vụ này xong.",
   "about.title": "Giới thiệu về Monitor",
-  "about.version": "Phiên bản {{version}}",
+  "about.line": "Monitor {{version}} · miễn phí và mã nguồn mở",
+  "about.website": "Trang web",
   "about.license": "Giấy phép MIT",
   "about.get": "Nhận"
 }

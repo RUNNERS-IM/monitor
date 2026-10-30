@@ -66,7 +66,8 @@
   "panel.heavyRow": "{{name}} · {{command}}",
   "panel.heavyNote": "Schwere Jobs laufen nacheinander. Andere Sitzungen warten, bis dieser fertig ist.",
   "about.title": "Über Monitor",
-  "about.version": "Version {{version}}",
+  "about.line": "Monitor {{version}} · kostenlos und Open Source",
+  "about.website": "Website",
   "about.license": "MIT-Lizenz",
   "about.get": "Laden"
 }
