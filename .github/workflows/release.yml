@@ -199,8 +199,15 @@ jobs:
         if: matrix.os == 'macos'
         run: |
           set -euo pipefail
-          tar -czf "dist.noindex/Monitor-$VERSION-aarch64.app.tar.gz" -C dist.noindex/mac-arm64 Monitor.app
-          tar -czf "dist.noindex/Monitor-$VERSION-x86_64.app.tar.gz" -C dist.noindex/mac Monitor.app
+          # Why: macOS tar stores extended attributes as "._name" entries. The Tauri updater unpacks those as plain
+          # files inside the app, which breaks the code signature ("Monitor is damaged"; v2.6.1030.3 did this).
+          # Without them the signature still verifies: the seal covers file contents, not attributes.
+          COPYFILE_DISABLE=1 tar --no-mac-metadata --no-xattrs -czf "dist.noindex/Monitor-$VERSION-aarch64.app.tar.gz" -C dist.noindex/mac-arm64 Monitor.app
+          COPYFILE_DISABLE=1 tar --no-mac-metadata --no-xattrs -czf "dist.noindex/Monitor-$VERSION-x86_64.app.tar.gz" -C dist.noindex/mac Monitor.app
+          # Fail the release rather than ship a bridge that installs a broken app.
+          for f in dist.noindex/Monitor-$VERSION-*.app.tar.gz; do
+            python3 -c "import sys,tarfile; n=tarfile.open(sys.argv[1]).getnames(); sys.exit(any('/._' in x for x in n))" "$f"
+          done
 
       - name: Collect the files
         shell: bash

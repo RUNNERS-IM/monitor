@@ -1,0 +1,125 @@
+/*
+ * RUNNERS window look: the shared values for windows built from boxes (About, Settings, viewers, the update window)
+ * in all four RUNNERS apps. They are design standard A (_docs/작업 가이드/공통.md), at the density of macOS System
+ * Settings (user decision `[RUNNERS] 네 앱 화면 값 통일` 1B, 2026-10-30). The menu-bar panel uses runners-menu.css
+ * instead (rows of 30).
+ * The source copy lives in the monitor repo (src/runners-window.css); other apps copy it unchanged.
+ * `--rw-accent` is the OS accent colour, which each app sets on <html> at runtime; #007aff (#0a84ff in dark mode) is
+ * the fallback where the OS has none.
+ */
+:root {
+  --rw-font: 13px;
+  --rw-font-small: 11px;
+  /* Window edge to the content. */
+  --rw-pad: 28px;
+  /* Boxes: corner, the line around them, the space between two of them. */
+  --rw-radius: 12px;
+  --rw-border: 0.5px;
+  --rw-box-gap: 24px;
+  /* A row inside a box, and the space between its icon, text and control. */
+  --rw-row-pad-y: 13px;
+  --rw-row-pad-x: 16px;
+  --rw-row-gap: 12px;
+  /* Small grey section title above a box. */
+  --rw-section-gap: 8px;
+  /* A row's title and its description line. */
+  --rw-title-gap: 2px;
+  /* Buttons, selected rows and other small things. */
+  --rw-small-radius: 6px;
+  --rw-button-height: 28px;
+
+  --rw-text: #1d1d1f;
+  --rw-text-secondary: rgba(0, 0, 0, 0.5);
+  --rw-separator: rgba(0, 0, 0, 0.12);
+  --rw-box-bg: rgba(255, 255, 255, 0.85);
+  /* Grey fill of a plain button or a track. */
+  --rw-control-bg: rgba(0, 0, 0, 0.06);
+  --rw-control-hover: rgba(0, 0, 0, 0.1);
+  /* Where the OS draws no material behind the window (Linux). */
+  --rw-window-bg: #ececec;
+  --rw-accent: #007aff;
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: var(--rw-font);
+  color: var(--rw-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --rw-text: #f5f5f7;
+    --rw-text-secondary: rgba(255, 255, 255, 0.55);
+    --rw-separator: rgba(255, 255, 255, 0.12);
+    --rw-box-bg: rgba(255, 255, 255, 0.05);
+    --rw-control-bg: rgba(255, 255, 255, 0.1);
+    --rw-control-hover: rgba(255, 255, 255, 0.16);
+    --rw-window-bg: #1e1e1e;
+    --rw-accent: #0a84ff;
+  }
+}
+
+/* A section: small grey title, then its box. */
+.rw-section-title {
+  margin: 0 0 var(--rw-section-gap);
+  padding: 0 2px;
+  font-size: var(--rw-font-small);
+  font-weight: 600;
+  line-height: 14px;
+  color: var(--rw-text-secondary);
+}
+
+.rw-box {
+  border: var(--rw-border) solid var(--rw-separator);
+  border-radius: var(--rw-radius);
+  background: var(--rw-box-bg);
+}
+
+.rw-row {
+  display: flex;
+  align-items: center;
+  gap: var(--rw-row-gap);
+  padding: var(--rw-row-pad-y) var(--rw-row-pad-x);
+}
+
+.rw-row-title {
+  font-size: var(--rw-font);
+  line-height: 16px;
+}
+
+.rw-row-desc {
+  margin-top: var(--rw-title-gap);
+  font-size: var(--rw-font-small);
+  line-height: 14px;
+  color: var(--rw-text-secondary);
+}
+
+.rw-button {
+  height: var(--rw-button-height);
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--rw-small-radius);
+  background: var(--rw-control-bg);
+  color: var(--rw-text);
+  font: inherit;
+  font-size: var(--rw-font);
+  cursor: default;
+}
+
+.rw-button:hover {
+  background: var(--rw-control-hover);
+}
+
+.rw-button.default {
+  background: var(--rw-accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.rw-button:disabled {
+  opacity: 0.5;
+}
+
+.rw-button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--rw-accent) 50%, transparent);
+  outline-offset: 1px;
+}

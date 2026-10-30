@@ -1,43 +1,35 @@
-/* RUNNERS app cards, design standard A (Split's roomier values, 2026-10-30): card radius 12, 0.5px hairline,
-   row 16/13 padding, 12 gap, section header 11 semibold 8 above the card, 24 between sections. Colours come from App.css
-   (--card is white 85% light / white 5% dark), so the cards follow dark and light with the rest of Monitor. */
+/* RUNNERS app cards. Every size and colour comes from runners-window.css (design standard A), so the cards match
+   the boxes of the other windows and follow dark and light mode and the OS accent colour. */
 .runners-apps {
-  --runners-apps-accent: var(--accent);
+  --runners-apps-accent: var(--rw-accent);
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--rw-box-gap);
   text-align: start;
-}
-
-/* Why: the light-mode blue is too dark to read on the grey dark-mode button; macOS uses this brighter blue in dark mode. */
-@media (prefers-color-scheme: dark) {
-  .runners-apps {
-    --runners-apps-accent: #0a84ff;
-  }
 }
 
 .runners-apps-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--rw-section-gap);
 }
 
 .runners-apps-title {
   margin: 0;
   padding: 0 2px;
-  font-size: 11px;
+  font-size: var(--rw-font-small);
   font-weight: 600;
   line-height: 14px;
-  color: var(--sub);
+  color: var(--rw-text-secondary);
 }
 
 .runners-apps-card {
   margin: 0;
   padding: 0;
   list-style: none;
-  border-radius: 12px;
-  border: 0.5px solid var(--line);
-  background: var(--card);
+  border-radius: var(--rw-radius);
+  border: var(--rw-border) solid var(--rw-separator);
+  background: var(--rw-box-bg);
   overflow: hidden;
 }
 
@@ -45,8 +37,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 13px 16px;
+  gap: var(--rw-row-gap);
+  padding: var(--rw-row-pad-y) var(--rw-row-pad-x);
 }
 
 /* Inset separator between rows, starting after the icon like macOS lists. */
@@ -56,7 +48,7 @@
   top: 0;
   inset-inline: 60px 0;
   height: 0.5px;
-  background: var(--line);
+  background: var(--rw-separator);
 }
 
 .runners-apps-icon {
@@ -71,8 +63,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--track);
-  color: var(--sub);
+  background: var(--rw-control-bg);
+  color: var(--rw-text-secondary);
   font-size: 15px;
   font-weight: 600;
 }
@@ -83,16 +75,16 @@
 }
 
 .runners-apps-name {
-  font-size: 13px;
+  font-size: var(--rw-font);
   font-weight: 500;
   line-height: 16px;
 }
 
 .runners-apps-desc {
-  margin-top: 1px;
-  font-size: 11px;
+  margin-top: var(--rw-title-gap);
+  font-size: var(--rw-font-small);
   line-height: 14px;
-  color: var(--sub);
+  color: var(--rw-text-secondary);
 }
 
 .runners-apps-get {
@@ -102,7 +94,7 @@
   padding: 0 10px;
   border: 0;
   border-radius: 11px;
-  background: var(--track);
+  background: var(--rw-control-bg);
   color: var(--runners-apps-accent);
   font: inherit;
   font-size: 12px;
@@ -111,7 +103,7 @@
 }
 
 .runners-apps-get:hover {
-  background: var(--line);
+  background: var(--rw-control-hover);
 }
 
 .runners-apps-get:focus-visible {
