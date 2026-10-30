@@ -11,6 +11,14 @@
 const isRelease = process.env.MONITOR_RELEASE === "1";
 const tag = process.env.MONITOR_TAG || "${version}";
 
+// Why: Windows keeps a file version as four numbers of at most 65535 each, so a "+2" cannot go in it. The same-day
+// number becomes the fourth number (2.6.1030+2 -> 2.6.1030.2, 2.6.1030 -> 2.6.1030.0), the same split Prompt uses
+// for its Windows version. The day part 2.6.MDD stays under 65535 (MDD is at most 1231). The semver version that
+// updates compare is not changed.
+const version = require("./package.json").version;
+const [base, sameDay = "0"] = version.split("+");
+const buildVersion = `${base}.${sameDay}`;
+
 /** @type {import('electron-builder').Configuration} */
 module.exports = {
   appId: "im.runners.monitor",
@@ -18,6 +26,7 @@ module.exports = {
   // Why: the Tauri build's binary was Contents/MacOS/monitor; keeping the name lets a Tauri copy that installs
   // this build through its own updater restart into it, and keeps `pkill -x monitor` working.
   executableName: "monitor",
+  buildVersion,
   copyright: "© 2026 RUNNERS. All rights reserved.",
   directories: { output: "dist.noindex", buildResources: "build" },
   // Why: React and the icons are bundled into out/renderer by vite; they stay prod dependencies only so the open
