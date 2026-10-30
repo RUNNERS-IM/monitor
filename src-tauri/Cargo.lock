@@ -2085,7 +2085,7 @@ dependencies = [
 
 [[package]]
 name = "monitor"
-version = "0.1.0"
+version = "2.6.1030"
 dependencies = [
  "libc",
  "serde",
