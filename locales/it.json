@@ -64,5 +64,9 @@
   "app.simulator": "Simulatore · {{amount}}",
   "summary.heavy": "1 job pesante",
   "panel.heavyRow": "{{name}} · {{command}}",
-  "panel.heavyNote": "I job pesanti vengono eseguiti uno alla volta. Le altre sessioni attendono che questo finisca."
+  "panel.heavyNote": "I job pesanti vengono eseguiti uno alla volta. Le altre sessioni attendono che questo finisca.",
+  "about.title": "Informazioni su Monitor",
+  "about.version": "Versione {{version}}",
+  "about.license": "Licenza MIT",
+  "about.get": "Ottieni"
 }

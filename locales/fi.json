@@ -64,5 +64,9 @@
   "app.simulator": "Simulaattori · {{amount}}",
   "summary.heavy": "Raskaita töitä: 1",
   "panel.heavyRow": "{{name}} · {{command}}",
-  "panel.heavyNote": "Raskaat työt ajetaan yksi kerrallaan. Muut istunnot odottavat, kunnes tämä päättyy."
+  "panel.heavyNote": "Raskaat työt ajetaan yksi kerrallaan. Muut istunnot odottavat, kunnes tämä päättyy.",
+  "about.title": "Tietoja Monitorista",
+  "about.version": "Versio {{version}}",
+  "about.license": "MIT-lisenssi",
+  "about.get": "Hae"
 }

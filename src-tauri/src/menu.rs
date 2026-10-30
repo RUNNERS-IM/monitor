@@ -9,9 +9,6 @@ use tauri::menu::{IconMenuItem, Menu, PredefinedMenuItem};
 use tauri::{App, AppHandle, Manager, Theme, Wry};
 
 use crate::i18n::t;
-
-/// The license line under "RUNNERS" in the about window (shared spec: app name · version · RUNNERS + one MIT line).
-const LICENSE_LINE: &str = "MIT License";
 use crate::snapshot::{Pressure, Snapshot};
 
 /// How the computer is doing, the same three levels the panel shows.
@@ -109,22 +106,8 @@ pub fn build(app: &App) -> tauri::Result<Menu<Wry>> {
         None::<&str>,
     )?;
     let usage = line("usage", "menu.showUsage", "chart-column", true, None)?;
-    #[cfg(target_os = "macos")]
+    // Why: opens Monitor's own About window (src/about.rs) on every OS, which also holds the RUNNERS app cards.
     let about = line("about", "menu.about", "info", true, None)?;
-    // Why: Windows and Linux have no AppKit about window to open by hand, so they keep muda's own About item, which cannot carry an icon.
-    #[cfg(not(target_os = "macos"))]
-    let about = PredefinedMenuItem::about(
-        app,
-        Some(&t("menu.about", &[])),
-        Some(
-            tauri::menu::AboutMetadataBuilder::new()
-                .name(Some("Monitor"))
-                .version(Some(app.package_info().version.to_string()))
-                .copyright(Some("RUNNERS"))
-                .credits(Some(LICENSE_LINE))
-                .build(),
-        ),
-    )?;
     // Why: there is no updater or settings screen yet, so these stay visible but disabled to keep the shared order.
     let updates = line("updates", "menu.checkUpdates", "refresh-cw", false, None)?;
     let settings = line("settings", "menu.settings", "settings", false, Some("CmdOrCtrl+,"))?;
@@ -139,10 +122,7 @@ pub fn build(app: &App) -> tauri::Result<Menu<Wry>> {
             &PredefinedMenuItem::separator(app)?,
             &usage.0,
             &PredefinedMenuItem::separator(app)?,
-            #[cfg(target_os = "macos")]
             &about.0,
-            #[cfg(not(target_os = "macos"))]
-            &about,
             &updates.0,
             &settings.0,
             &help.0,
@@ -156,10 +136,7 @@ pub fn build(app: &App) -> tauri::Result<Menu<Wry>> {
         readout_text: Mutex::new(readout_text),
         status,
         shown: Mutex::new(Some(Status::Fine)),
-        #[cfg(target_os = "macos")]
         icons: vec![readout, usage, about, updates, settings, help, quit],
-        #[cfg(not(target_os = "macos"))]
-        icons: vec![readout, usage, updates, settings, help, quit],
         dark: Mutex::new(dark),
     });
     Ok(menu)
@@ -212,49 +189,4 @@ pub fn follow_theme(app: &AppHandle) {
         let _ = item.set_icon(Some(icon(name, dark)));
     }
     *current = dark;
-}
-
-/// The standard macOS about window: "Monitor", version, "RUNNERS" and the license line.
-/// Why: the shared spec puts an icon on every line, and Tauri cannot give the built-in About item one,
-/// so this is a plain line that opens the same window AppKit's About item opens.
-#[cfg(target_os = "macos")]
-pub fn show_about(app: &AppHandle) {
-    let version = app.package_info().version.to_string();
-    let _ = app.run_on_main_thread(move || about_panel(&version));
-}
-
-#[cfg(target_os = "macos")]
-fn about_panel(version: &str) {
-    use objc2::rc::Retained;
-    use objc2::runtime::AnyObject;
-    use objc2::MainThreadMarker;
-    use objc2_app_kit::{
-        NSAboutPanelOptionApplicationName, NSAboutPanelOptionApplicationVersion, NSAboutPanelOptionCredits,
-        NSApplication,
-    };
-    use objc2_foundation::{ns_string, NSAttributedString, NSDictionary, NSString};
-
-    let Some(mtm) = MainThreadMarker::new() else {
-        return;
-    };
-    let keys: [&NSString; 4] = unsafe {
-        [
-            NSAboutPanelOptionApplicationName,
-            NSAboutPanelOptionApplicationVersion,
-            ns_string!("Copyright"),
-            NSAboutPanelOptionCredits,
-        ]
-    };
-    let values: [Retained<AnyObject>; 4] = [
-        Retained::into_super(Retained::into_super(NSString::from_str("Monitor"))),
-        Retained::into_super(Retained::into_super(NSString::from_str(version))),
-        Retained::into_super(Retained::into_super(NSString::from_str("RUNNERS"))),
-        Retained::into_super(Retained::into_super(NSAttributedString::from_nsstring(&NSString::from_str(LICENSE_LINE)))),
-    ];
-    let options = NSDictionary::from_retained_objects(&keys, &values);
-    let app = NSApplication::sharedApplication(mtm);
-    // Why: Monitor has no Dock icon, so without this the about window can open behind the app in front.
-    #[allow(deprecated)]
-    app.activateIgnoringOtherApps(true);
-    unsafe { app.orderFrontStandardAboutPanelWithOptions(&options) };
 }

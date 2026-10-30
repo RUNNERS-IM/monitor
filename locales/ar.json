@@ -64,5 +64,9 @@
   "app.simulator": "المحاكي · {{amount}}",
   "summary.heavy": "مهام ثقيلة: 1",
   "panel.heavyRow": "{{name}} · {{command}}",
-  "panel.heavyNote": "تعمل المهام الثقيلة واحدة تلو الأخرى. تنتظر الجلسات الأخرى حتى تنتهي هذه المهمة."
+  "panel.heavyNote": "تعمل المهام الثقيلة واحدة تلو الأخرى. تنتظر الجلسات الأخرى حتى تنتهي هذه المهمة.",
+  "about.title": "حول Monitor",
+  "about.version": "الإصدار {{version}}",
+  "about.license": "ترخيص MIT",
+  "about.get": "احصل عليه"
 }

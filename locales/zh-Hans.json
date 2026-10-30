@@ -64,5 +64,9 @@
   "app.simulator": "模拟器 · {{amount}}",
   "summary.heavy": "重任务 1",
   "panel.heavyRow": "{{name}} · {{command}}",
-  "panel.heavyNote": "重任务一次只运行一个。其他会话会等它结束。"
+  "panel.heavyNote": "重任务一次只运行一个。其他会话会等它结束。",
+  "about.title": "关于 Monitor",
+  "about.version": "版本 {{version}}",
+  "about.license": "MIT 许可证",
+  "about.get": "获取"
 }

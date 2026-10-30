@@ -33,13 +33,6 @@ tauri-plugin-notification = "2.8.0"
 # Pinned to the same version as Remote so every RUNNERS app renders the shared frame with the same pixels.
 tiny-skia = { version = "=0.12.0", default-features = false, features = ["std", "simd"] }
 
-# Why: opens the standard macOS about window from a menu line that has an icon (see src/menu.rs); same versions muda already uses.
-[target.'cfg(target_os = "macos")'.dependencies]
-objc2 = "0.6"
-objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSString", "NSDictionary", "NSAttributedString"] }
-objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSApplication", "NSResponder"] }
-
-
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
 [profile.release]
 codegen-units = 1

@@ -64,5 +64,9 @@
   "app.simulator": "Simulator · {{amount}}",
   "summary.heavy": "1 heavy job",
   "panel.heavyRow": "{{name}} · {{command}}",
-  "panel.heavyNote": "Heavy jobs run one at a time. Other sessions wait until this one ends."
+  "panel.heavyNote": "Heavy jobs run one at a time. Other sessions wait until this one ends.",
+  "about.title": "About Monitor",
+  "about.version": "Version {{version}}",
+  "about.license": "MIT License",
+  "about.get": "Get"
 }

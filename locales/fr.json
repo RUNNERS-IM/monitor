@@ -64,5 +64,9 @@
   "app.simulator": "Simulateur · {{amount}}",
   "summary.heavy": "1 tâche lourde",
   "panel.heavyRow": "{{name}} · {{command}}",
-  "panel.heavyNote": "Les tâches lourdes s’exécutent une à la fois. Les autres sessions attendent la fin de celle-ci."
+  "panel.heavyNote": "Les tâches lourdes s’exécutent une à la fois. Les autres sessions attendent la fin de celle-ci.",
+  "about.title": "À propos de Monitor",
+  "about.version": "Version {{version}}",
+  "about.license": "Licence MIT",
+  "about.get": "Obtenir"
 }

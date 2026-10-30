@@ -1,3 +1,4 @@
+mod about;
 mod actions;
 mod bars;
 mod cleanup;
@@ -66,7 +67,8 @@ fn translucent(state: State<'_, Translucent>) -> bool {
 }
 
 /// macOS gets the same blur as Control Center, Windows gets Acrylic, Linux has no blur and stays solid.
-fn apply_blur(window: &tauri::WebviewWindow) -> bool {
+/// `radius` rounds the blur for the borderless panel; a window with a title bar passes `None`.
+pub(crate) fn apply_blur(window: &tauri::WebviewWindow, radius: Option<f64>) -> bool {
     #[cfg(target_os = "macos")]
     {
         use window_vibrancy::{NSVisualEffectMaterial, NSVisualEffectState};
@@ -74,7 +76,7 @@ fn apply_blur(window: &tauri::WebviewWindow) -> bool {
             window,
             NSVisualEffectMaterial::Popover,
             Some(NSVisualEffectState::Active),
-            Some(14.0),
+            radius,
         )
         .is_ok();
     }
@@ -84,9 +86,53 @@ fn apply_blur(window: &tauri::WebviewWindow) -> bool {
     }
     #[allow(unreachable_code)]
     {
-        let _ = window;
+        let _ = (window, radius);
         false
     }
+}
+
+/// Dark or light forced by `MONITOR_THEME=dark|light` in a debug run, so both looks can be captured
+/// without changing the system setting. Always `None` in a release build.
+pub(crate) fn debug_theme() -> Option<tauri::Theme> {
+    #[cfg(debug_assertions)]
+    {
+        return match std::env::var("MONITOR_THEME").ok().as_deref() {
+            Some("dark") => Some(tauri::Theme::Dark),
+            Some("light") => Some(tauri::Theme::Light),
+            _ => None,
+        };
+    }
+    #[allow(unreachable_code)]
+    None
+}
+
+/// Debug runs only: `MONITOR_OPEN=panel|about` opens that window at launch, so it can be captured
+/// without clicking the tray. The panel opens like the slow-computer popup (no focus), so it stays up.
+#[cfg(debug_assertions)]
+fn debug_open(app: &tauri::AppHandle) {
+    if let (Some(theme), Some(panel)) = (debug_theme(), app.get_webview_window("main")) {
+        let _ = panel.set_theme(Some(theme));
+    }
+    let Ok(which) = std::env::var("MONITOR_OPEN") else {
+        return;
+    };
+    let handle = app.clone();
+    std::thread::spawn(move || {
+        // Why: the tray icon needs a moment before it reports where it sits.
+        std::thread::sleep(Duration::from_millis(1500));
+        let app = handle.clone();
+        let _ = handle.run_on_main_thread(move || match which.as_str() {
+            "about" => about::show(&app),
+            "panel" => {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.set_focusable(false);
+                    place_under_tray(&app, &window);
+                    let _ = window.show();
+                }
+            }
+            _ => {}
+        });
+    });
 }
 
 /// The newest reading. Why: one thread samples for both the tray and the panel, so opening the panel
@@ -320,7 +366,7 @@ pub fn run() {
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
             let panel = app.get_webview_window("main").expect("main window is declared in tauri.conf.json");
-            app.manage(Translucent(apply_blur(&panel)));
+            app.manage(Translucent(apply_blur(&panel, Some(14.0))));
 
             let menu = menu::build(app)?;
             let start = [bars::bar_height(0.0); 3];
@@ -332,8 +378,7 @@ pub fn run() {
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "usage" => toggle_panel(app),
-                    #[cfg(target_os = "macos")]
-                    "about" => menu::show_about(app),
+                    "about" => about::show(app),
                     "help" => {
                         let _ = app.opener().open_url(ISSUES_URL, None::<&str>);
                     }
@@ -399,6 +444,8 @@ pub fn run() {
                     std::thread::sleep(CLEANUP_EVERY);
                 }
             });
+            #[cfg(debug_assertions)]
+            debug_open(app.handle());
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -406,6 +453,10 @@ pub fn run() {
                 menu::follow_theme(window.app_handle());
             }
             // Why: the panel behaves like a tray popup and closes as soon as focus moves elsewhere.
+            // The About window is an ordinary window and stays open.
+            if window.label() != "main" {
+                return;
+            }
             if let WindowEvent::Focused(false) = event {
                 // Why: the popup never takes focus, so a focus change elsewhere must not close it; it has its own close button.
                 if window.state::<Popup>().0.lock().unwrap().open {

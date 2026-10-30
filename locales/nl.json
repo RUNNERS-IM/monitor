@@ -64,5 +64,9 @@
   "app.simulator": "Simulator · {{amount}}",
   "summary.heavy": "1 zware taak",
   "panel.heavyRow": "{{name}} · {{command}}",
-  "panel.heavyNote": "Zware taken draaien één voor één. Andere sessies wachten tot deze klaar is."
+  "panel.heavyNote": "Zware taken draaien één voor één. Andere sessies wachten tot deze klaar is.",
+  "about.title": "Over Monitor",
+  "about.version": "Versie {{version}}",
+  "about.license": "MIT-licentie",
+  "about.get": "Ophalen"
 }

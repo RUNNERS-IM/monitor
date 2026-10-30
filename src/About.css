@@ -1,0 +1,47 @@
+/* About window, design standard A. Colours come from App.css; the window is see-through over the
+   macOS blur, and draws the solid panel colour where the OS has no blur (Linux). */
+/* Why: Vite puts every stylesheet into one file for both windows, so these rules name the About window. */
+:root[data-window="about"] body {
+  background: var(--panel);
+}
+
+:root[data-window="about"][data-translucent="true"] body {
+  background: transparent;
+}
+
+.about {
+  box-sizing: border-box;
+  padding: 16px 20px 20px;
+}
+
+.about-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.about-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 8px;
+}
+
+.about-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.about-line {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--sub);
+}
+
+.about-company {
+  margin-top: 6px;
+}

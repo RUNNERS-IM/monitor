@@ -64,5 +64,9 @@
   "app.simulator": "Simulador · {{amount}}",
   "summary.heavy": "1 tarefa pesada",
   "panel.heavyRow": "{{name}} · {{command}}",
-  "panel.heavyNote": "Tarefas pesadas rodam uma de cada vez. As outras sessões esperam esta terminar."
+  "panel.heavyNote": "Tarefas pesadas rodam uma de cada vez. As outras sessões esperam esta terminar.",
+  "about.title": "Sobre o Monitor",
+  "about.version": "Versão {{version}}",
+  "about.license": "Licença MIT",
+  "about.get": "Obter"
 }

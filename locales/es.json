@@ -64,5 +64,9 @@
   "app.simulator": "Simulador · {{amount}}",
   "summary.heavy": "1 tarea pesada",
   "panel.heavyRow": "{{name}} · {{command}}",
-  "panel.heavyNote": "Las tareas pesadas se ejecutan de una en una. Las demás sesiones esperan a que termine esta."
+  "panel.heavyNote": "Las tareas pesadas se ejecutan de una en una. Las demás sesiones esperan a que termine esta.",
+  "about.title": "Acerca de Monitor",
+  "about.version": "Versión {{version}}",
+  "about.license": "Licencia MIT",
+  "about.get": "Obtener"
 }

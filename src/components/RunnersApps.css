@@ -1,0 +1,120 @@
+/* RUNNERS app cards, design standard A: card radius 10, 0.5px hairline, row 14/10 padding, 12 gap,
+   section header 11 semibold 6 above the card, 18 between sections. Colours come from App.css
+   (--card is white 85% light / white 5% dark), so the cards follow dark and light with the rest of Monitor. */
+.runners-apps {
+  --runners-apps-accent: var(--accent);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  text-align: start;
+}
+
+/* Why: the light-mode blue is too dark to read on the grey dark-mode button; macOS uses this brighter blue in dark mode. */
+@media (prefers-color-scheme: dark) {
+  .runners-apps {
+    --runners-apps-accent: #0a84ff;
+  }
+}
+
+.runners-apps-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.runners-apps-title {
+  margin: 0;
+  padding: 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+  color: var(--sub);
+}
+
+.runners-apps-card {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: 10px;
+  border: 0.5px solid var(--line);
+  background: var(--card);
+  overflow: hidden;
+}
+
+.runners-apps-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+/* Inset separator between rows, starting after the icon like macOS lists. */
+.runners-apps-row + .runners-apps-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  inset-inline: 58px 0;
+  height: 0.5px;
+  background: var(--line);
+}
+
+.runners-apps-icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  object-fit: contain;
+}
+
+.runners-apps-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--track);
+  color: var(--sub);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.runners-apps-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.runners-apps-name {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.runners-apps-desc {
+  margin-top: 1px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--sub);
+}
+
+.runners-apps-get {
+  flex: none;
+  min-width: 52px;
+  height: 22px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 11px;
+  background: var(--track);
+  color: var(--runners-apps-accent);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: default;
+}
+
+.runners-apps-get:hover {
+  background: var(--line);
+}
+
+.runners-apps-get:focus-visible {
+  outline: 2px solid var(--runners-apps-accent);
+  outline-offset: 1px;
+}

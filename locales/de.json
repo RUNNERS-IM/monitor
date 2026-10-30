@@ -64,5 +64,9 @@
   "app.simulator": "Simulator · {{amount}}",
   "summary.heavy": "1 schwerer Job",
   "panel.heavyRow": "{{name}} · {{command}}",
-  "panel.heavyNote": "Schwere Jobs laufen nacheinander. Andere Sitzungen warten, bis dieser fertig ist."
+  "panel.heavyNote": "Schwere Jobs laufen nacheinander. Andere Sitzungen warten, bis dieser fertig ist.",
+  "about.title": "Über Monitor",
+  "about.version": "Version {{version}}",
+  "about.license": "MIT-Lizenz",
+  "about.get": "Laden"
 }

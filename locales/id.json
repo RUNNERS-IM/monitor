@@ -64,5 +64,9 @@
   "app.simulator": "Simulator · {{amount}}",
   "summary.heavy": "1 tugas berat",
   "panel.heavyRow": "{{name}} · {{command}}",
-  "panel.heavyNote": "Tugas berat berjalan satu per satu. Sesi lain menunggu sampai tugas ini selesai."
+  "panel.heavyNote": "Tugas berat berjalan satu per satu. Sesi lain menunggu sampai tugas ini selesai.",
+  "about.title": "Tentang Monitor",
+  "about.version": "Versi {{version}}",
+  "about.license": "Lisensi MIT",
+  "about.get": "Dapatkan"
 }

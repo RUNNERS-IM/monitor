@@ -64,5 +64,9 @@
   "app.simulator": "Symulator · {{amount}}",
   "summary.heavy": "Ciężkie zadania: 1",
   "panel.heavyRow": "{{name}} · {{command}}",
-  "panel.heavyNote": "Ciężkie zadania działają po jednym. Inne sesje czekają, aż to się skończy."
+  "panel.heavyNote": "Ciężkie zadania działają po jednym. Inne sesje czekają, aż to się skończy.",
+  "about.title": "Monitor — informacje",
+  "about.version": "Wersja {{version}}",
+  "about.license": "Licencja MIT",
+  "about.get": "Pobierz"
 }

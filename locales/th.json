@@ -64,5 +64,9 @@
   "app.simulator": "ซิมูเลเตอร์ · {{amount}}",
   "summary.heavy": "งานหนัก 1",
   "panel.heavyRow": "{{name}} · {{command}}",
-  "panel.heavyNote": "งานหนักจะทำทีละงาน เซสชันอื่นจะรอจนงานนี้เสร็จ"
+  "panel.heavyNote": "งานหนักจะทำทีละงาน เซสชันอื่นจะรอจนงานนี้เสร็จ",
+  "about.title": "เกี่ยวกับ Monitor",
+  "about.version": "เวอร์ชัน {{version}}",
+  "about.license": "สัญญาอนุญาต MIT",
+  "about.get": "รับ"
 }

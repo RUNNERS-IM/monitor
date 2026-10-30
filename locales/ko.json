@@ -64,5 +64,9 @@
   "app.simulator": "시뮬레이터 · {{amount}}",
   "summary.heavy": "무거운 작업 1",
   "panel.heavyRow": "{{name}} · {{command}}",
-  "panel.heavyNote": "무거운 작업은 한 번에 하나씩 돕니다. 다른 세션은 이게 끝날 때까지 기다립니다."
+  "panel.heavyNote": "무거운 작업은 한 번에 하나씩 돕니다. 다른 세션은 이게 끝날 때까지 기다립니다.",
+  "about.title": "Monitor 정보",
+  "about.version": "버전 {{version}}",
+  "about.license": "MIT 라이선스",
+  "about.get": "받기"
 }
