@@ -34,7 +34,7 @@ Questions: open an issue at https://github.com/RUNNERS-IM/monitor/issues.
 
 최종 수정: 2026년 10월 30일
 
-Monitor 는 Runners Co., Ltd 가 만드는, 컴퓨터가 얼마나 바쁜지 보여 주는 macOS·윈도우·리눅스 앱입니다. 이 방침은 모든 Monitor 에 적용됩니다.
+Monitor는 Runners Co., Ltd가 만드는, 컴퓨터가 얼마나 바쁜지 보여 주는 macOS·윈도우·리눅스 앱입니다. 이 방침은 모든 Monitor에 적용됩니다.
 
 ## 모으는 정보
 
@@ -46,7 +46,7 @@ Monitor 는 Runners Co., Ltd 가 만드는, 컴퓨터가 얼마나 바쁜지 보
 
 ## 인터넷 연결
 
-Monitor 가 인터넷에 접속하는 일은 업데이트 하나뿐입니다. 켜진 지 1분 뒤와 그 뒤 하루에 한 번 Monitor 의 GitHub
+Monitor가 인터넷에 접속하는 일은 업데이트 하나뿐입니다. 켜진 지 1분 뒤와 그 뒤 하루에 한 번 Monitor의 GitHub
 릴리스 페이지에서 릴리스 목록과 업데이트 파일(`latest-mac.yml`, `latest.yml`, `latest-linux.yml`)을 받아 새 버전이
 있는지 보고, 있으면 먼저 받아 둔 뒤 물어보고 **지금 설치** 를 고를 때만 설치합니다. **나중에** 를 고르면 그날은 다시
 묻지 않습니다. 이 요청에는 사용자나 컴퓨터에 관한 정보가

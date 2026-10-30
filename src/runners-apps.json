@@ -4,7 +4,7 @@
     {
       "id": "apps",
       "title": {
-        "ko": "RUNNERS 의 다른 앱",
+        "ko": "RUNNERS의 다른 앱",
         "en": "More apps from RUNNERS"
       },
       "items": [
@@ -43,7 +43,7 @@
     {
       "id": "services",
       "title": {
-        "ko": "RUNNERS 의 서비스",
+        "ko": "RUNNERS의 서비스",
         "en": "Services from RUNNERS"
       },
       "items": [
