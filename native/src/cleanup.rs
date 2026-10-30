@@ -73,8 +73,12 @@ pub fn measure(progress: Option<&Path>) -> Cleanup {
 }
 
 /// The last result saved in `file`. Why: measuring takes minutes, so a restart shows the saved numbers instead of "measuring".
+/// A saved measurement, or none when the file is missing or found nothing at all.
+/// Why: a run that could not see the home folder saved `{"total":0,"top":[]}`, and the panel then showed "0.0 GB"
+/// instead of "measuring" until the next real measurement.
 pub fn load(file: &Path) -> Option<Cleanup> {
-    serde_json::from_slice(&fs::read(file).ok()?).ok()
+    let saved: Cleanup = serde_json::from_slice(&fs::read(file).ok()?).ok()?;
+    (saved.measured_at > 0 && !saved.top.is_empty()).then_some(saved)
 }
 
 pub fn save(file: &Path, cleanup: &Cleanup) {
