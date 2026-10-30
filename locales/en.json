@@ -1,5 +1,8 @@
 {
   "menu.about": "About Monitor",
+  "menu.status.fine": "{{name}} · Normal",
+  "menu.status.warn": "{{name}} · Busy",
+  "menu.status.bad": "{{name}} · Slow",
   "menu.checkUpdates": "Check for Updates…",
   "menu.showUsage": "Show Usage",
   "menu.settings": "Settings…",

@@ -18,9 +18,9 @@ Click the number in the menu bar (macOS) or the tray icon (Windows, Linux) to op
 | claude sessions | Number of running `claude` processes |
 | GitHub runner | **Building** when a job is running, **Idle** when a runner is waiting, **None** when no runner is installed |
 
-Right-click the menu bar number or tray icon for the menu: About, Check for Updates, Show Usage, Settings, Help & Feedback and Quit.
+Right-click the menu bar number or tray icon for the menu: a status line (computer name and state), Show Usage, About Monitor, Check for Updates, Settings, Help & Feedback and Quit Monitor.
 
-The panel and menu follow the language set for your computer. Monitor speaks English and Korean.
+The panel and menu follow the language set for your computer. Monitor speaks 18 languages: Arabic, Chinese (Simplified), Dutch, English, Finnish, French, German, Hindi, Indonesian, Italian, Japanese, Korean, Polish, Portuguese, Russian, Spanish, Thai and Vietnamese.
 
 ## Install
 
@@ -35,7 +35,7 @@ Done:
 - Tray app for this computer: CPU, memory, disk, claude sessions and runner state
 - Panel with the macOS blur (Acrylic on Windows), light and dark mode
 - Shared menu order with Split and Prompt
-- English and Korean
+- 18 languages (the same set as Split)
 
 Next:
 

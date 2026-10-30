@@ -1,6 +1,7 @@
 mod actions;
 mod cleanup;
 mod i18n;
+mod menu;
 mod snapshot;
 
 use std::collections::{HashMap, HashSet};
@@ -10,7 +11,6 @@ use std::time::{Duration, Instant};
 use cleanup::Cleanup;
 use snapshot::{Runner, Sampler, Snapshot};
 use i18n::t;
-use tauri::menu::{AboutMetadataBuilder, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{Manager, PhysicalPosition, State, WindowEvent};
 use tauri_plugin_notification::NotificationExt;
@@ -280,38 +280,7 @@ pub fn run() {
             let panel = app.get_webview_window("main").expect("main window is declared in tauri.conf.json");
             app.manage(Translucent(apply_blur(&panel)));
 
-            // Why: Split, Prompt and Monitor share this menu order: about, updates, app feature, settings, help, quit.
-            let about = PredefinedMenuItem::about(
-                app,
-                Some(&t("menu.about", &[])),
-                Some(
-                    AboutMetadataBuilder::new()
-                        .name(Some("Monitor"))
-                        .version(Some(app.package_info().version.to_string()))
-                        .copyright(Some("RUNNERS"))
-                        .build(),
-                ),
-            )?;
-            // Why: there is no updater or settings screen yet, so these stay visible but disabled to keep the shared order.
-            let updates = MenuItem::with_id(app, "updates", t("menu.checkUpdates", &[]), false, None::<&str>)?;
-            let usage = MenuItem::with_id(app, "usage", t("menu.showUsage", &[]), true, None::<&str>)?;
-            let settings = MenuItem::with_id(app, "settings", t("menu.settings", &[]), false, Some("CmdOrCtrl+,"))?;
-            let help = MenuItem::with_id(app, "help", t("menu.help", &[]), true, None::<&str>)?;
-            let quit = MenuItem::with_id(app, "quit", t("menu.quit", &[]), true, Some("CmdOrCtrl+Q"))?;
-            let menu = Menu::with_items(
-                app,
-                &[
-                    &about,
-                    &updates,
-                    &PredefinedMenuItem::separator(app)?,
-                    &usage,
-                    &PredefinedMenuItem::separator(app)?,
-                    &settings,
-                    &help,
-                    &PredefinedMenuItem::separator(app)?,
-                    &quit,
-                ],
-            )?;
+            let menu = menu::build(app)?;
             let tray = TrayIconBuilder::with_id(TRAY_ID);
             // Why: on macOS the menu bar shows only the memory number as text; other trays need a picture to be visible.
             #[cfg(not(target_os = "macos"))]
@@ -321,6 +290,8 @@ pub fn run() {
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "usage" => toggle_panel(app),
+                    #[cfg(target_os = "macos")]
+                    "about" => menu::show_about(app),
                     "help" => {
                         let _ = app.opener().open_url(ISSUES_URL, None::<&str>);
                     }
@@ -355,6 +326,9 @@ pub fn run() {
                     let _ = tray.set_title(Some(&t("tray.title", &[("value", &value)])));
                     let _ = tray.set_tooltip(Some(&t("tray.tooltip", &[("value", &value)])));
                 }
+                menu::show_status(&handle, &snap);
+                // Why: a backup for the ThemeChanged event, which a hidden panel window may not get on every OS.
+                menu::follow_theme(&handle);
                 *handle.state::<Latest>().0.lock().unwrap() = Some(snap);
                 std::thread::sleep(REFRESH);
             });
@@ -382,6 +356,9 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| {
+            if let WindowEvent::ThemeChanged(_) = event {
+                menu::follow_theme(window.app_handle());
+            }
             // Why: the panel behaves like a tray popup and closes as soon as focus moves elsewhere.
             if let WindowEvent::Focused(false) = event {
                 // Why: the popup never takes focus, so a focus change elsewhere must not close it; it has its own close button.

@@ -30,6 +30,12 @@ sys-locale = "0.3.2"
 libc = "0.2"
 tauri-plugin-notification = "2.8.0"
 
+# Why: opens the standard macOS about window from a menu line that has an icon (see src/menu.rs); same versions muda already uses.
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSString", "NSDictionary", "NSAttributedString"] }
+objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSApplication", "NSResponder"] }
+
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
 [profile.release]
