@@ -1,5 +1,6 @@
 {
   "menu.about": "Monitor 정보",
+  "menu.readout": "CPU {{cpu}} · 메모리 {{memory}} · 디스크 {{disk}}",
   "menu.status.fine": "{{name}} · 보통",
   "menu.status.warn": "{{name}} · 주의",
   "menu.status.bad": "{{name}} · 느림",
@@ -18,7 +19,7 @@
   "panel.runner": "GitHub 러너",
   "runner.idle": "대기",
   "runner.busy": "빌드 중",
-  "tray.title": "메모리 {{value}}",
+  "tray.title": "{{value}}",
   "panel.top": "가장 많이: {{apps}}",
   "panel.pressure.warn": "압박 주의",
   "panel.pressure.critical": "압박 위험",

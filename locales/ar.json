@@ -1,5 +1,6 @@
 {
   "menu.about": "حول Monitor",
+  "menu.readout": "CPU {{cpu}} · الذاكرة {{memory}} · القرص {{disk}}",
   "menu.status.fine": "{{name}} · عادي",
   "menu.status.warn": "{{name}} · مشغول",
   "menu.status.bad": "{{name}} · بطيء",
@@ -18,7 +19,7 @@
   "panel.runner": "مشغّل GitHub",
   "runner.idle": "في الانتظار",
   "runner.busy": "قيد البناء",
-  "tray.title": "الذاكرة {{value}}",
+  "tray.title": "{{value}}",
   "panel.top": "الأكثر: {{apps}}",
   "panel.pressure.warn": "ضغط مرتفع",
   "panel.pressure.critical": "ضغط حرج",

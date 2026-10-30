@@ -1,5 +1,6 @@
 {
   "menu.about": "Monitor के बारे में",
+  "menu.readout": "CPU {{cpu}} · मेमोरी {{memory}} · डिस्क {{disk}}",
   "menu.status.fine": "{{name}} · सामान्य",
   "menu.status.warn": "{{name}} · व्यस्त",
   "menu.status.bad": "{{name}} · धीमा",
@@ -18,7 +19,7 @@
   "panel.runner": "GitHub रनर",
   "runner.idle": "प्रतीक्षा में",
   "runner.busy": "बिल्ड हो रहा है",
-  "tray.title": "मेमोरी {{value}}",
+  "tray.title": "{{value}}",
   "panel.top": "सबसे ज़्यादा: {{apps}}",
   "panel.pressure.warn": "दबाव ज़्यादा",
   "panel.pressure.critical": "दबाव गंभीर",

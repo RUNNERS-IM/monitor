@@ -1,5 +1,6 @@
 {
   "menu.about": "Monitorについて",
+  "menu.readout": "CPU {{cpu}} · メモリ {{memory}} · ディスク {{disk}}",
   "menu.status.fine": "{{name}} · 正常",
   "menu.status.warn": "{{name}} · 注意",
   "menu.status.bad": "{{name}} · 低速",
@@ -18,7 +19,7 @@
   "panel.runner": "GitHub ランナー",
   "runner.idle": "待機中",
   "runner.busy": "ビルド中",
-  "tray.title": "メモリ {{value}}",
+  "tray.title": "{{value}}",
   "panel.top": "上位: {{apps}}",
   "panel.pressure.warn": "プレッシャー: 注意",
   "panel.pressure.critical": "プレッシャー: 危険",

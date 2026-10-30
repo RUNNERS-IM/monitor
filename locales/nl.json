@@ -1,5 +1,6 @@
 {
   "menu.about": "Over Monitor",
+  "menu.readout": "CPU {{cpu}} · Geheugen {{memory}} · Schijf {{disk}}",
   "menu.status.fine": "{{name}} · Normaal",
   "menu.status.warn": "{{name}} · Druk",
   "menu.status.bad": "{{name}} · Traag",
@@ -18,7 +19,7 @@
   "panel.runner": "GitHub-runner",
   "runner.idle": "Wacht",
   "runner.busy": "Bouwt",
-  "tray.title": "RAM {{value}}",
+  "tray.title": "{{value}}",
   "panel.top": "Grootste: {{apps}}",
   "panel.pressure.warn": "Hoge druk",
   "panel.pressure.critical": "Kritieke druk",

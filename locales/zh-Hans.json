@@ -1,5 +1,6 @@
 {
   "menu.about": "关于 Monitor",
+  "menu.readout": "CPU {{cpu}} · 内存 {{memory}} · 磁盘 {{disk}}",
   "menu.status.fine": "{{name}} · 正常",
   "menu.status.warn": "{{name}} · 繁忙",
   "menu.status.bad": "{{name}} · 缓慢",
@@ -18,7 +19,7 @@
   "panel.runner": "GitHub 运行器",
   "runner.idle": "空闲",
   "runner.busy": "构建中",
-  "tray.title": "内存 {{value}}",
+  "tray.title": "{{value}}",
   "panel.top": "占用最多：{{apps}}",
   "panel.pressure.warn": "压力偏高",
   "panel.pressure.critical": "压力严重",

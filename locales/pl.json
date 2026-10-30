@@ -1,5 +1,6 @@
 {
   "menu.about": "Monitor — informacje",
+  "menu.readout": "CPU {{cpu}} · Pamięć {{memory}} · Dysk {{disk}}",
   "menu.status.fine": "{{name}} · Normalnie",
   "menu.status.warn": "{{name}} · Obciążony",
   "menu.status.bad": "{{name}} · Wolno",
@@ -18,7 +19,7 @@
   "panel.runner": "Runner GitHub",
   "runner.idle": "Czeka",
   "runner.busy": "Kompiluje",
-  "tray.title": "RAM {{value}}",
+  "tray.title": "{{value}}",
   "panel.top": "Najwięcej: {{apps}}",
   "panel.pressure.warn": "Wysokie obciążenie",
   "panel.pressure.critical": "Krytyczne obciążenie",

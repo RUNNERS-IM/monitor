@@ -1,5 +1,6 @@
 {
   "menu.about": "О программе Monitor",
+  "menu.readout": "CPU {{cpu}} · Память {{memory}} · Диск {{disk}}",
   "menu.status.fine": "{{name}} · Норма",
   "menu.status.warn": "{{name}} · Загружен",
   "menu.status.bad": "{{name}} · Медленно",
@@ -18,7 +19,7 @@
   "panel.runner": "Раннер GitHub",
   "runner.idle": "Ожидает",
   "runner.busy": "Сборка",
-  "tray.title": "ОЗУ {{value}}",
+  "tray.title": "{{value}}",
   "panel.top": "Больше всего: {{apps}}",
   "panel.pressure.warn": "Нагрузка высокая",
   "panel.pressure.critical": "Нагрузка критическая",

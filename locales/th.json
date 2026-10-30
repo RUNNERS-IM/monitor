@@ -1,5 +1,6 @@
 {
   "menu.about": "เกี่ยวกับ Monitor",
+  "menu.readout": "CPU {{cpu}} · หน่วยความจำ {{memory}} · ดิสก์ {{disk}}",
   "menu.status.fine": "{{name}} · ปกติ",
   "menu.status.warn": "{{name}} · ทำงานหนัก",
   "menu.status.bad": "{{name}} · ช้า",
@@ -18,7 +19,7 @@
   "panel.runner": "รันเนอร์ GitHub",
   "runner.idle": "รอ",
   "runner.busy": "กำลังบิลด์",
-  "tray.title": "แรม {{value}}",
+  "tray.title": "{{value}}",
   "panel.top": "ใช้มากสุด: {{apps}}",
   "panel.pressure.warn": "แรงกดดันสูง",
   "panel.pressure.critical": "แรงกดดันวิกฤต",

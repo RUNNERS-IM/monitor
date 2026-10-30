@@ -1,5 +1,6 @@
 {
   "menu.about": "Giới thiệu về Monitor",
+  "menu.readout": "CPU {{cpu}} · Bộ nhớ {{memory}} · Ổ đĩa {{disk}}",
   "menu.status.fine": "{{name}} · Bình thường",
   "menu.status.warn": "{{name}} · Bận",
   "menu.status.bad": "{{name}} · Chậm",
@@ -18,7 +19,7 @@
   "panel.runner": "Runner GitHub",
   "runner.idle": "Đang chờ",
   "runner.busy": "Đang build",
-  "tray.title": "RAM {{value}}",
+  "tray.title": "{{value}}",
   "panel.top": "Nhiều nhất: {{apps}}",
   "panel.pressure.warn": "Áp lực cao",
   "panel.pressure.critical": "Áp lực nghiêm trọng",

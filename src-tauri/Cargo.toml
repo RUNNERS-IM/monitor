@@ -29,6 +29,9 @@ tauri-plugin-opener = "2.7.2"
 sys-locale = "0.3.2"
 libc = "0.2"
 tauri-plugin-notification = "2.8.0"
+# Why: draws the menu-bar bars picture at runtime, so the moving bars need no image files.
+# Pinned to the same version as Remote so every RUNNERS app renders the shared frame with the same pixels.
+tiny-skia = { version = "=0.12.0", default-features = false, features = ["std", "simd"] }
 
 # Why: opens the standard macOS about window from a menu line that has an icon (see src/menu.rs); same versions muda already uses.
 [target.'cfg(target_os = "macos")'.dependencies]

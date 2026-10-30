@@ -1,5 +1,6 @@
 //! The right-click tray menu, in the order shared by Split, Prompt and Monitor
 //! (`_docs/작업 가이드/공통.md`, "메뉴바 메뉴와 아이콘"): status line, app feature, about / updates / settings / help, quit.
+//! Monitor puts one more line on top that reads out the three tray bars (CPU · memory · disk).
 
 use std::sync::Mutex;
 
@@ -72,6 +73,9 @@ fn icon(name: &str, dark: bool) -> Image<'static> {
 
 /// Menu lines that change after the menu is built.
 pub struct TrayMenu {
+    /// "CPU 12% · Memory 83% · Disk 40%", the numbers behind the tray bars.
+    readout: IconMenuItem<Wry>,
+    readout_text: Mutex<String>,
     status: IconMenuItem<Wry>,
     shown: Mutex<Option<Status>>,
     /// Lines with a Lucide icon, and the icon's name.
@@ -89,6 +93,12 @@ pub fn build(app: &App) -> tauri::Result<Menu<Wry>> {
         IconMenuItem::with_id(app, id, t(key, &[]), enabled, Some(icon(name, dark)), accelerator).map(|item| (item, name))
     };
 
+    // Why: the tray picture is three bars without labels, so the first line names them with their values.
+    // It only reports, so it is disabled; it carries the "usage" icon from the shared table.
+    let dash = "–";
+    let readout_text = t("menu.readout", &[("cpu", dash), ("memory", dash), ("disk", dash)]);
+    let readout = line("readout", "menu.readout", "chart-column", false, None)?;
+    readout.0.set_text(&readout_text)?;
     // Why: the line only reports; it starts as "fine" and is corrected on the first reading 3 seconds later.
     let status = IconMenuItem::with_id(
         app,
@@ -124,6 +134,7 @@ pub fn build(app: &App) -> tauri::Result<Menu<Wry>> {
     let menu = Menu::with_items(
         app,
         &[
+            &readout.0,
             &status,
             &PredefinedMenuItem::separator(app)?,
             &usage.0,
@@ -139,16 +150,39 @@ pub fn build(app: &App) -> tauri::Result<Menu<Wry>> {
             &quit.0,
         ],
     )?;
+    let readout_item = readout.0.clone();
     app.manage(TrayMenu {
+        readout: readout_item,
+        readout_text: Mutex::new(readout_text),
         status,
         shown: Mutex::new(Some(Status::Fine)),
         #[cfg(target_os = "macos")]
-        icons: vec![usage, about, updates, settings, help, quit],
+        icons: vec![readout, usage, about, updates, settings, help, quit],
         #[cfg(not(target_os = "macos"))]
-        icons: vec![usage, updates, settings, help, quit],
+        icons: vec![readout, usage, updates, settings, help, quit],
         dark: Mutex::new(dark),
     });
     Ok(menu)
+}
+
+/// Puts the newest CPU, memory and disk percentages in the first line; skips the update when the text is unchanged.
+pub fn show_usage(app: &AppHandle, snap: &Snapshot) {
+    let menu = app.state::<TrayMenu>();
+    let percent = |value: f64| format!("{}%", value.round());
+    let text = t(
+        "menu.readout",
+        &[
+            ("cpu", &percent(snap.cpu_percent as f64)),
+            ("memory", &percent(snap.memory_percent())),
+            ("disk", &percent(snap.disk_percent())),
+        ],
+    );
+    let mut shown = menu.readout_text.lock().unwrap();
+    if *shown == text {
+        return;
+    }
+    let _ = menu.readout.set_text(&text);
+    *shown = text;
 }
 
 /// Puts the newest reading in the status line; does nothing while the level stays the same.

@@ -1,5 +1,6 @@
 {
   "menu.about": "Sobre o Monitor",
+  "menu.readout": "CPU {{cpu}} · Memória {{memory}} · Disco {{disk}}",
   "menu.status.fine": "{{name}} · Normal",
   "menu.status.warn": "{{name}} · Ocupado",
   "menu.status.bad": "{{name}} · Lento",
@@ -18,7 +19,7 @@
   "panel.runner": "Runner do GitHub",
   "runner.idle": "Ocioso",
   "runner.busy": "Compilando",
-  "tray.title": "MEM {{value}}",
+  "tray.title": "{{value}}",
   "panel.top": "Mais uso: {{apps}}",
   "panel.pressure.warn": "Pressão alta",
   "panel.pressure.critical": "Pressão crítica",

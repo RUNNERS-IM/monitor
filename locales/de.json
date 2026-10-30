@@ -1,5 +1,6 @@
 {
   "menu.about": "Über Monitor",
+  "menu.readout": "CPU {{cpu}} · Arbeitsspeicher {{memory}} · Festplatte {{disk}}",
   "menu.status.fine": "{{name}} · Normal",
   "menu.status.warn": "{{name}} · Ausgelastet",
   "menu.status.bad": "{{name}} · Langsam",
@@ -18,7 +19,7 @@
   "panel.runner": "GitHub-Runner",
   "runner.idle": "Bereit",
   "runner.busy": "Build läuft",
-  "tray.title": "RAM {{value}}",
+  "tray.title": "{{value}}",
   "panel.top": "Top: {{apps}}",
   "panel.pressure.warn": "Speicherdruck hoch",
   "panel.pressure.critical": "Speicherdruck kritisch",

@@ -1,4 +1,5 @@
 mod actions;
+mod bars;
 mod cleanup;
 mod i18n;
 mod menu;
@@ -11,7 +12,8 @@ use std::time::{Duration, Instant};
 use cleanup::Cleanup;
 use snapshot::{Runner, Sampler, Snapshot};
 use i18n::t;
-use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+use tauri::image::Image;
+use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
 use tauri::{Manager, PhysicalPosition, State, WindowEvent};
 use tauri_plugin_notification::NotificationExt;
 use tauri_plugin_opener::OpenerExt;
@@ -28,6 +30,15 @@ const SLOW_NOTICE_EVERY: Duration = Duration::from_secs(30 * 60);
 const NOTICE_APPS: usize = 2;
 // Why: the tray click that opens the panel also sends it a focus-lost event right away, so blur is ignored this long after opening.
 const BLUR_GRACE: Duration = Duration::from_millis(400);
+// Why: the bars glide to each new reading and then stop, so the picture costs nothing between readings.
+const BARS_ANIMATION: Duration = Duration::from_millis(450);
+const BARS_FRAMES: u32 = 14;
+// Why: macOS uses the picture as a template (only its shape counts) and tints it for a dark or light menu bar.
+// Windows and Linux show the colour as drawn; white suits the usual dark taskbar, a light Linux panel may hide it.
+#[cfg(target_os = "macos")]
+const BARS_COLOR: [u8; 3] = [0, 0, 0];
+#[cfg(not(target_os = "macos"))]
+const BARS_COLOR: [u8; 3] = [255, 255, 255];
 
 #[derive(Default)]
 struct PanelShownAt(Mutex<Option<Instant>>);
@@ -260,6 +271,37 @@ fn toggle_panel(app: &tauri::AppHandle) {
     let _ = window.set_focus();
 }
 
+fn bars_image(heights: [f32; 3]) -> Image<'static> {
+    Image::new_owned(bars::render(heights, BARS_COLOR), bars::SIZE, bars::SIZE)
+}
+
+/// Moves the tray bars from `shown` to the new reading over a short ease-out, then leaves them still.
+/// Returns how long it took, so the sampling loop keeps its 3-second rhythm.
+fn show_bars(tray: &TrayIcon, shown: &mut [f32; 3], snap: &Snapshot) -> Duration {
+    let started = Instant::now();
+    let target = [
+        bars::bar_height(snap.cpu_percent / 100.0),
+        bars::bar_height((snap.memory_percent() / 100.0) as f32),
+        bars::bar_height((snap.disk_percent() / 100.0) as f32),
+    ];
+    let from = *shown;
+    let largest = from.iter().zip(&target).map(|(a, b)| (a - b).abs()).fold(0.0, f32::max);
+    // Why: less than one pixel of change is not worth a moving picture; under a hundredth it is not worth redrawing at all.
+    let frames = if largest * bars::SIZE as f32 / 24.0 < 1.0 { 1 } else { BARS_FRAMES };
+    if largest >= 0.01 {
+        for frame in 1..=frames {
+            let k = bars::ease_out(frame as f32 / frames as f32);
+            let heights = [0, 1, 2].map(|i| from[i] + (target[i] - from[i]) * k);
+            let _ = tray.set_icon_with_as_template(Some(bars_image(heights)), true);
+            if frame < frames {
+                std::thread::sleep(BARS_ANIMATION / frames);
+            }
+        }
+        *shown = target;
+    }
+    started.elapsed()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -281,11 +323,11 @@ pub fn run() {
             app.manage(Translucent(apply_blur(&panel)));
 
             let menu = menu::build(app)?;
-            let tray = TrayIconBuilder::with_id(TRAY_ID);
-            // Why: on macOS the menu bar shows only the memory number as text; other trays need a picture to be visible.
-            #[cfg(not(target_os = "macos"))]
-            let tray = tray.icon(app.default_window_icon().unwrap().clone());
-            tray.tooltip("Monitor")
+            let start = [bars::bar_height(0.0); 3];
+            TrayIconBuilder::with_id(TRAY_ID)
+                .icon(bars_image(start))
+                .icon_as_template(true)
+                .tooltip("Monitor")
                 .menu(&menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
@@ -315,22 +357,26 @@ pub fn run() {
             let mut sampler = Sampler::new().expect("failed to open system counters");
             let handle = app.handle().clone();
             let mut noticed = HashMap::new();
+            let mut shown = start;
             std::thread::spawn(move || loop {
                 let snap = sampler.sample();
                 if !popup_if_slow(&handle, &snap) {
                     notify_if_slow(&handle, &snap, &mut noticed);
                 }
+                let mut spent = Duration::ZERO;
                 if let Some(tray) = handle.tray_by_id(TRAY_ID) {
                     let value = format!("{}%", snap.memory_percent().round());
-                    // Why: a bare "84%" in the menu bar reads like the battery, so the number carries a short label.
+                    // Why: the bars picture next to it says what the number is, so the title is only the memory percent.
                     let _ = tray.set_title(Some(&t("tray.title", &[("value", &value)])));
                     let _ = tray.set_tooltip(Some(&t("tray.tooltip", &[("value", &value)])));
+                    spent = show_bars(&tray, &mut shown, &snap);
                 }
+                menu::show_usage(&handle, &snap);
                 menu::show_status(&handle, &snap);
                 // Why: a backup for the ThemeChanged event, which a hidden panel window may not get on every OS.
                 menu::follow_theme(&handle);
                 *handle.state::<Latest>().0.lock().unwrap() = Some(snap);
-                std::thread::sleep(REFRESH);
+                std::thread::sleep(REFRESH.saturating_sub(spent));
             });
 
             let handle = app.handle().clone();

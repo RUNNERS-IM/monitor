@@ -1,5 +1,6 @@
 {
   "menu.about": "Tentang Monitor",
+  "menu.readout": "CPU {{cpu}} · Memori {{memory}} · Disk {{disk}}",
   "menu.status.fine": "{{name}} · Normal",
   "menu.status.warn": "{{name}} · Sibuk",
   "menu.status.bad": "{{name}} · Lambat",
@@ -18,7 +19,7 @@
   "panel.runner": "Runner GitHub",
   "runner.idle": "Menunggu",
   "runner.busy": "Sedang build",
-  "tray.title": "MEM {{value}}",
+  "tray.title": "{{value}}",
   "panel.top": "Terbanyak: {{apps}}",
   "panel.pressure.warn": "Tekanan tinggi",
   "panel.pressure.critical": "Tekanan kritis",

@@ -1,5 +1,6 @@
 {
   "menu.about": "Tietoja Monitorista",
+  "menu.readout": "CPU {{cpu}} · Muisti {{memory}} · Levy {{disk}}",
   "menu.status.fine": "{{name}} · Normaali",
   "menu.status.warn": "{{name}} · Kiireinen",
   "menu.status.bad": "{{name}} · Hidas",
@@ -18,7 +19,7 @@
   "panel.runner": "GitHub-runner",
   "runner.idle": "Odottaa",
   "runner.busy": "Rakentaa",
-  "tray.title": "Muisti {{value}}",
+  "tray.title": "{{value}}",
   "panel.top": "Eniten: {{apps}}",
   "panel.pressure.warn": "Paine korkea",
   "panel.pressure.critical": "Paine kriittinen",
