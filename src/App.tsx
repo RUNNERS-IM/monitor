@@ -304,7 +304,10 @@ function usePolling<T>(command: string, everyMs: number): T | null {
 function App() {
   const snap = usePolling<Snapshot>("snapshot", REFRESH_MS);
   const cleanup = usePolling<Cleanup>("cleanup", CLEANUP_REFRESH_MS);
-  const [open, setOpen] = useState<Section | null>(null);
+  // Why: a debug run can start with a row open (`VITE_MONITOR_EXPAND=work`) so it can be captured without clicking.
+  const [open, setOpen] = useState<Section | null>(
+    import.meta.env.DEV ? ((import.meta.env.VITE_MONITOR_EXPAND as Section | undefined) ?? null) : null,
+  );
   const panelRef = useRef<HTMLElement>(null);
   useTranslucent();
   useFitWindow(panelRef);
