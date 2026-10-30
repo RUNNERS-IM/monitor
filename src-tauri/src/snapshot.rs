@@ -115,6 +115,9 @@ pub struct ClaudeSession {
     pub name: Option<String>,
     pub running_secs: u64,
     pub busy: bool,
+    /// Opened by a person in a terminal. Why: background `claude` runs (agents, scripts, `claude -p`) also show up as
+    /// claude processes, and counting them as sessions made the panel say 9 or 10 when only 7 were open.
+    pub human: bool,
 }
 
 /// A GitHub Actions runner, named after its install folder (for example `sense` in `~/actions-runners/sense`).
@@ -192,6 +195,7 @@ impl Sampler {
                     Some("idle") => false,
                     _ => average >= CLAUDE_BUSY_CPU,
                 },
+                human: info.as_ref().is_some_and(|i| i.kind.as_deref().is_none_or(|kind| kind == "interactive")),
             });
         }
         self.claude_cpu.retain(|pid, _| processes.contains_key(pid));
@@ -300,6 +304,8 @@ fn repo_name(process: &Process) -> Option<String> {
 struct SessionFile {
     name: Option<String>,
     status: Option<String>,
+    /// "interactive" for a session a person opened.
+    kind: Option<String>,
 }
 
 /// Claude Code keeps `~/.claude/sessions/<pid>.json` with the session's name and whether it is busy.

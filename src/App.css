@@ -122,6 +122,51 @@ body,
   font-variant-numeric: tabular-nums;
 }
 
+.meter-value.high {
+  color: var(--high);
+}
+
+.meter-value.full {
+  color: var(--full);
+}
+
+.mini-track {
+  display: block;
+  width: 60px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--track);
+  overflow: hidden;
+}
+
+.mini-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.mini-fill.ok {
+  background: var(--ok);
+}
+
+.mini-fill.high {
+  background: var(--high);
+}
+
+.mini-fill.full {
+  background: var(--full);
+}
+
+.mini-spark {
+  display: block;
+  width: 60px;
+}
+
+.mini-spark .spark {
+  height: 16px;
+}
+
 .meter-track {
   height: 6px;
   border-radius: 6px;
@@ -283,7 +328,7 @@ body,
 .head {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .host {
@@ -292,11 +337,17 @@ body,
   gap: 8px;
 }
 
+/* Why: a 20px circle centred on the two header lines, like the close button of a macOS notification. */
 .close {
   display: inline-flex;
-  padding: 4px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  padding: 0;
   border: none;
-  border-radius: 6px;
+  border-radius: 50%;
   background: var(--track);
   color: var(--ink);
   cursor: pointer;

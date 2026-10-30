@@ -28,7 +28,10 @@ pub struct Candidate {
     pub bytes: u64,
 }
 
-pub fn measure() -> Cleanup {
+/// Measures every folder, writing each finished folder to `progress` so a restart picks up where it stopped.
+/// Why: a full measurement takes about four minutes, and a restart in that time (every code change in a dev run,
+/// a quit, a log-out) used to throw the work away, so `cleanup.json` was never written.
+pub fn measure(progress: Option<&Path>) -> Cleanup {
     let Some(home) = home_dir() else {
         return Cleanup { total: 0, top: Vec::new(), measured_at: now() };
     };
@@ -45,11 +48,24 @@ pub fn measure() -> Cleanup {
     .collect();
     find_build_folders(&home.join("git"), 0, &mut found);
 
-    let mut candidates: Vec<Candidate> = found
-        .into_iter()
-        .map(|path| Candidate { bytes: folder_size(&path), path: tilde(&path, &home) })
-        .filter(|c| c.bytes > 0)
-        .collect();
+    // Why: a folder deleted since the unfinished run must not be counted from the saved progress.
+    let wanted: Vec<String> = found.iter().map(|folder| tilde(folder, &home)).collect();
+    let mut candidates: Vec<Candidate> = progress.and_then(load_progress).unwrap_or_default();
+    candidates.retain(|c| wanted.contains(&c.path));
+    for folder in found {
+        let path = tilde(&folder, &home);
+        if candidates.iter().any(|c| c.path == path) {
+            continue;
+        }
+        candidates.push(Candidate { bytes: folder_size(&folder), path });
+        if let Some(file) = progress {
+            write_json(file, &candidates);
+        }
+    }
+    if let Some(file) = progress {
+        let _ = fs::remove_file(file);
+    }
+    candidates.retain(|c| c.bytes > 0);
     candidates.sort_by_key(|c| std::cmp::Reverse(c.bytes));
     let total = candidates.iter().map(|c| c.bytes).sum();
     candidates.truncate(TOP);
@@ -62,11 +78,23 @@ pub fn load(file: &Path) -> Option<Cleanup> {
 }
 
 pub fn save(file: &Path, cleanup: &Cleanup) {
+    write_json(file, cleanup);
+}
+
+/// Folders already measured by a run that did not finish.
+fn load_progress(file: &Path) -> Option<Vec<Candidate>> {
+    serde_json::from_slice(&fs::read(file).ok()?).ok()
+}
+
+/// Writes through a temporary file so a restart in the middle never leaves half a file behind.
+fn write_json<T: Serialize + ?Sized>(file: &Path, value: &T) {
     if let Some(dir) = file.parent() {
         let _ = fs::create_dir_all(dir);
     }
-    if let Ok(json) = serde_json::to_vec(cleanup) {
-        let _ = fs::write(file, json);
+    let Ok(json) = serde_json::to_vec(value) else { return };
+    let temp = file.with_extension("tmp");
+    if fs::write(&temp, json).is_ok() {
+        let _ = fs::rename(&temp, file);
     }
 }
 

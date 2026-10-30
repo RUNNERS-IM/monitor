@@ -22,6 +22,7 @@ const ISSUES_URL: &str = "https://github.com/RUNNERS-IM/monitor/issues";
 const REFRESH: Duration = Duration::from_secs(3);
 const CLEANUP_EVERY: Duration = Duration::from_secs(30 * 60);
 const CLEANUP_FILE: &str = "cleanup.json";
+const CLEANUP_PROGRESS_FILE: &str = "cleanup-progress.json";
 // Why: a slow computer stays slow for a while, so the same warning is repeated at most this often.
 const SLOW_NOTICE_EVERY: Duration = Duration::from_secs(30 * 60);
 const NOTICE_APPS: usize = 2;
@@ -359,7 +360,9 @@ pub fn run() {
             });
 
             let handle = app.handle().clone();
-            let saved = app.path().app_data_dir().ok().map(|dir| dir.join(CLEANUP_FILE));
+            let data_dir = app.path().app_data_dir().ok();
+            let saved = data_dir.as_ref().map(|dir| dir.join(CLEANUP_FILE));
+            let progress = data_dir.map(|dir| dir.join(CLEANUP_PROGRESS_FILE));
             std::thread::spawn(move || {
                 cleanup::run_in_background();
                 if let Some(found) = saved.as_deref().and_then(cleanup::load) {
@@ -368,7 +371,7 @@ pub fn run() {
                     std::thread::sleep(CLEANUP_EVERY.saturating_sub(age));
                 }
                 loop {
-                    let found = cleanup::measure();
+                    let found = cleanup::measure(progress.as_deref());
                     if let Some(file) = &saved {
                         cleanup::save(file, &found);
                     }

@@ -21,7 +21,7 @@ type Pressure = "normal" | "warn" | "critical";
 
 type AppKind = "app" | "build" | "simulator";
 type AppUse = { name: string; cpuPercent: number; memory: number; quittable: boolean; kind: AppKind; folder: string | null };
-type ClaudeSession = { pid: number; name: string | null; runningSecs: number; busy: boolean };
+type ClaudeSession = { pid: number; name: string | null; runningSecs: number; busy: boolean; human: boolean };
 type Runner = { name: string; busy: boolean; pausedUntil: number | null };
 
 type Snapshot = {
@@ -112,6 +112,15 @@ function Sparkline({ values, tone }: { values: number[]; tone: Level }) {
   );
 }
 
+/** The small bar in front of a summary number, so how full something is reads without opening the line. */
+function MiniBar({ value, tone }: { value: number; tone: Level }) {
+  return (
+    <span className="mini-track" aria-hidden>
+      <span className={`mini-fill ${tone}`} style={{ width: `${Math.min(value, 100)}%` }} />
+    </span>
+  );
+}
+
 /** What opens under a summary line: the graph (or bar) and the detail lines. */
 function Meter({ value, tone, history, details }: { value: number; tone: Level; history?: number[]; details: string[] }) {
   return (
@@ -177,6 +186,8 @@ function SummaryRow({
   icon,
   label,
   value,
+  tone,
+  gauge,
   badge,
   open,
   onToggle,
@@ -185,6 +196,9 @@ function SummaryRow({
   icon: LucideIcon;
   label: string;
   value: string;
+  /** Colours the number only when it is high, so a normal line stays plain. */
+  tone?: Level;
+  gauge?: React.ReactNode;
   badge?: { text: string; tone: Level };
   open: boolean;
   onToggle: () => void;
@@ -197,7 +211,8 @@ function SummaryRow({
         <Label icon={icon} text={label} />
         <span className="meter-right">
           {badge && <span className={`badge ${badge.tone}`}>{badge.text}</span>}
-          <span className="meter-value">{value}</span>
+          {gauge}
+          <span className={`meter-value ${tone && tone !== "ok" ? tone : ""}`}>{value}</span>
           <Chevron size={ICON_SIZE} strokeWidth={ICON_STROKE} className="chevron" aria-hidden />
         </span>
       </button>
@@ -314,12 +329,16 @@ function App() {
   const topMemory = snap.topMemory.map((app) => `${app.name} ${formatGb(app.memory)}`).join(", ");
   const idleRunners = snap.runners.filter((runner) => !runner.busy && !runner.pausedUntil).length;
   const busyRunners = snap.runners.filter((runner) => runner.busy && !runner.pausedUntil).length;
+  const people = snap.claudeSessions.filter((session) => session.human).length;
+  const jobs = snap.claudeSessions.length - people;
   const workValue = [
     ...(snap.heavyJob ? [t("summary.heavy")] : []),
-    t("summary.claude", { count: snap.claudeSessions.length }),
+    jobs > 0 ? t("summary.claudeWithJobs", { count: people, jobs }) : t("summary.claude", { count: people }),
     busyRunners > 0 ? t("summary.runnersBusy", { count: busyRunners }) : t("summary.runnersIdle", { count: idleRunners }),
   ].join(" · ");
-  const status = snap.slowMemory ? "slowMemory" : snap.slowCpu ? "slowCpu" : "fine";
+  const status = snap.slowMemory ? "slowMemory" : "slowCpu";
+  const cpuTone = level(snap.cpuPercent);
+  const diskTone = level(disk);
 
   return (
     <main ref={panelRef} className="panel">
@@ -327,7 +346,8 @@ function App() {
         <div>
           <div className="host">
             {snap.host}
-            <span className={`badge ${slow ? (snap.memoryPressure === "critical" ? "full" : "high") : "ok"}`}>{t(`status.${status}`)}</span>
+            {/* Why: a "normal" badge on every open said nothing, so the badge shows only when something is wrong. */}
+            {slow && <span className={`badge ${snap.memoryPressure === "critical" ? "full" : "high"}`}>{t(`status.${status}`)}</span>}
           </div>
           <div className="os">{snap.os}</div>
         </div>
@@ -343,12 +363,18 @@ function App() {
           icon={Cpu}
           label={t("panel.cpu")}
           value={`${Math.round(snap.cpuPercent)}%`}
+          tone={cpuTone}
+          gauge={
+            <span className="mini-spark">
+              <Sparkline values={snap.cpuHistory} tone={cpuTone} />
+            </span>
+          }
           open={open === "cpu"}
           onToggle={() => toggle("cpu")}
         >
           <Meter
             value={snap.cpuPercent}
-            tone={level(snap.cpuPercent)}
+            tone={cpuTone}
             history={snap.cpuHistory}
             details={[topCpu ? t("panel.top", { apps: topCpu }) : t("panel.cpuDetail")]}
           />
@@ -357,7 +383,9 @@ function App() {
           icon={MemoryStick}
           label={t("panel.memory")}
           value={`${Math.round(memory)}%`}
-          badge={{ text: t(`panel.pressure.${snap.memoryPressure}`), tone: memoryTone }}
+          tone={memoryTone}
+          gauge={<MiniBar value={memory} tone={memoryTone} />}
+          badge={snap.memoryPressure === "normal" ? undefined : { text: t(`panel.pressure.${snap.memoryPressure}`), tone: memoryTone }}
           open={open === "memory"}
           onToggle={() => toggle("memory")}
         >
@@ -368,10 +396,18 @@ function App() {
             details={[`${formatGb(snap.memoryUsed)} / ${formatGb(snap.memoryTotal)}`, t("panel.top", { apps: topMemory })]}
           />
         </SummaryRow>
-        <SummaryRow icon={HardDrive} label={t("panel.disk")} value={`${Math.round(disk)}%`} open={open === "disk"} onToggle={() => toggle("disk")}>
+        <SummaryRow
+          icon={HardDrive}
+          label={t("panel.disk")}
+          value={`${Math.round(disk)}%`}
+          tone={diskTone}
+          gauge={<MiniBar value={disk} tone={diskTone} />}
+          open={open === "disk"}
+          onToggle={() => toggle("disk")}
+        >
           <Meter
             value={disk}
-            tone={level(disk)}
+            tone={diskTone}
             details={[
               `${formatGb(snap.diskUsed)} / ${formatGb(snap.diskTotal)} · ${t("panel.diskFree", { free: formatGb(snap.diskTotal - snap.diskUsed) })}`,
             ]}
@@ -393,7 +429,7 @@ function App() {
             {snap.claudeSessions.map((session) => (
               <Row
                 key={session.pid}
-                text={t("panel.claudeRow", { name: session.name ?? "claude", time: formatDuration(session.runningSecs) })}
+                text={t("panel.claudeRow", { name: session.name ?? (session.human ? "claude" : t("panel.claudeJob")), time: formatDuration(session.runningSecs) })}
                 state={t(session.busy ? "panel.claudeBusy" : "panel.claudeIdle")}
                 tone={session.busy ? "busy" : "quiet"}
               />
