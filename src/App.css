@@ -108,15 +108,21 @@ body,
   background: var(--rm-separator);
 }
 
-/* Summary rows: the label keeps its width and a long value (the Work row) is cut with an ellipsis instead. */
+/* Summary rows: the label keeps its width and a long value (the Work row) is cut with an ellipsis instead.
+   Why: the trailing part fills the rest of the row so every chevron ends at the same right edge. */
 .summary-row .rm-label {
-  flex: 1 0 auto;
+  flex: 0 0 auto;
   max-width: 50%;
 }
 
 .summary-row .rm-trailing {
+  flex: 1 1 auto;
   min-width: 0;
   justify-content: flex-end;
+}
+
+.summary-row .value {
+  text-align: right;
 }
 
 .summary-row .value {
