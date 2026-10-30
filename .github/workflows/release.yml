@@ -287,12 +287,26 @@ jobs:
               "linux-x86_64": {url: $linux, signature: $linuxsig}}}' > files/latest.json
           jq '.platforms | keys' files/latest.json
 
+      # 릴리스 본문은 저장소의 RELEASE_NOTES.md("## 한국어" · "## English" 두 칸의 "- " 목록)다. 앱의 업데이트 창이
+      # 이 본문에서 자기 언어 칸의 목록만 읽어 "바뀐 점"으로 보여 준다. 설치 안내는 그 뒤 다른 칸에 붙여서 목록에
+      # 섞이지 않게 한다. 버전 올리기(scripts/bump-release.sh)가 비었거나 지난 판 그대로인 파일을 막는다.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.version.outputs.sha }}
+          path: repo
+          sparse-checkout: RELEASE_NOTES.md
+          sparse-checkout-cone-mode: false
+
       - name: Publish the GitHub release
         run: |
           set -euo pipefail
+          {
+            cat repo/RELEASE_NOTES.md
+            printf '\n## Downloads\n\nmacOS (Apple silicon, Intel), Windows, Linux. The Windows installer is not code signed yet, so Windows shows a SmartScreen warning the first time.\n'
+          } > body.md
           ls -la files
           gh release create "v$VERSION" files/* \
             --repo "$GITHUB_REPOSITORY" \
             --target "${{ needs.version.outputs.sha }}" \
             --title "Monitor $VERSION" \
-            --notes "macOS (Apple silicon, Intel), Windows, Linux. The Windows installer is not code signed yet, so Windows shows a SmartScreen warning the first time."
+            --notes-file body.md

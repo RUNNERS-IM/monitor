@@ -67,9 +67,28 @@ For an Intel Mac build on Apple silicon, also run `pnpm native --target x86_64-a
 - `electron/main/` is the main process (tray, panel window, sampling loop, updates), `electron/preload/` the bridge the page talks through, `src/` the panel and About window.
 - `native/` is the one native module (napi-rs): system readings, the cleanup scan, quitting an app, pausing a runner and the tray picture.
 - Screen text lives in `locales/`; the page and the main process read the same files. Check them with `pnpm check:locales`.
-- Debug runs take `MONITOR_OPEN=panel|about`, `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1` (made-up names for screenshots) and `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup`.
+- Debug runs take `MONITOR_OPEN=panel|about|update|update-progress` (the last two show the update window with made-up notes), `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1` (made-up names for screenshots) and `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup`.
 
 So far Monitor has been built and checked on macOS (Apple silicon) only. Windows and Linux builds have not been tried yet.
+
+## Releasing
+
+Merging into the `release` branch builds and publishes a release (`.github/workflows/release.yml`). Before that, write
+this release's changes in `RELEASE_NOTES.md`. It becomes the GitHub release text, and the update window shows its list
+under "What's new":
+
+```md
+## 한국어
+
+- 한 줄에 바뀐 점 하나씩, 합니다체로 씁니다.
+
+## English
+
+- One change per line.
+```
+
+Korean screens read the `## 한국어` list, every other language the `## English` one. The version bump
+(`scripts/bump-release.sh`) stops when either list is empty or the file is the same as the last release's.
 
 ## Privacy
 

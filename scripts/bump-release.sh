@@ -16,6 +16,27 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
+# 바뀐 점(RELEASE_NOTES.md)이 GitHub 릴리스 본문이 되고, 앱의 업데이트 창이 그 목록을 보여 준다.
+# 형식: "## 한국어" 와 "## English" 두 칸, 칸마다 "- " 로 시작하는 줄에 바뀐 점 하나씩(한국어는 합니다체).
+# 비었거나 지난 릴리스의 글 그대로면 멈춘다. 고치지 않고 내면 업데이트 창이 옛 바뀐 점을 보여 주기 때문이다.
+NOTES="$REPO_ROOT/RELEASE_NOTES.md"
+python3 - "$NOTES" <<'PY'
+import re, sys
+text = open(sys.argv[1], encoding="utf-8").read() if __import__("os").path.exists(sys.argv[1]) else ""
+for heading in ("한국어", "English"):
+    m = re.search(rf"(?m)^##\s+{heading}\s*$(.*?)(?=^##\s|\Z)", text, re.S)
+    items = [l for l in (m.group(1).splitlines() if m else []) if re.match(r"^\s*-\s+\S", l)]
+    if not items:
+        sys.exit(f"RELEASE_NOTES.md: '## {heading}' 아래에 '- ' 줄이 없습니다. 이번 판의 바뀐 점을 적어 주세요.")
+PY
+LAST_TAG=$(git -C "$REPO_ROOT" tag --list 'v*' --sort=-v:refname | head -1)
+if [ -n "$LAST_TAG" ] && git -C "$REPO_ROOT" cat-file -e "$LAST_TAG:RELEASE_NOTES.md" 2>/dev/null; then
+  if git -C "$REPO_ROOT" show "$LAST_TAG:RELEASE_NOTES.md" | cmp -s - "$NOTES"; then
+    echo "RELEASE_NOTES.md 가 지난 릴리스($LAST_TAG)와 같습니다. 이번 판의 바뀐 점으로 고쳐 주세요." >&2
+    exit 1
+  fi
+fi
+
 YEAR=$(TZ=Asia/Seoul date +%Y)
 MMDD=$(TZ=Asia/Seoul date +%m%d)
 BASE="2.$((YEAR % 10)).$MMDD"

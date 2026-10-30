@@ -67,9 +67,27 @@ pnpm dist           # 지금 운영체제용 설치 파일을 dist.noindex/ 에 
 - `electron/main/` 은 메인 프로세스(트레이, 패널 창, 3초마다 재기, 업데이트), `electron/preload/` 는 화면이 메인 프로세스와 말하는 통로, `src/` 는 패널과 정보 창입니다.
 - `native/` 는 하나뿐인 네이티브 모듈(napi-rs)입니다. 컴퓨터 사용량 읽기, 정리할 거리 재기, 앱 끄기, 러너 멈추기, 트레이 그림 그리기를 합니다.
 - 화면 글자는 `locales/` 에 모여 있고 화면과 메인 프로세스가 같은 파일을 읽습니다. `pnpm check:locales` 로 빠진 키를 확인합니다.
-- 개발 실행은 `MONITOR_OPEN=panel|about`, `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1`(스크린샷용 가짜 이름), `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup` 를 받습니다.
+- 개발 실행은 `MONITOR_OPEN=panel|about|update|update-progress`(뒤의 둘은 가짜 바뀐 점으로 업데이트 창을 띄움), `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1`(스크린샷용 가짜 이름), `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup` 를 받습니다.
 
 아직 macOS(애플 실리콘)에서만 빌드하고 확인했습니다. 윈도우·리눅스 판은 아직 시험해 보지 않았습니다.
+
+## 배포
+
+`release` 브랜치에 합치면 배포 판을 빌드해 올립니다(`.github/workflows/release.yml`). 그 전에 이번 판의 바뀐 점을
+`RELEASE_NOTES.md` 에 적습니다. 이 파일이 GitHub 릴리스 본문이 되고, 업데이트 창의 "바뀐 점" 칸이 그 목록을 보여 줍니다.
+
+```md
+## 한국어
+
+- 한 줄에 바뀐 점 하나씩, 합니다체로 씁니다.
+
+## English
+
+- One change per line.
+```
+
+한국어 화면은 `## 한국어` 목록을, 다른 언어는 모두 `## English` 목록을 읽습니다. 버전 올리기(`scripts/bump-release.sh`)는
+두 목록 중 하나가 비었거나 지난 판의 파일과 같으면 멈춥니다.
 
 ## 개인정보
 
