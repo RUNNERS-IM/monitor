@@ -1,6 +1,6 @@
 [package]
 name = "monitor-native"
-version = "2.6.1030+2"
+version = "2.6.1030+3"
 description = "Monitor's one native module: system readings, the cleanup scan, quit / pause actions and the tray picture"
 authors = ["RUNNERS-IM"]
 license-file = "../LICENSE.md"

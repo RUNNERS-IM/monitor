@@ -2,7 +2,7 @@
   "name": "monitor",
   "productName": "Monitor",
   "private": true,
-  "version": "2.6.1030+2",
+  "version": "2.6.1030+3",
   "description": "Watch CPU, memory, disk, claude sessions and runners from the menu bar",
   "author": "RUNNERS",
   "homepage": "https://github.com/RUNNERS-IM/monitor",
