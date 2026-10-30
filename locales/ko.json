@@ -52,7 +52,7 @@
   "slow.swap": "스왑 {{size}} · 메모리 대신 디스크를 쓰는 중",
   "slow.quit": "끄기",
   "slow.quitNote": "끄기는 ⌘Q와 같아서 저장할지 먼저 묻습니다.",
-  "slow.spotlight": "Spotlight 색인이 바쁩니다. ‘시스템 설정’ → ‘Spotlight’ → ‘검색 개인정보 보호’에 ~/git을 넣으면 줄어듭니다.",
+  "slow.spotlight": "Spotlight 색인이 바쁩니다. 줄이려면 ‘시스템 설정’ → ‘Spotlight’ → ‘검색 개인정보 보호’에 ~/git을 넣으세요.",
   "runner.pause": "1시간 멈춤",
   "runner.paused": "멈춤 · {{time}}에 다시 켜짐",
   "runner.pauseBusyNote": "빌드 중인 러너를 멈추면 그 빌드는 취소됩니다.",
