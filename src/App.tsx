@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { LogicalSize, getCurrentWindow } from "@tauri-apps/api/window";
 import { Cpu, HardDrive, MemoryStick, SquareTerminal, Workflow, type LucideIcon } from "lucide-react";
+import { t } from "./i18n";
 import "./App.css";
 
 type RunnerState = "none" | "idle" | "busy";
@@ -24,11 +25,6 @@ const PANEL_WIDTH = 340;
 const ICON_STROKE = 1.5;
 const ICON_SIZE = 14;
 
-const RUNNER_LABEL: Record<RunnerState, string> = {
-  none: "없음",
-  idle: "대기",
-  busy: "빌드 중",
-};
 
 function formatGb(bytes: number): string {
   return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
@@ -114,7 +110,7 @@ function App() {
   if (!snap) {
     return (
       <main ref={panelRef} className="panel loading">
-        불러오는 중
+        {t("panel.loading")}
       </main>
     );
   }
@@ -129,28 +125,28 @@ function App() {
         <div className="os">{snap.os}</div>
       </header>
       <section>
-        <h2 className="section-head">자원</h2>
+        <h2 className="section-head">{t("panel.resources")}</h2>
         <div className="card">
-          <Meter icon={Cpu} label="CPU" value={snap.cpuPercent} detail="모든 코어 평균" />
+          <Meter icon={Cpu} label={t("panel.cpu")} value={snap.cpuPercent} detail={t("panel.cpuDetail")} />
           <Meter
             icon={MemoryStick}
-            label="메모리"
+            label={t("panel.memory")}
             value={memory}
             detail={`${formatGb(snap.memoryUsed)} / ${formatGb(snap.memoryTotal)}`}
           />
-          <Meter icon={HardDrive} label="디스크" value={disk} detail={`${formatGb(snap.diskUsed)} / ${formatGb(snap.diskTotal)}`} />
+          <Meter icon={HardDrive} label={t("panel.disk")} value={disk} detail={`${formatGb(snap.diskUsed)} / ${formatGb(snap.diskTotal)}`} />
         </div>
       </section>
       <section>
-        <h2 className="section-head">작업</h2>
+        <h2 className="section-head">{t("panel.work")}</h2>
         <div className="card">
           <div className="fact">
-            <Label icon={SquareTerminal} text="claude 세션" />
-            <strong>{snap.claudeSessions}개</strong>
+            <Label icon={SquareTerminal} text={t("panel.claudeSessions")} />
+            <strong>{t("panel.sessionCount", { count: snap.claudeSessions })}</strong>
           </div>
           <div className="fact">
-            <Label icon={Workflow} text="GitHub 러너" />
-            <strong className={`runner ${snap.runner}`}>{RUNNER_LABEL[snap.runner]}</strong>
+            <Label icon={Workflow} text={t("panel.runner")} />
+            <strong className={`runner ${snap.runner}`}>{t(`runner.${snap.runner}`)}</strong>
           </div>
         </div>
       </section>

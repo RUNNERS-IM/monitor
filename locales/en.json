@@ -1,0 +1,22 @@
+{
+  "menu.about": "About Monitor",
+  "menu.checkUpdates": "Check for Updates…",
+  "menu.showUsage": "Show Usage",
+  "menu.settings": "Settings…",
+  "menu.help": "Help & Feedback",
+  "menu.quit": "Quit Monitor",
+  "tray.tooltip": "Monitor · Memory {{value}}",
+  "panel.loading": "Loading",
+  "panel.resources": "Resources",
+  "panel.work": "Work",
+  "panel.cpu": "CPU",
+  "panel.cpuDetail": "Average of all cores",
+  "panel.memory": "Memory",
+  "panel.disk": "Disk",
+  "panel.claudeSessions": "claude sessions",
+  "panel.sessionCount": "{{count}}",
+  "panel.runner": "GitHub runner",
+  "runner.none": "None",
+  "runner.idle": "Idle",
+  "runner.busy": "Building"
+}

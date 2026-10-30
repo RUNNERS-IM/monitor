@@ -1,15 +1,19 @@
+mod i18n;
 mod snapshot;
 
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
 use snapshot::{Sampler, Snapshot};
-use tauri::menu::{Menu, MenuItem};
+use i18n::t;
+use tauri::menu::{AboutMetadataBuilder, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{Manager, State, WindowEvent};
+use tauri_plugin_opener::OpenerExt;
 use tauri_plugin_positioner::{Position, WindowExt};
 
 const TRAY_ID: &str = "monitor";
+const ISSUES_URL: &str = "https://github.com/RUNNERS-IM/monitor/issues";
 const REFRESH: Duration = Duration::from_secs(3);
 // Why: the tray click that opens the panel also sends it a focus-lost event right away, so blur is ignored this long after opening.
 const BLUR_GRACE: Duration = Duration::from_millis(400);
@@ -73,6 +77,7 @@ fn toggle_panel(app: &tauri::AppHandle) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_positioner::init())
+        .plugin(tauri_plugin_opener::init())
         .manage(PanelShownAt::default())
         .manage(Mutex::new(Sampler::new().expect("failed to open system counters")))
         .invoke_handler(tauri::generate_handler![snapshot, translucent])
@@ -84,8 +89,38 @@ pub fn run() {
             let panel = app.get_webview_window("main").expect("main window is declared in tauri.conf.json");
             app.manage(Translucent(apply_blur(&panel)));
 
-            let quit = MenuItem::with_id(app, "quit", "Monitor 끝내기", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&quit])?;
+            // Why: Split, Prompt and Monitor share this menu order: about, updates, app feature, settings, help, quit.
+            let about = PredefinedMenuItem::about(
+                app,
+                Some(&t("menu.about", &[])),
+                Some(
+                    AboutMetadataBuilder::new()
+                        .name(Some("Monitor"))
+                        .version(Some(app.package_info().version.to_string()))
+                        .copyright(Some("RUNNERS"))
+                        .build(),
+                ),
+            )?;
+            // Why: there is no updater or settings screen yet, so these stay visible but disabled to keep the shared order.
+            let updates = MenuItem::with_id(app, "updates", t("menu.checkUpdates", &[]), false, None::<&str>)?;
+            let usage = MenuItem::with_id(app, "usage", t("menu.showUsage", &[]), true, None::<&str>)?;
+            let settings = MenuItem::with_id(app, "settings", t("menu.settings", &[]), false, Some("CmdOrCtrl+,"))?;
+            let help = MenuItem::with_id(app, "help", t("menu.help", &[]), true, None::<&str>)?;
+            let quit = MenuItem::with_id(app, "quit", t("menu.quit", &[]), true, Some("CmdOrCtrl+Q"))?;
+            let menu = Menu::with_items(
+                app,
+                &[
+                    &about,
+                    &updates,
+                    &PredefinedMenuItem::separator(app)?,
+                    &usage,
+                    &PredefinedMenuItem::separator(app)?,
+                    &settings,
+                    &help,
+                    &PredefinedMenuItem::separator(app)?,
+                    &quit,
+                ],
+            )?;
             let tray = TrayIconBuilder::with_id(TRAY_ID);
             // Why: on macOS the menu bar shows only the memory number, like Stats; other trays need a picture to be visible.
             #[cfg(not(target_os = "macos"))]
@@ -93,10 +128,13 @@ pub fn run() {
             tray.tooltip("Monitor")
                 .menu(&menu)
                 .show_menu_on_left_click(false)
-                .on_menu_event(|app, event| {
-                    if event.id.as_ref() == "quit" {
-                        app.exit(0);
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "usage" => toggle_panel(app),
+                    "help" => {
+                        let _ = app.opener().open_url(ISSUES_URL, None::<&str>);
                     }
+                    "quit" => app.exit(0),
+                    _ => {}
                 })
                 .on_tray_icon_event(|tray, event| {
                     tauri_plugin_positioner::on_tray_event(tray.app_handle(), &event);
@@ -118,7 +156,7 @@ pub fn run() {
                 if let Some(tray) = handle.tray_by_id(TRAY_ID) {
                     let text = format!("{}%", snap.memory_percent().round());
                     let _ = tray.set_title(Some(&text));
-                    let _ = tray.set_tooltip(Some(&format!("Monitor · 메모리 {text}")));
+                    let _ = tray.set_tooltip(Some(&t("tray.tooltip", &[("value", &text)])));
                 }
                 std::thread::sleep(REFRESH);
             });

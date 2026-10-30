@@ -1,0 +1,22 @@
+{
+  "menu.about": "Monitor 정보",
+  "menu.checkUpdates": "업데이트 확인…",
+  "menu.showUsage": "사용량 보기",
+  "menu.settings": "설정…",
+  "menu.help": "도움말 · 피드백",
+  "menu.quit": "Monitor 끝내기",
+  "tray.tooltip": "Monitor · 메모리 {{value}}",
+  "panel.loading": "불러오는 중",
+  "panel.resources": "자원",
+  "panel.work": "작업",
+  "panel.cpu": "CPU",
+  "panel.cpuDetail": "모든 코어 평균",
+  "panel.memory": "메모리",
+  "panel.disk": "디스크",
+  "panel.claudeSessions": "claude 세션",
+  "panel.sessionCount": "{{count}}개",
+  "panel.runner": "GitHub 러너",
+  "runner.none": "없음",
+  "runner.idle": "대기",
+  "runner.busy": "빌드 중"
+}
