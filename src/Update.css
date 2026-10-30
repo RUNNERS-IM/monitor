@@ -1,48 +1,58 @@
-/* Update question window: the menu look (runners-menu.css) at alert size. The OS draws the menu material behind it
-   on macOS and Windows; Linux gets the solid menu colour from runners-menu.css. */
-:root[data-window="update"] {
-  color: var(--rm-text);
-  font-size: var(--rm-font);
+/* Update window: Split's layout (icon on top, centred text, "What's new" box, full-width buttons) with the shared
+   window values from runners-window.css (user decision `[RUNNERS] 네 앱 화면 값 통일` 2B). The OS draws its material
+   behind the window on macOS and Windows; Linux gets the solid window colour. */
+:root[data-window="update"] body {
+  background: var(--rw-window-bg);
+}
+
+:root[data-window="update"][data-translucent="true"] body {
+  background: transparent;
 }
 
 .update {
   box-sizing: border-box;
-  padding: 20px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--rw-pad) 24px 20px;
+  text-align: center;
   /* Why: the window has no title bar, so the whole background moves it. */
   -webkit-app-region: drag;
 }
 
-.update-head {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-}
-
 .update-icon {
-  flex: none;
-  width: 52px;
-  height: 52px;
-}
-
-.update-text {
-  min-width: 0;
-  padding-top: 4px;
+  width: 64px;
+  height: 64px;
 }
 
 .update-title {
-  margin: 0;
-  font-size: 13px;
+  margin: 12px 0 0;
+  font-size: var(--rw-font);
   font-weight: 600;
   line-height: 18px;
 }
 
 .update-ask {
   margin: 4px 0 0;
-  line-height: 1.4;
+  font-size: var(--rw-font);
+  line-height: 1.45;
 }
 
-.rm-group.update-notes {
-  margin: 16px 0 0;
+.update-notes {
+  align-self: stretch;
+  margin-top: 16px;
+  padding: 10px 0;
+  border: var(--rw-border) solid var(--rw-separator);
+  border-radius: 10px;
+  background: var(--rw-box-bg);
+  text-align: start;
+}
+
+.update-notes-title {
+  margin: 0 14px 6px;
+  font-size: var(--rw-font-small);
+  font-weight: 600;
+  color: var(--rw-text-secondary);
 }
 
 .update-list {
@@ -51,10 +61,12 @@
   margin: 0;
   padding: 0 14px 0 30px;
   overflow-y: auto;
+  font-size: var(--rw-font);
   line-height: 1.45;
   -webkit-app-region: no-drag;
 }
 
+/* Why: a list that goes on below the box fades out at the bottom, so the cut line reads as "scrolls". */
 .update-list.more {
   -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
   mask-image: linear-gradient(to bottom, #000 calc(100% - 16px), transparent);
@@ -66,68 +78,44 @@
 
 .update-buttons {
   display: flex;
-  justify-content: flex-end;
+  align-self: stretch;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
-.update-button {
-  min-width: 84px;
-  height: 28px;
-  padding: 0 14px;
-  border: none;
-  border-radius: 6px;
-  background: var(--rm-hover);
-  color: var(--rm-text);
-  font: inherit;
+.update-buttons .rw-button {
+  flex: 1;
   -webkit-app-region: no-drag;
 }
 
-.update-button:hover {
-  background: var(--rm-separator);
-}
-
-.update-button.default {
-  background: var(--rm-accent);
-  color: #fff;
-  font-weight: 600;
-}
-
-.update-button:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--rm-accent) 50%, transparent);
-  outline-offset: 1px;
-}
-
-.update-button:disabled {
-  opacity: 0.5;
-}
-
-/* While downloading, a bar as tall and round as the buttons stands where they go (shared rule, 1B). */
+/* While downloading, a bar as tall and round as the buttons stands where they go (progress decision 1B). */
 .update-progress {
   display: flex;
+  align-self: stretch;
   align-items: center;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .update-progress-track {
   flex: 1;
-  height: 28px;
-  border-radius: 6px;
-  background: var(--rm-hover);
+  height: var(--rw-button-height);
+  border-radius: var(--rw-small-radius);
+  background: var(--rw-control-bg);
   overflow: hidden;
 }
 
 .update-progress-fill {
   height: 100%;
-  background: var(--rm-accent);
+  background: var(--rw-accent);
   transition: width 0.3s ease;
 }
 
 .update-progress-text {
   flex: none;
   min-width: 96px;
-  text-align: right;
-  color: var(--rm-text-secondary);
+  text-align: end;
+  font-size: var(--rw-font);
+  color: var(--rw-text-secondary);
   font-variant-numeric: tabular-nums;
 }
