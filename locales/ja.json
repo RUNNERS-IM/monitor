@@ -70,6 +70,8 @@
   "about.line": "Monitor {{version}} · 無料",
   "about.website": "Webサイト",
   "about.license": "© 2026 RUNNERS. All rights reserved.",
+  "about.notices": "オープンソースの表記",
+  "about.close": "閉じる",
   "about.get": "入手",
   "update.latest": "Monitor {{version}} は最新です。",
   "update.installing": "バージョン {{version}} をインストールして Monitor を再起動します。",

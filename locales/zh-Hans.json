@@ -70,6 +70,8 @@
   "about.line": "Monitor {{version}} · 免费",
   "about.website": "网站",
   "about.license": "© 2026 RUNNERS. All rights reserved.",
+  "about.notices": "开源声明",
+  "about.close": "关闭",
   "about.get": "获取",
   "update.latest": "Monitor {{version}} 已是最新版本。",
   "update.installing": "正在安装版本 {{version}} 并重新启动 Monitor。",

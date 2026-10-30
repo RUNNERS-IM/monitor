@@ -70,6 +70,8 @@
   "about.line": "Monitor {{version}} · free",
   "about.website": "Website",
   "about.license": "© 2026 RUNNERS. All rights reserved.",
+  "about.notices": "Open Source Notices",
+  "about.close": "Close",
   "about.get": "Get",
   "update.latest": "Monitor {{version}} is up to date.",
   "update.installing": "Installing version {{version}} and restarting Monitor.",

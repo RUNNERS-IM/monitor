@@ -1,5 +1,6 @@
 // Monitor's About window, laid out like Split's: app icon, name, "version · free and open source", Website and
-// GitHub buttons, the RUNNERS app cards, then the license and icon credit lines. It replaces the native macOS about panel, which cannot hold the cards (shared spec in _docs/작업 가이드/공통.md).
+// GitHub buttons, the RUNNERS app cards, then "© RUNNERS · Open Source Notices", which opens the notices in a sheet
+// (same layout as Split's). It replaces the native macOS about panel, which cannot hold the cards (shared spec in _docs/작업 가이드/공통.md).
 import { useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getVersion } from "@tauri-apps/api/app";
@@ -19,17 +20,23 @@ const GITHUB = "https://github.com/RUNNERS-IM/monitor";
 
 export default function About() {
   const [version, setVersion] = useState("");
+  const [notices, setNotices] = useState<string | null>(null);
   const root = useRef<HTMLElement>(null);
   const groups = useMemo(() => loadRunnersAppGroups("monitor"), []);
 
   useEffect(() => {
     getVersion().then(setVersion).catch(() => undefined);
+    // Why: a debug run can open the notices sheet at launch (`VITE_MONITOR_EXPAND=notices`) so it can be captured.
+    if (import.meta.env.DEV && import.meta.env.VITE_MONITOR_EXPAND === "notices") void openNotices(setNotices);
     invoke<boolean>("translucent").then((on) => {
       document.documentElement.dataset.translucent = String(on);
     });
     // Why: a small utility window closes with Escape, like other macOS about windows.
+    // Why: with the notices sheet open, Escape closes only the sheet, like a macOS sheet.
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") getCurrentWindow().close();
+      if (event.key !== "Escape") return;
+      if (document.querySelector(".notices")) setNotices(null);
+      else getCurrentWindow().close();
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
@@ -72,9 +79,49 @@ export default function About() {
       </header>
       <RunnersApps groups={groups} locale={locale} onOpen={(url) => void openUrl(url)} />
       <footer className="about-credit">
-        <p>{t("about.license")}</p>
-        <p>Icons: Lucide (ISC License)</p>
+        {t("about.license")} ·{" "}
+        <button type="button" className="about-notices-link" onClick={() => void openNotices(setNotices)}>
+          {t("about.notices")}
+        </button>
       </footer>
+      {notices !== null && <NoticesSheet text={notices} onClose={() => setNotices(null)} />}
     </main>
+  );
+}
+
+/** Loads THIRD_PARTY_NOTICES.md only when asked, so the 600 KB of notices does not slow down opening the window. */
+async function openNotices(show: (text: string) => void) {
+  const file = await import("../THIRD_PARTY_NOTICES.md?raw");
+  show(file.default);
+}
+
+/** Sheet over the About window, like Split's: title, scrolling notices with "#" lines in bold, and a Close button. */
+function NoticesSheet({ text, onClose }: { text: string; onClose: () => void }) {
+  const blocks = useMemo(() => text.split(/\n(?=# )/), [text]);
+  return (
+    <div className="notices-backdrop" onClick={onClose}>
+      <section className="notices" role="dialog" aria-modal="true" aria-labelledby="notices-title" onClick={(e) => e.stopPropagation()}>
+        <h2 id="notices-title" className="notices-title">
+          {t("about.notices")}
+        </h2>
+        <div className="notices-body">
+          {blocks.map((block, index) => {
+            const [first, ...rest] = block.split("\n");
+            const heading = first.startsWith("# ");
+            return (
+              <div key={index} className="notices-block">
+                {heading ? <h3>{first.slice(2)}</h3> : <p>{first}</p>}
+                <p>{rest.join("\n").trim()}</p>
+              </div>
+            );
+          })}
+        </div>
+        <div className="notices-actions">
+          <button type="button" className="notices-close" onClick={onClose}>
+            {t("about.close")}
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }

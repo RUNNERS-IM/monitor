@@ -70,6 +70,8 @@
   "about.line": "Monitor {{version}} · gratis",
   "about.website": "Situs Web",
   "about.license": "© 2026 RUNNERS. All rights reserved.",
+  "about.notices": "Pemberitahuan sumber terbuka",
+  "about.close": "Tutup",
   "about.get": "Dapatkan",
   "update.latest": "Monitor {{version}} sudah versi terbaru.",
   "update.installing": "Memasang versi {{version}} dan memulai ulang Monitor.",

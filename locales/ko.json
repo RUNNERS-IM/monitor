@@ -70,6 +70,8 @@
   "about.line": "Monitor {{version}} · 무료",
   "about.website": "웹사이트",
   "about.license": "© 2026 RUNNERS. All rights reserved.",
+  "about.notices": "오픈소스 고지",
+  "about.close": "닫기",
   "about.get": "받기",
   "update.latest": "최신 버전입니다 (Monitor {{version}}).",
   "update.installing": "새 버전({{version}})을 설치하고 Monitor를 다시 켭니다.",

@@ -70,6 +70,8 @@
   "about.line": "Monitor {{version}} · मुफ़्त",
   "about.website": "वेबसाइट",
   "about.license": "© 2026 RUNNERS. All rights reserved.",
+  "about.notices": "ओपन सोर्स सूचनाएँ",
+  "about.close": "बंद करें",
   "about.get": "पाएं",
   "update.latest": "Monitor {{version}} नवीनतम है।",
   "update.installing": "संस्करण {{version}} इंस्टॉल करके Monitor फिर से शुरू हो रहा है।",
