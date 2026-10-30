@@ -57,5 +57,8 @@
   "popup.close": "닫기 (나아질 때까지 다시 안 뜸)",
   "app.build": "빌드 중 · {{amount}}",
   "app.buildIn": "{{folder}} 빌드 중 · {{amount}}",
-  "app.simulator": "시뮬레이터 · {{amount}}"
+  "app.simulator": "시뮬레이터 · {{amount}}",
+  "summary.heavy": "무거운 작업 1",
+  "panel.heavyRow": "{{name}} · {{command}}",
+  "panel.heavyNote": "무거운 작업은 한 번에 하나씩 돕니다. 다른 세션은 이게 끝날 때까지 기다립니다."
 }

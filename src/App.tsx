@@ -41,6 +41,7 @@ type Snapshot = {
   topCpu: AppUse[];
   topMemory: AppUse[];
   claudeSessions: ClaudeSession[];
+  heavyJob: { name: string; command: string; runningSecs: number } | null;
   runners: Runner[];
   popup: boolean;
 };
@@ -314,6 +315,7 @@ function App() {
   const idleRunners = snap.runners.filter((runner) => !runner.busy && !runner.pausedUntil).length;
   const busyRunners = snap.runners.filter((runner) => runner.busy && !runner.pausedUntil).length;
   const workValue = [
+    ...(snap.heavyJob ? [t("summary.heavy")] : []),
     t("summary.claude", { count: snap.claudeSessions.length }),
     busyRunners > 0 ? t("summary.runnersBusy", { count: busyRunners }) : t("summary.runnersIdle", { count: idleRunners }),
   ].join(" · ");
@@ -376,6 +378,16 @@ function App() {
           />
         </SummaryRow>
         <SummaryRow icon={SquareTerminal} label={t("panel.work")} value={workValue} open={open === "work"} onToggle={() => toggle("work")}>
+          {snap.heavyJob && (
+            <div className="group">
+              <Row
+                text={t("panel.heavyRow", { name: snap.heavyJob.name || "claude", command: snap.heavyJob.command })}
+                state={formatDuration(snap.heavyJob.runningSecs)}
+                tone="busy"
+              />
+              <div className="meter-detail">{t("panel.heavyNote")}</div>
+            </div>
+          )}
           <div className="group">
             {snap.claudeSessions.length === 0 && <div className="empty">{t("panel.claudeEmpty")}</div>}
             {snap.claudeSessions.map((session) => (

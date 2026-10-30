@@ -53,6 +53,8 @@ pub struct Snapshot {
     pub top_memory: Vec<AppUse>,
     pub claude_sessions: Vec<ClaudeSession>,
     pub runners: Vec<Runner>,
+    /// The heavy job holding the shared turn (`heavy-run` in claude-config), if any.
+    pub heavy_job: Option<HeavyJob>,
     /// The panel was opened by itself because the computer turned slow; set by the app, not by sampling.
     pub popup: bool,
 }
@@ -224,6 +226,7 @@ impl Sampler {
             top_memory,
             claude_sessions,
             runners,
+            heavy_job: heavy_job(),
             popup: false,
         }
     }
@@ -305,6 +308,37 @@ fn claude_session_file(pid: u32) -> Option<SessionFile> {
     let home = std::env::var_os(if cfg!(windows) { "USERPROFILE" } else { "HOME" })?;
     let path = PathBuf::from(home).join(".claude").join("sessions").join(format!("{pid}.json"));
     serde_json::from_slice(&std::fs::read(path).ok()?).ok()
+}
+
+/// One heavy job (simulator, Gradle, release build) running through `heavy-run`, which lets one session at a time go.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HeavyJob {
+    pub name: String,
+    pub command: String,
+    pub running_secs: u64,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct HeavyFile {
+    name: Option<String>,
+    command: String,
+    started_epoch: u64,
+}
+
+/// `heavy-run` writes `~/.runners/heavy.json` while it holds the turn and removes it when done.
+/// Why: sessions wait for each other through it, so the panel shows who has the turn and for how long.
+fn heavy_job() -> Option<HeavyJob> {
+    let home = std::env::var_os(if cfg!(windows) { "USERPROFILE" } else { "HOME" })?;
+    let path = PathBuf::from(home).join(".runners").join("heavy.json");
+    let file: HeavyFile = serde_json::from_slice(&std::fs::read(path).ok()?).ok()?;
+    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).ok()?.as_secs();
+    Some(HeavyJob {
+        name: file.name.unwrap_or_default(),
+        command: file.command,
+        running_secs: now.saturating_sub(file.started_epoch),
+    })
 }
 
 fn quittable(process: &Process) -> bool {

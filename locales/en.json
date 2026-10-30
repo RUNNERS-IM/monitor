@@ -57,5 +57,8 @@
   "popup.close": "Close (stays closed until it recovers)",
   "app.build": "Building · {{amount}}",
   "app.buildIn": "Building {{folder}} · {{amount}}",
-  "app.simulator": "Simulator · {{amount}}"
+  "app.simulator": "Simulator · {{amount}}",
+  "summary.heavy": "1 heavy job",
+  "panel.heavyRow": "{{name}} · {{command}}",
+  "panel.heavyNote": "Heavy jobs run one at a time. Other sessions wait until this one ends."
 }
