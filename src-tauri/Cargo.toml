@@ -1,6 +1,6 @@
 [package]
 name = "monitor"
-version = "2.6.1030"
+version = "2.6.1030-2"
 description = "Watch CPU, memory, disk, claude sessions and runners across computers"
 authors = ["RUNNERS-IM"]
 license-file = "../LICENSE.md"
