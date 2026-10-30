@@ -236,7 +236,7 @@ dependencies = [
 
 [[package]]
 name = "monitor-native"
-version = "2.6.1030"
+version = "2.6.1030+2"
 dependencies = [
  "libc",
  "napi",

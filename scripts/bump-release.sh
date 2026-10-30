@@ -3,7 +3,7 @@
 # 출시일(KST) 기준 2.{연도 끝자리}.{MMDD}. 같은 날 이미 낸 버전이 있으면 뒤에 .2, .3 을 붙인다
 # (GitHub 태그는 겹칠 수 없어서).
 #
-# Tauri · Cargo 는 버전을 semver 로만 받아서 앱 안에 넣는 버전은 모양을 조금 바꾼다:
+# 앱(package.json, electron-updater) · Cargo 는 버전을 semver 로만 받아서 앱 안에 넣는 버전은 모양을 조금 바꾼다:
 #   - 앞자리 0 은 뺀다 (0105 -> 105). semver 는 0 으로 시작하는 숫자를 받지 않는다.
 #   - 같은 날 두 번째부터는 .2 대신 +2 를 붙인다. semver 는 숫자 세 칸까지만 받는다.
 #     -2 는 쓰지 않는다. Linux rpm 이 버전에 - 를 받지 않아 빌드가 멈추고, semver 가 -2 를 시험판으로 봐서
@@ -29,18 +29,17 @@ while git -C "$REPO_ROOT" rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null
   N=$((N + 1))
 done
 
-# 세 파일의 버전이 어긋나면 앱 정보 창과 설치 파일 이름이 서로 달라지니 같이 고친다
+# 두 파일의 버전이 어긋나면 앱 정보 창과 네이티브 모듈의 버전이 서로 달라지니 같이 고친다
 python3 - "$REPO_ROOT" "$APP_VERSION" <<'PY'
 import json, re, sys
 root, version = sys.argv[1], sys.argv[2]
-for name in ("package.json", "src-tauri/tauri.conf.json"):
-    path = f"{root}/{name}"
-    data = json.load(open(path))
-    data["version"] = version
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-        f.write("\n")
-path = f"{root}/src-tauri/Cargo.toml"
+path = f"{root}/package.json"
+data = json.load(open(path))
+data["version"] = version
+with open(path, "w") as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
+    f.write("\n")
+path = f"{root}/native/Cargo.toml"
 text = open(path).read()
 text = re.sub(r'(?m)^version = ".*"$', f'version = "{version}"', text, count=1)
 open(path, "w").write(text)
