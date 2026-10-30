@@ -1,5 +1,33 @@
+use std::collections::{HashMap, VecDeque};
+use std::path::{Path, PathBuf};
+
 use serde::Serialize;
-use sysinfo::{Disks, ProcessRefreshKind, ProcessesToUpdate, RefreshKind, System, UpdateKind};
+use sysinfo::{Disks, Pid, Process, ProcessRefreshKind, ProcessesToUpdate, RefreshKind, System, UpdateKind};
+
+/// About ten minutes of readings at the 3 second interval.
+const HISTORY_LEN: usize = 200;
+const TOP_APPS: usize = 3;
+// Why: an idle claude still wakes up now and then, so only a steady average above this (percent of one core)
+// over the last 30 seconds (10 readings) counts as working, when the session file does not say.
+const CLAUDE_BUSY_CPU: f32 = 5.0;
+const CLAUDE_CPU_READINGS: usize = 10;
+/// Compilers, linkers and build daemons. Quitting one breaks a build another session is running.
+const BUILD_TOOLS: &[&str] = &[
+    "clang", "clang++", "cc", "c++", "cc1", "cc1plus", "ld", "ld64", "ld.lld", "lld", "swift-frontend", "swiftc",
+    "swift-build", "xcodebuild", "xcbbuildservice", "rustc", "cargo", "java", "gradle", "kotlin-daemon", "go",
+];
+// Why: a Runner.Worker is started a few processes below its Runner.Listener, never deeper than this.
+const MAX_PARENT_HOPS: usize = 10;
+// Why: a short spike is normal; the computer feels slow when the CPU stays this busy for a minute (20 readings).
+const SLOW_CPU: f32 = 80.0;
+const SLOW_CPU_READINGS: usize = 20;
+/// Processes the OS needs to keep running; quitting them would log the user out or hang the computer.
+const SYSTEM_PROCESSES: &[&str] = &[
+    "kernel_task", "launchd", "windowserver", "loginwindow", "dock", "finder", "systemuiserver",
+    "controlcenter", "coreaudiod", "mds", "mds_stores", "mdworker", "mdworker_shared", "mdsync",
+    "system", "system idle process", "csrss", "wininit", "winlogon", "services", "lsass", "dwm",
+    "explorer", "systemd", "xorg", "gnome-shell",
+];
 
 /// One reading of this computer, sent to the panel and later to other computers.
 #[derive(Clone, Debug, Serialize)]
@@ -10,10 +38,23 @@ pub struct Snapshot {
     pub cpu_percent: f32,
     pub memory_used: u64,
     pub memory_total: u64,
+    pub memory_pressure: Pressure,
     pub disk_used: u64,
     pub disk_total: u64,
-    pub claude_sessions: usize,
-    pub runner: RunnerState,
+    pub swap_used: u64,
+    /// Memory pressure is at warning or worse.
+    pub slow_memory: bool,
+    /// CPU has stayed above `SLOW_CPU` for the last minute.
+    pub slow_cpu: bool,
+    /// Oldest first, in percent.
+    pub cpu_history: Vec<f32>,
+    pub memory_history: Vec<f32>,
+    pub top_cpu: Vec<AppUse>,
+    pub top_memory: Vec<AppUse>,
+    pub claude_sessions: Vec<ClaudeSession>,
+    pub runners: Vec<Runner>,
+    /// The panel was opened by itself because the computer turned slow; set by the app, not by sampling.
+    pub popup: bool,
 }
 
 impl Snapshot {
@@ -25,20 +66,74 @@ impl Snapshot {
     }
 }
 
+/// Whether memory is really short. macOS fills spare memory with cache, so "used" alone looks alarming when it is not.
 #[derive(Clone, Copy, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub enum RunnerState {
-    /// No GitHub Actions runner process on this computer.
-    None,
-    /// Runner.Listener is up and waiting for a job.
-    Idle,
-    /// Runner.Worker exists, so a job is running right now.
-    Busy,
+pub enum Pressure {
+    Normal,
+    Warn,
+    Critical,
+}
+
+/// One app's share, with its helper processes added up.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppUse {
+    pub name: String,
+    /// Percent of the whole computer, on the same scale as `cpu_percent`.
+    pub cpu_percent: f32,
+    pub memory: u64,
+    /// Whether the panel offers a Quit button: only for apps people use, never for system processes, Monitor itself,
+    /// claude, other users' processes, build tools or simulators.
+    pub quittable: bool,
+    pub kind: AppKind,
+    /// For a build tool, the repository it is building (the folder holding `.git` above its working folder).
+    pub folder: Option<String>,
+    #[serde(skip)]
+    pub pids: Vec<Pid>,
+    /// The `.app` bundle, so a Mac app can be asked to quit like ⌘Q instead of being sent a signal.
+    #[serde(skip)]
+    pub bundle: Option<PathBuf>,
+}
+
+/// What kind of program an entry is, so the panel offers Quit only where it is safe.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum AppKind {
+    App,
+    Build,
+    Simulator,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ClaudeSession {
+    pub pid: u32,
+    /// The session name Claude Code shows in its session list (for example "Split"), when it has one.
+    pub name: Option<String>,
+    pub running_secs: u64,
+    pub busy: bool,
+}
+
+/// A GitHub Actions runner, named after its install folder (for example `sense` in `~/actions-runners/sense`).
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Runner {
+    pub name: String,
+    pub busy: bool,
+    /// Unix time when a paused runner starts again; set by the panel's pause button, not by sampling.
+    pub paused_until: Option<u64>,
+    /// The install folder, which holds `.service` naming the launchd job.
+    #[serde(skip)]
+    pub dir: PathBuf,
 }
 
 pub struct Sampler {
     system: System,
     disks: Disks,
+    cpu_history: VecDeque<f32>,
+    memory_history: VecDeque<f32>,
+    claude_cpu: HashMap<Pid, VecDeque<f32>>,
 }
 
 impl Sampler {
@@ -46,7 +141,13 @@ impl Sampler {
         let mut system = System::new_with_specifics(RefreshKind::nothing())?;
         // Why: CPU usage is a difference between two readings, so take the first one now.
         system.refresh_cpu_usage();
-        Ok(Self { system, disks: Disks::new_with_refreshed_list()? })
+        Ok(Self {
+            system,
+            disks: Disks::new_with_refreshed_list()?,
+            cpu_history: VecDeque::with_capacity(HISTORY_LEN),
+            memory_history: VecDeque::with_capacity(HISTORY_LEN),
+            claude_cpu: HashMap::new(),
+        })
     }
 
     pub fn sample(&mut self) -> Snapshot {
@@ -55,40 +156,75 @@ impl Sampler {
         self.system.refresh_processes_specifics(
             ProcessesToUpdate::All,
             true,
-            ProcessRefreshKind::nothing().with_exe(UpdateKind::OnlyIfNotSet),
+            ProcessRefreshKind::nothing()
+                .with_cpu()
+                .with_memory()
+                .with_exe(UpdateKind::OnlyIfNotSet)
+                .with_cwd(UpdateKind::OnlyIfNotSet)
+                .with_user(UpdateKind::OnlyIfNotSet),
         );
         self.disks.refresh(true);
 
-        let mut claude_sessions = 0;
-        let mut listener = false;
-        let mut worker = false;
-        for process in self.system.processes().values() {
-            let name = process.name().to_string_lossy().to_lowercase();
-            let name = name.strip_suffix(".exe").unwrap_or(&name);
-            match name {
-                "claude" => claude_sessions += 1,
-                "runner.listener" => listener = true,
-                "runner.worker" => worker = true,
-                _ => {}
-            }
-        }
-        let runner = match (listener, worker) {
-            (_, true) => RunnerState::Busy,
-            (true, false) => RunnerState::Idle,
-            _ => RunnerState::None,
-        };
+        let processes = self.system.processes();
+        let cores = self.system.cpus().len().max(1) as f32;
+        let (top_cpu, top_memory) = top_apps(processes, cores);
 
+        let mut claude_sessions = Vec::new();
+        for (pid, process) in processes {
+            if plain_name(process) != "claude" {
+                continue;
+            }
+            let readings = self.claude_cpu.entry(*pid).or_default();
+            if readings.len() == CLAUDE_CPU_READINGS {
+                readings.pop_front();
+            }
+            readings.push_back(process.cpu_usage());
+            let average = readings.iter().sum::<f32>() / readings.len() as f32;
+            let info = claude_session_file(pid.as_u32());
+            claude_sessions.push(ClaudeSession {
+                pid: pid.as_u32(),
+                name: info.as_ref().and_then(|i| i.name.clone()),
+                running_secs: process.run_time(),
+                busy: match info.as_ref().and_then(|i| i.status.as_deref()) {
+                    Some("busy") => true,
+                    Some("idle") => false,
+                    _ => average >= CLAUDE_BUSY_CPU,
+                },
+            });
+        }
+        self.claude_cpu.retain(|pid, _| processes.contains_key(pid));
+        claude_sessions.sort_by_key(|s| std::cmp::Reverse(s.running_secs));
+
+        let runners = runners(processes);
+        let cpu_percent = self.system.global_cpu_usage();
+        let memory_used = self.system.used_memory();
+        let memory_total = self.system.total_memory();
         let (disk_used, disk_total) = self.system_disk();
+        push_capped(&mut self.cpu_history, cpu_percent);
+        push_capped(&mut self.memory_history, memory_used as f32 * 100.0 / memory_total.max(1) as f32);
+        let memory_pressure = memory_pressure(&self.system);
+        let slow_cpu = self.cpu_history.len() >= SLOW_CPU_READINGS
+            && self.cpu_history.iter().rev().take(SLOW_CPU_READINGS).all(|&v| v >= SLOW_CPU);
+
         Snapshot {
             host: System::host_name().unwrap_or_default(),
             os: System::long_os_version().unwrap_or_default(),
-            cpu_percent: self.system.global_cpu_usage(),
-            memory_used: self.system.used_memory(),
-            memory_total: self.system.total_memory(),
+            cpu_percent,
+            memory_used,
+            memory_total,
+            memory_pressure,
             disk_used,
             disk_total,
+            swap_used: self.system.used_swap(),
+            slow_memory: !matches!(memory_pressure, Pressure::Normal),
+            slow_cpu,
+            cpu_history: self.cpu_history.iter().copied().collect(),
+            memory_history: self.memory_history.iter().copied().collect(),
+            top_cpu,
+            top_memory,
             claude_sessions,
-            runner,
+            runners,
+            popup: false,
         }
     }
 
@@ -105,5 +241,199 @@ impl Sampler {
             .or_else(|| self.disks.iter().max_by_key(|d| d.total_space()))
             .map(|d| (d.total_space() - d.available_space(), d.total_space()))
             .unwrap_or((0, 0))
+    }
+}
+
+fn push_capped(history: &mut VecDeque<f32>, value: f32) {
+    if history.len() == HISTORY_LEN {
+        history.pop_front();
+    }
+    history.push_back(value);
+}
+
+/// Lower-case process name without `.exe`.
+fn plain_name(process: &Process) -> String {
+    let name = process.name().to_string_lossy().to_lowercase();
+    name.strip_suffix(".exe").map(str::to_owned).unwrap_or(name)
+}
+
+/// The name people know an app by, and its kind. Why: Chrome, Slack and Xcode run many helper processes inside their
+/// `.app` bundle, so the outermost bundle name adds those up instead of listing "Google Chrome Helper" five times.
+/// Simulators are folded into one entry each for the same reason; their processes carry dozens of iOS names.
+fn app_name(process: &Process) -> (String, Option<PathBuf>, AppKind) {
+    let name = plain_name(process);
+    let exe = process.exe().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default();
+    if exe.contains("/CoreSimulator/") || name == "xpcproxy_sim" || name == "launchd_sim" {
+        return ("iOS Simulator".into(), None, AppKind::Simulator);
+    }
+    if name.starts_with("qemu-system") || exe.contains("/Android/sdk/emulator/") {
+        return ("Android Emulator".into(), None, AppKind::Simulator);
+    }
+    if BUILD_TOOLS.contains(&name.as_str()) {
+        return (process.name().to_string_lossy().into_owned(), None, AppKind::Build);
+    }
+    if let Some(bundle) = process
+        .exe()
+        .and_then(|exe| exe.ancestors().filter(|p| p.extension().is_some_and(|e| e == "app")).last())
+    {
+        let name = bundle.file_stem().unwrap_or_default().to_string_lossy().into_owned();
+        return (name, Some(bundle.to_path_buf()), AppKind::App);
+    }
+    let name = process.name().to_string_lossy();
+    (name.strip_suffix(".exe").unwrap_or(&name).to_owned(), None, AppKind::App)
+}
+
+/// The repository a build tool works in: the nearest folder above its working folder that holds `.git`.
+fn repo_name(process: &Process) -> Option<String> {
+    process
+        .cwd()?
+        .ancestors()
+        .find(|dir| dir.join(".git").exists())
+        .and_then(Path::file_name)
+        .map(|n| n.to_string_lossy().into_owned())
+}
+
+#[derive(serde::Deserialize)]
+struct SessionFile {
+    name: Option<String>,
+    status: Option<String>,
+}
+
+/// Claude Code keeps `~/.claude/sessions/<pid>.json` with the session's name and whether it is busy.
+/// Why: every claude process reports the home folder as its working folder, so this file is the only way to tell them apart.
+fn claude_session_file(pid: u32) -> Option<SessionFile> {
+    let home = std::env::var_os(if cfg!(windows) { "USERPROFILE" } else { "HOME" })?;
+    let path = PathBuf::from(home).join(".claude").join("sessions").join(format!("{pid}.json"));
+    serde_json::from_slice(&std::fs::read(path).ok()?).ok()
+}
+
+fn quittable(process: &Process) -> bool {
+    let name = plain_name(process);
+    let own = process.pid().as_u32() == std::process::id();
+    !own && name != "claude" && name != "monitor" && !SYSTEM_PROCESSES.contains(&name.as_str()) && owned_by_me(process)
+}
+
+#[cfg(unix)]
+fn owned_by_me(process: &Process) -> bool {
+    // Why: other users' and root processes cannot be asked to quit by us anyway.
+    process.user_id().is_some_and(|uid| **uid == unsafe { libc::getuid() })
+}
+
+#[cfg(not(unix))]
+fn owned_by_me(_process: &Process) -> bool {
+    true
+}
+
+fn top_apps(processes: &HashMap<Pid, Process>, cores: f32) -> (Vec<AppUse>, Vec<AppUse>) {
+    let mut apps: HashMap<String, AppUse> = HashMap::new();
+    for (pid, process) in processes {
+        let (name, bundle, kind) = app_name(process);
+        let entry = apps.entry(name.clone()).or_insert(AppUse {
+            name,
+            cpu_percent: 0.0,
+            memory: 0,
+            quittable: kind == AppKind::App,
+            kind,
+            folder: None,
+            pids: Vec::new(),
+            bundle,
+        });
+        // Why: sysinfo gives percent of one core, while the CPU bar is percent of the whole computer.
+        entry.cpu_percent += process.cpu_usage() / cores;
+        entry.memory += process.memory();
+        // Why: one protected process (say a root helper) makes the whole app unsafe to quit from here.
+        entry.quittable &= quittable(process);
+        entry.pids.push(*pid);
+    }
+    let mut by_cpu: Vec<AppUse> = apps.values().cloned().collect();
+    by_cpu.sort_by(|a, b| b.cpu_percent.total_cmp(&a.cpu_percent));
+    by_cpu.truncate(TOP_APPS);
+    let mut by_memory: Vec<AppUse> = apps.into_values().collect();
+    by_memory.sort_by_key(|a| std::cmp::Reverse(a.memory));
+    by_memory.truncate(TOP_APPS);
+    // Why: only the few entries on screen need their repository looked up, which touches the disk.
+    for app in by_cpu.iter_mut().chain(by_memory.iter_mut()).filter(|a| a.kind == AppKind::Build) {
+        app.folder = app.pids.iter().filter_map(|pid| processes.get(pid)).find_map(repo_name);
+    }
+    (by_cpu, by_memory)
+}
+
+/// Every Runner.Listener is one runner; it is busy when a Runner.Worker runs somewhere below it.
+fn runners(processes: &HashMap<Pid, Process>) -> Vec<Runner> {
+    let mut listeners: Vec<(Pid, PathBuf)> = Vec::new();
+    let mut workers: Vec<Pid> = Vec::new();
+    for (pid, process) in processes {
+        match plain_name(process).as_str() {
+            "runner.listener" => listeners.push((*pid, runner_dir(process))),
+            "runner.worker" => workers.push(*pid),
+            _ => {}
+        }
+    }
+    let mut busy_listeners = Vec::new();
+    for worker in workers {
+        let mut current = processes.get(&worker).and_then(Process::parent);
+        for _ in 0..MAX_PARENT_HOPS {
+            let Some(pid) = current else { break };
+            if listeners.iter().any(|(listener, _)| *listener == pid) {
+                busy_listeners.push(pid);
+                break;
+            }
+            current = processes.get(&pid).and_then(Process::parent);
+        }
+    }
+    let mut runners: Vec<Runner> = listeners
+        .into_iter()
+        .map(|(pid, dir)| Runner {
+            name: dir.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "runner".into()),
+            busy: busy_listeners.contains(&pid),
+            paused_until: None,
+            dir,
+        })
+        .collect();
+    runners.sort_by(|a, b| a.name.cmp(&b.name));
+    runners
+}
+
+/// The folder above `bin/Runner.Listener`, which is how each runner was installed and named.
+fn runner_dir(process: &Process) -> PathBuf {
+    process.exe().and_then(Path::parent).and_then(Path::parent).map(Path::to_path_buf).unwrap_or_default()
+}
+
+#[cfg(target_os = "macos")]
+fn memory_pressure(_system: &System) -> Pressure {
+    // Why: this is the same level Activity Monitor colours its memory pressure graph with (1 normal, 2 warn, 4 critical).
+    let mut level: libc::c_int = 0;
+    let mut size = std::mem::size_of::<libc::c_int>();
+    let ok = unsafe {
+        libc::sysctlbyname(
+            c"kern.memorystatus_vm_pressure_level".as_ptr(),
+            (&mut level as *mut libc::c_int).cast(),
+            &mut size,
+            std::ptr::null_mut(),
+            0,
+        )
+    } == 0;
+    match level {
+        _ if !ok => Pressure::Normal,
+        4.. => Pressure::Critical,
+        2 | 3 => Pressure::Warn,
+        _ => Pressure::Normal,
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn memory_pressure(system: &System) -> Pressure {
+    // Why: Windows and Linux have no single pressure number, so it is estimated from memory that can still be handed out.
+    let total = system.total_memory();
+    if total == 0 {
+        return Pressure::Normal;
+    }
+    let available = system.available_memory() as f64 / total as f64;
+    if available < 0.10 {
+        Pressure::Critical
+    } else if available < 0.20 {
+        Pressure::Warn
+    } else {
+        Pressure::Normal
     }
 }

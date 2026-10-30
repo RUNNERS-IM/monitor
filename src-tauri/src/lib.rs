@@ -1,25 +1,49 @@
+mod actions;
+mod cleanup;
 mod i18n;
 mod snapshot;
 
+use std::collections::{HashMap, HashSet};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
-use snapshot::{Sampler, Snapshot};
+use cleanup::Cleanup;
+use snapshot::{Runner, Sampler, Snapshot};
 use i18n::t;
 use tauri::menu::{AboutMetadataBuilder, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-use tauri::{Manager, State, WindowEvent};
+use tauri::{Manager, PhysicalPosition, State, WindowEvent};
+use tauri_plugin_notification::NotificationExt;
 use tauri_plugin_opener::OpenerExt;
 use tauri_plugin_positioner::{Position, WindowExt};
 
 const TRAY_ID: &str = "monitor";
 const ISSUES_URL: &str = "https://github.com/RUNNERS-IM/monitor/issues";
 const REFRESH: Duration = Duration::from_secs(3);
+const CLEANUP_EVERY: Duration = Duration::from_secs(30 * 60);
+const CLEANUP_FILE: &str = "cleanup.json";
+// Why: a slow computer stays slow for a while, so the same warning is repeated at most this often.
+const SLOW_NOTICE_EVERY: Duration = Duration::from_secs(30 * 60);
+const NOTICE_APPS: usize = 2;
 // Why: the tray click that opens the panel also sends it a focus-lost event right away, so blur is ignored this long after opening.
 const BLUR_GRACE: Duration = Duration::from_millis(400);
 
 #[derive(Default)]
 struct PanelShownAt(Mutex<Option<Instant>>);
+
+/// The panel opened by itself because the computer turned slow.
+#[derive(Default)]
+struct Popup(Mutex<PopupState>);
+
+#[derive(Default)]
+struct PopupState {
+    open: bool,
+    /// Reasons the open popup is about, so closing it silences exactly those.
+    showing: HashSet<&'static str>,
+    last_shown: HashMap<&'static str, Instant>,
+    /// Closed by the user; not shown again until that reason has cleared once.
+    dismissed: HashSet<&'static str>,
+}
 
 /// Whether the OS blurs what is behind the panel; the page draws a solid background when it does not.
 struct Translucent(bool);
@@ -53,9 +77,167 @@ fn apply_blur(window: &tauri::WebviewWindow) -> bool {
     }
 }
 
+/// The newest reading. Why: one thread samples for both the tray and the panel, so opening the panel
+/// does not take extra readings that would cut CPU averages short and double the history.
+#[derive(Default)]
+struct Latest(Mutex<Option<Snapshot>>);
+
+#[derive(Default)]
+struct LatestCleanup(Mutex<Option<Cleanup>>);
+
+/// Runners paused from the panel, by name, with the Unix time they come back.
+/// Why: a paused runner has no process, so without this it would simply vanish from the list.
+#[derive(Default)]
+struct PausedRunners(Mutex<HashMap<String, u64>>);
+
 #[tauri::command]
-fn snapshot(sampler: State<'_, Mutex<Sampler>>) -> Snapshot {
-    sampler.lock().unwrap().sample()
+fn snapshot(app: tauri::AppHandle, latest: State<'_, Latest>, paused: State<'_, PausedRunners>) -> Option<Snapshot> {
+    let mut snap = latest.0.lock().unwrap().clone()?;
+    snap.popup = app.state::<Popup>().0.lock().unwrap().open;
+    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_secs();
+    let mut paused = paused.0.lock().unwrap();
+    paused.retain(|_, until| *until > now);
+    for (name, until) in paused.iter() {
+        match snap.runners.iter_mut().find(|r| &r.name == name) {
+            Some(runner) => runner.paused_until = Some(*until),
+            None => snap.runners.push(Runner { name: name.clone(), busy: false, paused_until: Some(*until), dir: Default::default() }),
+        }
+    }
+    snap.runners.sort_by(|a, b| a.name.cmp(&b.name));
+    Some(snap)
+}
+
+#[tauri::command]
+fn quit_app(name: String, latest: State<'_, Latest>) -> Result<(), String> {
+    let app = latest
+        .0
+        .lock()
+        .unwrap()
+        .as_ref()
+        .and_then(|snap| snap.top_cpu.iter().chain(&snap.top_memory).find(|a| a.name == name).cloned())
+        .ok_or_else(|| format!("{name} is no longer running"))?;
+    actions::quit_app(&app)
+}
+
+#[tauri::command]
+fn pause_runner(name: String, latest: State<'_, Latest>, paused: State<'_, PausedRunners>) -> Result<(), String> {
+    let runner = latest
+        .0
+        .lock()
+        .unwrap()
+        .as_ref()
+        .and_then(|snap| snap.runners.iter().find(|r| r.name == name).cloned())
+        .ok_or_else(|| format!("runner {name} is not running"))?;
+    let until = actions::pause_runner(&runner)?;
+    paused.0.lock().unwrap().insert(name, until);
+    Ok(())
+}
+
+/// Opens the panel by itself, under the tray, when the computer turns slow, with "why it is slow" on top.
+/// Returns false when there is no panel to open, so the caller can fall back to a notification.
+fn popup_if_slow(app: &tauri::AppHandle, snap: &Snapshot) -> bool {
+    let Some(window) = app.get_webview_window("main") else {
+        return false;
+    };
+    let reasons: [(&'static str, bool); 2] = [("memory", snap.slow_memory), ("cpu", snap.slow_cpu)];
+    let popup = app.state::<Popup>();
+    let mut state = popup.0.lock().unwrap();
+    for (reason, slow) in reasons {
+        if !slow {
+            state.dismissed.remove(reason);
+        }
+    }
+    let due: Vec<&'static str> = reasons
+        .iter()
+        .filter(|(reason, slow)| {
+            *slow
+                && !state.dismissed.contains(reason)
+                && !state.last_shown.get(reason).is_some_and(|at| at.elapsed() < SLOW_NOTICE_EVERY)
+        })
+        .map(|(reason, _)| *reason)
+        .collect();
+    if due.is_empty() {
+        return true;
+    }
+    for reason in &due {
+        state.last_shown.insert(reason, Instant::now());
+    }
+    // Why: when the user already has the panel open they see the reasons there; nothing more to pop up.
+    if window.is_visible().unwrap_or(false) {
+        return true;
+    }
+    state.showing = due.into_iter().collect();
+    state.open = true;
+    drop(state);
+    // Why: the popup must not take keyboard focus, or it would swallow what the user is typing in another app.
+    let _ = window.set_focusable(false);
+    place_under_tray(app, &window);
+    let _ = window.show();
+    true
+}
+
+/// Puts the panel just under the tray icon (above it on Windows), from the icon's own position.
+/// Why: the positioner plugin only knows the tray position after the mouse has touched the icon, which a popup cannot wait for.
+fn place_under_tray(app: &tauri::AppHandle, window: &tauri::WebviewWindow) {
+    let rect = app.tray_by_id(TRAY_ID).and_then(|tray| tray.rect().ok().flatten());
+    let (Some(rect), Ok(size), Ok(scale)) = (rect, window.outer_size(), window.scale_factor()) else {
+        let _ = window.move_window(Position::TopRight);
+        return;
+    };
+    let at = rect.position.to_physical::<f64>(scale);
+    let icon = rect.size.to_physical::<f64>(scale);
+    let x = at.x + icon.width / 2.0 - size.width as f64 / 2.0;
+    let y = if cfg!(target_os = "windows") { at.y - size.height as f64 } else { at.y + icon.height };
+    let _ = window.set_position(PhysicalPosition::new(x, y));
+}
+
+/// Closes a popup and keeps it closed until the computer has recovered from the same reason.
+fn dismiss_popup(app: &tauri::AppHandle) {
+    let popup = app.state::<Popup>();
+    let mut state = popup.0.lock().unwrap();
+    if !state.open {
+        return;
+    }
+    state.open = false;
+    let showing: Vec<&'static str> = state.showing.drain().collect();
+    state.dismissed.extend(showing);
+}
+
+#[tauri::command]
+fn close_popup(app: tauri::AppHandle) {
+    dismiss_popup(&app);
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.hide();
+        let _ = window.set_focusable(true);
+    }
+}
+
+/// Shows a system notification when the computer turns slow, naming the apps most likely behind it.
+/// Why: kept for when there is no panel window to pop up; in a dev run macOS shows it as Terminal's notification.
+fn notify_if_slow(app: &tauri::AppHandle, snap: &Snapshot, last: &mut HashMap<&'static str, Instant>) {
+    let reasons: [(&'static str, bool); 2] = [("memory", snap.slow_memory), ("cpu", snap.slow_cpu)];
+    for (reason, slow) in reasons {
+        if !slow || last.get(reason).is_some_and(|at| at.elapsed() < SLOW_NOTICE_EVERY) {
+            continue;
+        }
+        let apps: Vec<String> = if reason == "memory" {
+            snap.top_memory.iter().take(NOTICE_APPS).map(|a| format!("{} {:.1} GB", a.name, a.memory as f64 / 1024f64.powi(3))).collect()
+        } else {
+            snap.top_cpu.iter().take(NOTICE_APPS).map(|a| format!("{} {}%", a.name, a.cpu_percent.round())).collect()
+        };
+        let _ = app
+            .notification()
+            .builder()
+            .title(t(&format!("notice.{reason}.title"), &[]))
+            .body(t("notice.body", &[("apps", &apps.join(", "))]))
+            .show();
+        last.insert(reason, Instant::now());
+    }
+}
+
+#[tauri::command]
+fn cleanup(latest: State<'_, LatestCleanup>) -> Option<Cleanup> {
+    latest.0.lock().unwrap().clone()
 }
 
 fn toggle_panel(app: &tauri::AppHandle) {
@@ -63,9 +245,13 @@ fn toggle_panel(app: &tauri::AppHandle) {
         return;
     };
     if window.is_visible().unwrap_or(false) {
+        // Why: clicking the tray while the popup is up is the user saying "seen it".
+        dismiss_popup(app);
         let _ = window.hide();
+        let _ = window.set_focusable(true);
         return;
     }
+    let _ = window.set_focusable(true);
     // Why: the tray sits top-right on macOS and bottom-right on Windows; TrayCenter follows it on every OS.
     let _ = window.move_window(Position::TrayCenter);
     *app.state::<PanelShownAt>().0.lock().unwrap() = Some(Instant::now());
@@ -78,9 +264,13 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_positioner::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_notification::init())
         .manage(PanelShownAt::default())
-        .manage(Mutex::new(Sampler::new().expect("failed to open system counters")))
-        .invoke_handler(tauri::generate_handler![snapshot, translucent])
+        .manage(Popup::default())
+        .manage(Latest::default())
+        .manage(LatestCleanup::default())
+        .manage(PausedRunners::default())
+        .invoke_handler(tauri::generate_handler![snapshot, cleanup, quit_app, pause_runner, translucent, close_popup])
         .setup(|app| {
             // Why: Monitor lives in the tray only, so it should not take a Dock slot on macOS.
             #[cfg(target_os = "macos")]
@@ -150,21 +340,51 @@ pub fn run() {
                 .build(app)?;
 
             // Why: the tray text is the at-a-glance view, so it refreshes even while the panel is closed.
+            let mut sampler = Sampler::new().expect("failed to open system counters");
             let handle = app.handle().clone();
+            let mut noticed = HashMap::new();
             std::thread::spawn(move || loop {
-                let snap = handle.state::<Mutex<Sampler>>().lock().unwrap().sample();
-                if let Some(tray) = handle.tray_by_id(TRAY_ID) {
-                    let text = format!("{}%", snap.memory_percent().round());
-                    let _ = tray.set_title(Some(&text));
-                    let _ = tray.set_tooltip(Some(&t("tray.tooltip", &[("value", &text)])));
+                let snap = sampler.sample();
+                if !popup_if_slow(&handle, &snap) {
+                    notify_if_slow(&handle, &snap, &mut noticed);
                 }
+                if let Some(tray) = handle.tray_by_id(TRAY_ID) {
+                    let value = format!("{}%", snap.memory_percent().round());
+                    // Why: a bare "84%" in the menu bar reads like the battery, so the number carries a short label.
+                    let _ = tray.set_title(Some(&t("tray.title", &[("value", &value)])));
+                    let _ = tray.set_tooltip(Some(&t("tray.tooltip", &[("value", &value)])));
+                }
+                *handle.state::<Latest>().0.lock().unwrap() = Some(snap);
                 std::thread::sleep(REFRESH);
+            });
+
+            let handle = app.handle().clone();
+            let saved = app.path().app_data_dir().ok().map(|dir| dir.join(CLEANUP_FILE));
+            std::thread::spawn(move || {
+                cleanup::run_in_background();
+                if let Some(found) = saved.as_deref().and_then(cleanup::load) {
+                    let age = Duration::from_secs(cleanup::now().saturating_sub(found.measured_at));
+                    *handle.state::<LatestCleanup>().0.lock().unwrap() = Some(found);
+                    std::thread::sleep(CLEANUP_EVERY.saturating_sub(age));
+                }
+                loop {
+                    let found = cleanup::measure();
+                    if let Some(file) = &saved {
+                        cleanup::save(file, &found);
+                    }
+                    *handle.state::<LatestCleanup>().0.lock().unwrap() = Some(found);
+                    std::thread::sleep(CLEANUP_EVERY);
+                }
             });
             Ok(())
         })
         .on_window_event(|window, event| {
             // Why: the panel behaves like a tray popup and closes as soon as focus moves elsewhere.
             if let WindowEvent::Focused(false) = event {
+                // Why: the popup never takes focus, so a focus change elsewhere must not close it; it has its own close button.
+                if window.state::<Popup>().0.lock().unwrap().open {
+                    return;
+                }
                 let shown_at = *window.state::<PanelShownAt>().0.lock().unwrap();
                 if shown_at.is_some_and(|at| at.elapsed() < BLUR_GRACE) {
                     return;
