@@ -313,7 +313,7 @@ pub fn run() {
                 ],
             )?;
             let tray = TrayIconBuilder::with_id(TRAY_ID);
-            // Why: on macOS the menu bar shows only the memory number, like Stats; other trays need a picture to be visible.
+            // Why: on macOS the menu bar shows only the memory number as text; other trays need a picture to be visible.
             #[cfg(not(target_os = "macos"))]
             let tray = tray.icon(app.default_window_icon().unwrap().clone());
             tray.tooltip("Monitor")
