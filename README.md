@@ -1,7 +1,68 @@
-# Tauri + React + Typescript
+# Monitor
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+**English** · [한국어](README.ko.md)
 
-## Recommended IDE Setup
+See how busy your computers are from the menu bar or system tray: CPU, memory, disk, running claude sessions and GitHub Actions runners.
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+Monitor is made by RUNNERS-IM for the computers in our office. It is written from scratch with [Tauri 2](https://tauri.app), so one code base builds for macOS (Apple silicon and Intel), Windows and Linux.
+
+## What it shows
+
+Click the number in the menu bar (macOS) or the tray icon (Windows, Linux) to open the panel.
+
+| Item | What it means |
+|:---|:---|
+| CPU | Average use of all cores |
+| Memory | Memory in use and the total. The menu bar number is this value |
+| Disk | Space used on the disk the system starts from (`/` on macOS and Linux, the system drive on Windows) |
+| claude sessions | Number of running `claude` processes |
+| GitHub runner | **Building** when a job is running, **Idle** when a runner is waiting, **None** when no runner is installed |
+
+Right-click the menu bar number or tray icon for the menu: About, Check for Updates, Show Usage, Settings, Help & Feedback and Quit.
+
+The panel and menu follow the language set for your computer. Monitor speaks English and Korean.
+
+## Install
+
+Monitor has not been released yet. Until the first release, build it from source (below).
+
+Releases will follow the same rules as Split and Prompt: a version like `2.6.1030`, files on [GitHub Releases](https://github.com/RUNNERS-IM/monitor/releases) and a Homebrew cask in `runners-im/tap` for macOS.
+
+## Roadmap
+
+Done:
+
+- Tray app for this computer: CPU, memory, disk, claude sessions and runner state
+- Panel with the macOS blur (Acrylic on Windows), light and dark mode
+- Shared menu order with Split and Prompt
+- English and Korean
+
+Next:
+
+- A list of the other computers in the office in the same panel
+- Signed releases, automatic updates and installers for macOS, Windows and Linux
+- AWS EC2 servers
+
+Issues and pull requests are welcome in this repository.
+
+## Building from source
+
+Requires [Rust](https://rustup.rs), Node.js 20 or later and pnpm. On Linux, install the [Tauri system packages](https://tauri.app/start/prerequisites/) first.
+
+```sh
+pnpm install
+pnpm tauri dev      # run with live reload
+pnpm tauri build    # build an installer for this OS
+```
+
+Screen text lives in `locales/` (`en.json`, `ko.json`). The panel (`src/`) and the tray menu (`src-tauri/`) read the same files.
+
+So far Monitor has been built and checked on macOS (Apple silicon) only. Windows and Linux builds have not been tried yet.
+
+## Privacy
+
+Monitor collects nothing and sends nothing. See [PRIVACY.md](PRIVACY.md).
+
+## License
+
+Not chosen yet.
