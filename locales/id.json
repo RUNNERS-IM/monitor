@@ -21,7 +21,6 @@
   "runner.idle": "Menunggu",
   "runner.busy": "Sedang build",
   "tray.title": "{{value}}",
-  "panel.top": "Terbanyak: {{apps}}",
   "panel.pressure.warn": "Tekanan tinggi",
   "panel.pressure.critical": "Tekanan kritis",
   "panel.diskFree": "{{free}} kosong",
@@ -41,8 +40,6 @@
   "notice.memory.title": "Lambat: memori hampir habis",
   "notice.cpu.title": "Lambat: CPU sibuk lebih dari satu menit",
   "notice.body": "Aplikasi terberat: {{apps}} · Anda dapat menutupnya dari Monitor di bar menu",
-  "slow.memoryTitle": "Siapa yang memakai {{size}} memori",
-  "slow.cpuTitle": "Siapa yang memakai CPU",
   "slow.system": "Sistem",
   "slow.cache": "Cache (dikosongkan otomatis)",
   "slow.other": "Aplikasi lain",
@@ -87,5 +84,10 @@
   "update.downloading": "Mengunduh… {{percent}}%",
   "update.installing": "Menginstal…",
   "update.install": "Instal Sekarang",
-  "update.later": "Nanti"
+  "update.later": "Nanti",
+  "disk.cache": "Cache",
+  "disk.packages": "node_modules",
+  "disk.build": "Folder build",
+  "disk.rest": "Selebihnya",
+  "disk.cleanupNote": "Bagian berwarna bisa dibersihkan. Baris di bawah menunjukkan letaknya."
 }

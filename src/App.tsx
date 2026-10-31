@@ -237,6 +237,24 @@ function cpuParts(snap: Snapshot): { parts: Part[]; total: number } {
   return { parts: parts.filter((part) => part.size > 0), total: Math.max(100, used + other) };
 }
 
+const KIND_COLOURS = { cache: "#ff9f0a", packages: "#64d2ff", build: "#bf5af2" } as const;
+
+/** The parts of the disk: what could be cleaned, by kind, then the rest of the used space (the free part left empty). */
+function diskParts(snap: Snapshot, cleanup: Cleanup | null): { parts: Part[]; total: number } {
+  // Why: a result saved by an older version has no split, so the whole cleanup total shows as one part.
+  const kinds = cleanup ? (cleanup.kinds?.length ? cleanup.kinds : [{ kind: "cache" as const, bytes: cleanup.total }]) : [];
+  const cleanable: Part[] = kinds.map((item) => ({
+    key: item.kind,
+    label: cleanup?.kinds?.length ? t(`disk.${item.kind}`) : t("panel.cleanup"),
+    amount: formatGb(item.bytes),
+    size: item.bytes,
+    colour: KIND_COLOURS[item.kind],
+  }));
+  const rest = Math.max(0, snap.diskUsed - cleanable.reduce((sum, part) => sum + part.size, 0));
+  const parts: Part[] = [...cleanable, { key: "rest", label: t("disk.rest"), amount: formatGb(rest), size: rest, colour: "#8e8e93" }];
+  return { parts: parts.filter((part) => part.size > 0), total: snap.diskTotal };
+}
+
 /** One line under the bar: colour square, name, amount, and Quit for an app that can be quit. */
 function Legend({ part }: { part: Part }) {
   const [error, setError] = useState<string | null>(null);
@@ -270,15 +288,11 @@ function Legend({ part }: { part: Part }) {
   );
 }
 
-/** Shown only while the computer is slow: who uses the memory (or the CPU) as one bar, and Quit for each app. */
-function SlowBox({ snap }: { snap: Snapshot }) {
-  const { parts, total } = snap.slowMemory ? memoryParts(snap) : cpuParts(snap);
-  const title = snap.slowMemory ? t("slow.memoryTitle", { size: `${Math.round(snap.memoryTotal / 1024 ** 3)} GB` }) : t("slow.cpuTitle");
-  const spotlightBusy = snap.topCpu.some((app) => SPOTLIGHT.test(app.name) && app.cpuPercent >= MIN_TOP_CPU);
+/** Who fills the CPU, memory or disk: one bar with a colour per part, and a line (with Quit for an app) per part. */
+function Breakdown({ parts, total, label }: { parts: Part[]; total: number; label: string }) {
   return (
-    <div className="rm-group slow">
-      <div className="rm-heading">{title}</div>
-      <div className="stack" role="img" aria-label={title}>
+    <>
+      <div className="stack" role="img" aria-label={label}>
         {parts.map((part) => (
           <span key={part.key} style={{ width: `${(part.size * 100) / total}%`, background: part.colour }} />
         ))}
@@ -286,11 +300,7 @@ function SlowBox({ snap }: { snap: Snapshot }) {
       {parts.map((part) => (
         <Legend key={part.key} part={part} />
       ))}
-      {snap.slowMemory && snap.slowCpu && <div className="rm-note">{t("slow.cpu")}</div>}
-      {snap.swapUsed > 0 && <div className="rm-note">{t("slow.swap", { size: formatGb(snap.swapUsed) })}</div>}
-      {spotlightBusy && <div className="rm-note">{t("slow.spotlight")}</div>}
-      {parts.some((part) => part.app?.quittable) && <div className="rm-note">{t("slow.quitNote")}</div>}
-    </div>
+    </>
   );
 }
 
@@ -358,11 +368,15 @@ function App() {
   const snap = usePolling<Snapshot>(native.snapshot, REFRESH_MS);
   const cleanup = usePolling<Cleanup>(native.cleanup, CLEANUP_REFRESH_MS);
   // Why: a debug run can start with a row open (`VITE_MONITOR_EXPAND=work`) so it can be captured without clicking.
-  const [open, setOpen] = useState<Section | null>(
-    import.meta.env.DEV ? ((import.meta.env.VITE_MONITOR_EXPAND as Section | undefined) ?? null) : null,
-  );
+  const debugOpen = import.meta.env.DEV ? ((import.meta.env.VITE_MONITOR_EXPAND as Section | undefined) ?? null) : null;
+  const [open, setOpen] = useState<Section | null>(debugOpen);
   const panelRef = useRef<HTMLElement>(null);
   useFitWindow(panelRef);
+  // Why: the slow box at the top repeated what the row shows, so a slow computer now opens the row that is short instead.
+  const slowRow: Section | null = snap?.slowMemory ? "memory" : snap?.slowCpu ? "cpu" : null;
+  useEffect(() => {
+    if (slowRow && !debugOpen) setOpen(slowRow);
+  }, [slowRow, debugOpen]);
 
   if (!snap) {
     return (
@@ -377,11 +391,10 @@ function App() {
   const memory = percent(snap.memoryUsed, snap.memoryTotal);
   const disk = percent(snap.diskUsed, snap.diskTotal);
   const memoryTone = PRESSURE_LEVEL[snap.memoryPressure];
-  const topCpu = snap.topCpu
-    .filter((app) => app.cpuPercent >= MIN_TOP_CPU)
-    .map((app) => `${app.name} ${Math.round(app.cpuPercent)}%`)
-    .join(", ");
-  const topMemory = snap.topMemory.map((app) => `${app.name} ${formatGb(app.memory)}`).join(", ");
+  const spotlightBusy = snap.topCpu.some((app) => SPOTLIGHT.test(app.name) && app.cpuPercent >= MIN_TOP_CPU);
+  const cpuBreakdown = cpuParts(snap);
+  const memoryBreakdown = memoryParts(snap);
+  const quitNote = (parts: Part[]) => parts.some((part) => part.app?.quittable) && <div className="rm-note">{t("slow.quitNote")}</div>;
   const idleRunners = snap.runners.filter((runner) => !runner.busy && !runner.pausedUntil).length;
   const busyRunners = snap.runners.filter((runner) => runner.busy && !runner.pausedUntil).length;
   const people = snap.claudeSessions.filter((session) => session.human).length;
@@ -409,7 +422,6 @@ function App() {
         )}
       </header>
       <div className="rm-separator" />
-      {slow && <SlowBox snap={snap} />}
       <SummaryRow
         icon={Cpu}
         label={t("panel.cpu")}
@@ -424,7 +436,11 @@ function App() {
         onToggle={() => toggle("cpu")}
       >
         <Sparkline values={snap.cpuHistory} tone={cpuTone} />
-        <div className="rm-note">{topCpu ? t("panel.top", { apps: topCpu }) : t("panel.cpuDetail")}</div>
+        <div className="rm-note">{t("panel.cpuDetail")}</div>
+        <Breakdown {...cpuBreakdown} label={t("panel.cpu")} />
+        {snap.slowCpu && <div className="rm-note">{t("slow.cpu")}</div>}
+        {spotlightBusy && <div className="rm-note">{t("slow.spotlight")}</div>}
+        {quitNote(cpuBreakdown.parts)}
       </SummaryRow>
       <SummaryRow
         icon={MemoryStick}
@@ -438,7 +454,9 @@ function App() {
       >
         <Sparkline values={snap.memoryHistory} tone={memoryTone} />
         <div className="rm-note">{`${formatGb(snap.memoryUsed)} / ${formatGb(snap.memoryTotal)}`}</div>
-        <div className="rm-note">{t("panel.top", { apps: topMemory })}</div>
+        <Breakdown {...memoryBreakdown} label={t("panel.memory")} />
+        {snap.swapUsed > 0 && <div className="rm-note">{t("slow.swap", { size: formatGb(snap.swapUsed) })}</div>}
+        {quitNote(memoryBreakdown.parts)}
       </SummaryRow>
       <SummaryRow
         icon={HardDrive}
@@ -449,12 +467,11 @@ function App() {
         open={open === "disk"}
         onToggle={() => toggle("disk")}
       >
-        <div className="meter-track">
-          <div className={`meter-fill ${diskTone}`} style={{ width: `${Math.min(disk, 100)}%` }} />
-        </div>
         <div className="rm-note">
           {`${formatGb(snap.diskUsed)} / ${formatGb(snap.diskTotal)} · ${t("panel.diskFree", { free: formatGb(snap.diskTotal - snap.diskUsed) })}`}
         </div>
+        <Breakdown {...diskParts(snap, cleanup)} label={t("panel.disk")} />
+        <div className="rm-note">{cleanup ? t("disk.cleanupNote") : t("panel.cleanupMeasuringNote")}</div>
       </SummaryRow>
       <SummaryRow icon={SquareTerminal} label={t("panel.work")} value={workValue} open={open === "work"} onToggle={() => toggle("work")}>
         {snap.heavyJob && (

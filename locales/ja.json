@@ -21,7 +21,6 @@
   "runner.idle": "待機中",
   "runner.busy": "ビルド中",
   "tray.title": "{{value}}",
-  "panel.top": "上位: {{apps}}",
   "panel.pressure.warn": "プレッシャー: 注意",
   "panel.pressure.critical": "プレッシャー: 危険",
   "panel.diskFree": "空き {{free}}",
@@ -41,8 +40,6 @@
   "notice.memory.title": "メモリが不足して動作が遅くなっています",
   "notice.cpu.title": "CPUの高負荷が1分以上続き、動作が遅くなっています",
   "notice.body": "使用量の多いアプリ: {{apps}} · メニューバーのMonitorから終了できます",
-  "slow.memoryTitle": "メモリ {{size}} を使っているもの",
-  "slow.cpuTitle": "CPU を使っているもの",
   "slow.system": "システム",
   "slow.cache": "キャッシュ(自動で解放)",
   "slow.other": "その他のアプリ",
@@ -87,5 +84,10 @@
   "update.downloading": "ダウンロード中… {{percent}}%",
   "update.installing": "インストール中…",
   "update.install": "今すぐインストール",
-  "update.later": "あとで"
+  "update.later": "あとで",
+  "disk.cache": "キャッシュ",
+  "disk.packages": "node_modules",
+  "disk.build": "ビルドフォルダ",
+  "disk.rest": "その他すべて",
+  "disk.cleanupNote": "色の付いた部分は片付けられます。下の行で場所を確認できます。"
 }

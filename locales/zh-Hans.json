@@ -21,7 +21,6 @@
   "runner.idle": "空闲",
   "runner.busy": "构建中",
   "tray.title": "{{value}}",
-  "panel.top": "占用最多：{{apps}}",
   "panel.pressure.warn": "压力偏高",
   "panel.pressure.critical": "压力严重",
   "panel.diskFree": "可用 {{free}}",
@@ -41,8 +40,6 @@
   "notice.memory.title": "内存不足，运行变慢",
   "notice.cpu.title": "CPU 繁忙超过 1 分钟，运行变慢",
   "notice.body": "占用最多的应用：{{apps}} · 可在菜单栏的 Monitor 中退出",
-  "slow.memoryTitle": "谁在使用 {{size}} 内存",
-  "slow.cpuTitle": "谁在使用 CPU",
   "slow.system": "系统",
   "slow.cache": "缓存(自动释放)",
   "slow.other": "其他应用",
@@ -87,5 +84,10 @@
   "update.downloading": "正在下载… {{percent}}%",
   "update.installing": "正在安装…",
   "update.install": "立即安装",
-  "update.later": "以后"
+  "update.later": "以后",
+  "disk.cache": "缓存",
+  "disk.packages": "node_modules",
+  "disk.build": "构建文件夹",
+  "disk.rest": "其余部分",
+  "disk.cleanupNote": "彩色部分可以清理。下面一行显示它们的位置。"
 }

@@ -21,7 +21,6 @@
   "runner.idle": "閒置",
   "runner.busy": "建置中",
   "tray.title": "{{value}}",
-  "panel.top": "佔用最多：{{apps}}",
   "panel.pressure.warn": "壓力偏高",
   "panel.pressure.critical": "壓力嚴重",
   "panel.diskFree": "可用 {{free}}",
@@ -41,8 +40,6 @@
   "notice.memory.title": "記憶體不足，執行變慢",
   "notice.cpu.title": "CPU 忙碌超過 1 分鐘，執行變慢",
   "notice.body": "佔用最多的 App：{{apps}} · 可在選單列的 Monitor 中結束",
-  "slow.memoryTitle": "誰在使用 {{size}} 記憶體",
-  "slow.cpuTitle": "誰在使用 CPU",
   "slow.system": "系統",
   "slow.cache": "快取（自動釋放）",
   "slow.other": "其他 App",
@@ -87,5 +84,10 @@
   "update.downloading": "正在下載⋯ {{percent}}%",
   "update.installing": "正在安裝⋯",
   "update.install": "立即安裝",
-  "update.later": "稍後"
+  "update.later": "稍後",
+  "disk.cache": "快取",
+  "disk.packages": "node_modules",
+  "disk.build": "建置資料夾",
+  "disk.rest": "其餘部分",
+  "disk.cleanupNote": "彩色部分可以清理。下面一列顯示它們的位置。"
 }

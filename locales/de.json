@@ -21,7 +21,6 @@
   "runner.idle": "Bereit",
   "runner.busy": "Build läuft",
   "tray.title": "{{value}}",
-  "panel.top": "Top: {{apps}}",
   "panel.pressure.warn": "Speicherdruck hoch",
   "panel.pressure.critical": "Speicherdruck kritisch",
   "panel.diskFree": "{{free}} frei",
@@ -41,8 +40,6 @@
   "notice.memory.title": "Langsam: Arbeitsspeicher wird knapp",
   "notice.cpu.title": "Langsam: CPU seit über einer Minute ausgelastet",
   "notice.body": "Größte Verbraucher: {{apps}} · Sie können sie über Monitor in der Menüleiste beenden",
-  "slow.memoryTitle": "Wer {{size}} Arbeitsspeicher nutzt",
-  "slow.cpuTitle": "Wer die CPU nutzt",
   "slow.system": "System",
   "slow.cache": "Cache (wird automatisch geleert)",
   "slow.other": "Andere Apps",
@@ -87,5 +84,10 @@
   "update.downloading": "Wird geladen … {{percent}} %",
   "update.installing": "Wird installiert …",
   "update.install": "Jetzt installieren",
-  "update.later": "Später"
+  "update.later": "Später",
+  "disk.cache": "Caches",
+  "disk.packages": "node_modules",
+  "disk.build": "Build-Ordner",
+  "disk.rest": "Alles andere",
+  "disk.cleanupNote": "Die farbigen Teile lassen sich aufräumen. Die Zeile darunter zeigt, wo sie liegen."
 }

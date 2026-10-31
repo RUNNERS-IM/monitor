@@ -21,7 +21,6 @@
   "runner.idle": "Đang chờ",
   "runner.busy": "Đang build",
   "tray.title": "{{value}}",
-  "panel.top": "Nhiều nhất: {{apps}}",
   "panel.pressure.warn": "Áp lực cao",
   "panel.pressure.critical": "Áp lực nghiêm trọng",
   "panel.diskFree": "Còn trống {{free}}",
@@ -41,8 +40,6 @@
   "notice.memory.title": "Máy chậm vì thiếu bộ nhớ",
   "notice.cpu.title": "Máy chậm vì CPU bận hơn 1 phút",
   "notice.body": "Ứng dụng dùng nhiều nhất: {{apps}} · Bạn có thể thoát chúng từ Monitor trên thanh menu",
-  "slow.memoryTitle": "Ai đang dùng {{size}} bộ nhớ",
-  "slow.cpuTitle": "Ai đang dùng CPU",
   "slow.system": "Hệ thống",
   "slow.cache": "Bộ nhớ đệm (tự giải phóng)",
   "slow.other": "Ứng dụng khác",
@@ -87,5 +84,10 @@
   "update.downloading": "Đang tải về… {{percent}}%",
   "update.installing": "Đang cài đặt…",
   "update.install": "Cài đặt ngay",
-  "update.later": "Để sau"
+  "update.later": "Để sau",
+  "disk.cache": "Bộ nhớ đệm",
+  "disk.packages": "node_modules",
+  "disk.build": "Thư mục build",
+  "disk.rest": "Phần còn lại",
+  "disk.cleanupNote": "Phần có màu có thể dọn được. Dòng bên dưới cho biết chúng ở đâu."
 }

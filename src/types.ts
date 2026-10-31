@@ -36,4 +36,10 @@ export type Snapshot = {
   popup: boolean;
 };
 
-export type Cleanup = { total: number; top: { path: string; bytes: number }[]; measuredAt: number };
+export type Cleanup = {
+  total: number;
+  top: { path: string; bytes: number }[];
+  /** The total split by kind; empty in a result an older version saved. */
+  kinds: { kind: "cache" | "packages" | "build"; bytes: number }[];
+  measuredAt: number;
+};
