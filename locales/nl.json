@@ -61,7 +61,6 @@
   "summary.runnersBusy": "Runners aan het bouwen: {{count}}",
   "status.slowMemory": "Traag · geheugen",
   "status.slowCpu": "Traag · CPU",
-  "popup.close": "Sluiten (komt pas terug als het weer goed gaat)",
   "app.build": "Bouwt · {{amount}}",
   "app.buildIn": "Bouwt {{folder}} · {{amount}}",
   "app.simulator": "Simulator · {{amount}}",

@@ -35,7 +35,6 @@ export type Snapshot = {
   claudeSessions: ClaudeSession[];
   heavyJob: { name: string; command: string; runningSecs: number } | null;
   runners: Runner[];
-  popup: boolean;
 };
 
 export type Cleanup = {

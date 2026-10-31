@@ -61,7 +61,6 @@
   "summary.runnersBusy": "{{count}} runner sedang build",
   "status.slowMemory": "Lambat · memori",
   "status.slowCpu": "Lambat · CPU",
-  "popup.close": "Tutup (tidak muncul lagi sampai pulih)",
   "app.build": "Sedang build · {{amount}}",
   "app.buildIn": "Build {{folder}} · {{amount}}",
   "app.simulator": "Simulator · {{amount}}",

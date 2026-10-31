@@ -61,7 +61,6 @@
   "summary.runnersBusy": "Runners en compilation : {{count}}",
   "status.slowMemory": "Lent · mémoire",
   "status.slowCpu": "Lent · CPU",
-  "popup.close": "Fermer (ne réapparaît pas avant le retour à la normale)",
   "app.build": "Compilation · {{amount}}",
   "app.buildIn": "Compilation de {{folder}} · {{amount}}",
   "app.simulator": "Simulateur · {{amount}}",

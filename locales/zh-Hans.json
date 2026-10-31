@@ -61,7 +61,6 @@
   "summary.runnersBusy": "运行器 {{count}} 构建中",
   "status.slowMemory": "变慢 · 内存",
   "status.slowCpu": "变慢 · CPU",
-  "popup.close": "关闭（恢复前不再弹出）",
   "app.build": "构建中 · {{amount}}",
   "app.buildIn": "正在构建 {{folder}} · {{amount}}",
   "app.simulator": "模拟器 · {{amount}}",

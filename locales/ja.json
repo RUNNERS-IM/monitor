@@ -61,7 +61,6 @@
   "summary.runnersBusy": "ランナー {{count}} ビルド中",
   "status.slowMemory": "低速 · メモリ",
   "status.slowCpu": "低速 · CPU",
-  "popup.close": "閉じる(回復するまで再表示しません)",
   "app.build": "ビルド中 · {{amount}}",
   "app.buildIn": "{{folder}} をビルド中 · {{amount}}",
   "app.simulator": "シミュレータ · {{amount}}",

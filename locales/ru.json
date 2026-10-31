@@ -61,7 +61,6 @@
   "summary.runnersBusy": "Раннеров в сборке: {{count}}",
   "status.slowMemory": "Медленно · память",
   "status.slowCpu": "Медленно · CPU",
-  "popup.close": "Закрыть (не появится, пока всё не наладится)",
   "app.build": "Сборка · {{amount}}",
   "app.buildIn": "Сборка {{folder}} · {{amount}}",
   "app.simulator": "Симулятор · {{amount}}",

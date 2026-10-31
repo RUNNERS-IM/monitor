@@ -22,7 +22,6 @@ export const cleanup = () => api().cleanup() as Promise<Cleanup | null>;
 export const quitApp = (name: string) => api().quitApp(name);
 export const emptyCleanup = (kind: CleanupKind) => api().emptyCleanup(kind);
 export const pauseRunner = (name: string) => api().pauseRunner(name);
-export const closePopup = () => api().closePopup();
 export const fitHeight = (height: number) => api().fitHeight(height);
 export const version = () => api().version();
 export const openExternal = (url: string) => api().openExternal(url);

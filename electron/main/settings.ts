@@ -8,9 +8,11 @@ export type Settings = {
   autoUpdate: boolean;
   /** The day (`2026-10-30`) "Later" was chosen in the update dialog, so the daily check does not ask again that day. */
   updateLaterOn: string | null;
+  /** The day (`Sat Oct 31 2026`) each slow-computer notice was last shown. Why: once a day, even across restarts. */
+  noticedOn: Partial<Record<"memory" | "cpu", string>>;
 };
 
-const DEFAULTS: Settings = { autoUpdate: true, updateLaterOn: null };
+const DEFAULTS: Settings = { autoUpdate: true, updateLaterOn: null, noticedOn: {} };
 
 function file(): string {
   return join(app.getPath("userData"), "settings.json");

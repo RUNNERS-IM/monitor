@@ -61,7 +61,6 @@
   "summary.runnersBusy": "{{count}} runner đang build",
   "status.slowMemory": "Chậm · bộ nhớ",
   "status.slowCpu": "Chậm · CPU",
-  "popup.close": "Đóng (không hiện lại cho đến khi ổn hơn)",
   "app.build": "Đang build · {{amount}}",
   "app.buildIn": "Đang build {{folder}} · {{amount}}",
   "app.simulator": "Trình mô phỏng · {{amount}}",

@@ -1,5 +1,5 @@
 // Monitor's main process: a tray app that samples this computer every 3 seconds, shows the reading on the tray and
-// in a panel under it, pops the panel up by itself when the computer turns slow, and measures cleanable folders
+// in a panel under it, colours the tray icon and notifies once a day when the computer turns slow, and measures cleanable folders
 // every 30 minutes.
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme, Notification, shell, systemPreferences, type Tray } from "electron";
 import { readFileSync } from "node:fs";
@@ -10,7 +10,7 @@ import { buildMenu, forgetIcons, type Command, type MenuState } from "./menu";
 import { native, type Sampler } from "./native";
 import { releaseNoteLines } from "./releaseNotes";
 import { readSettings, writeSettings } from "./settings";
-import { createTray, showReading } from "./tray";
+import { createTray, showReading, type Level } from "./tray";
 import type { Snapshot } from "./types";
 import { checkNow, displayVersion, startUpdates } from "./updates";
 import { answerUpdate, askUpdate, createPanel, placeUnderTray, showAbout, TRANSLUCENT, updateOffer } from "./windows";
@@ -20,11 +20,11 @@ const REFRESH_MS = 3000;
 const CLEANUP_EVERY_MS = 30 * 60 * 1000;
 const CLEANUP_FILE = "cleanup.json";
 const CLEANUP_PROGRESS_FILE = "cleanup-progress.json";
-// Why: a slow computer stays slow for a while, so the same warning is repeated at most this often.
-const SLOW_NOTICE_EVERY_MS = 30 * 60 * 1000;
-// Why: memory pressure flips to warning and back within seconds on a busy Mac, so the popup waits until it has stayed
-// short this long. The native CPU flag already means a full minute above the limit.
-const SLOW_MEMORY_FOR_MS = 60 * 1000;
+// Why: memory pressure flips to warning and back within seconds on a busy Mac, so a slow reading still counts until
+// it has been gone this long; otherwise the icon would flicker and a notice could never see a full minute.
+const SLOW_HOLD_MS = 60 * 1000;
+// Why: a notice is for a computer that has stayed slow, not a short spike. The native CPU flag already means a full minute.
+const SLOW_NOTICE_AFTER_MS = 60 * 1000;
 const NOTICE_APPS = 2;
 // Why: the tray click that opens the panel can also send it a focus-lost event right away, so blur is ignored this long after opening.
 const BLUR_GRACE_MS = 400;
@@ -58,18 +58,13 @@ let hiddenByBlurAt = 0;
  *  Why: a paused runner has no process, so without this it would simply vanish from the list. */
 const paused = new Map<string, number>();
 
-/** The panel opened by itself because the computer turned slow. */
-const popup = {
-  open: false,
-  /** Reasons the open popup is about, so closing it silences exactly those. */
-  showing: new Set<Reason>(),
-  lastShown: new Map<Reason, number>(),
-  /** Closed by the user, with the day it was closed on; not shown again for that reason that day. */
-  dismissed: new Map<Reason, string>(),
-  /** When each reason turned slow, cleared when it recovers. */
-  slowSince: new Map<Reason, number>(),
+/** When each reason was last read as slow, and since when it has stayed slow (allowing the short gaps above). */
+const slow = {
+  lastAt: new Map<Reason, number>(),
+  since: new Map<Reason, number>(),
+  /** When memory pressure was last critical. */
+  criticalAt: 0,
 };
-const noticed = new Map<Reason, number>();
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -82,11 +77,45 @@ function reasons(snap: Snapshot): [Reason, boolean][] {
 
 const today = () => new Date().toDateString();
 
-function recently(at: number | undefined): boolean {
-  return at !== undefined && Date.now() - at < SLOW_NOTICE_EVERY_MS;
+/** Reasons that are slow now, holding each for SLOW_HOLD_MS after its last slow reading. Also returns the icon level. */
+function trackSlow(snap: Snapshot): { held: Reason[]; level: Level } {
+  const now = Date.now();
+  if (snap.memoryPressure === "critical") slow.criticalAt = now;
+  const held: Reason[] = [];
+  for (const [reason, isSlow] of reasons(snap)) {
+    if (isSlow) slow.lastAt.set(reason, now);
+    if (now - (slow.lastAt.get(reason) ?? -Infinity) < SLOW_HOLD_MS) {
+      held.push(reason);
+      if (!slow.since.has(reason)) slow.since.set(reason, now);
+    } else slow.since.delete(reason);
+  }
+  const level: Level = now - slow.criticalAt < SLOW_HOLD_MS ? "bad" : held.length > 0 ? "warn" : "fine";
+  return { held, level };
 }
 
-/** Shows the panel without taking focus, under the tray. Why: a popup must not swallow what the user is typing. */
+/** Shows a system notification once a day per reason when the computer has stayed slow, naming the apps most likely
+ *  behind it. Clicking it opens the panel. Why: the panel no longer opens by itself (it kept reopening on Macs that
+ *  hover at the warning level), and the day is saved so a restart does not repeat it. */
+function notifyIfSlow(snap: Snapshot, held: Reason[]): void {
+  const now = Date.now();
+  for (const reason of held) {
+    if (now - (slow.since.get(reason) ?? now) < SLOW_NOTICE_AFTER_MS) continue;
+    const noticedOn = readSettings().noticedOn;
+    if (noticedOn[reason] === today()) continue;
+    writeSettings({ noticedOn: { ...noticedOn, [reason]: today() } });
+    const apps =
+      reason === "memory"
+        ? snap.topMemory.slice(0, NOTICE_APPS).map((a) => `${a.name} ${(a.memory / 1024 ** 3).toFixed(1)} GB`)
+        : snap.topCpu.slice(0, NOTICE_APPS).map((a) => `${a.name} ${Math.round(a.cpuPercent)}%`);
+    const notice = new Notification({ title: t(`notice.${reason}.title`), body: t("notice.body", { apps: apps.join(", ") }) });
+    notice.on("click", () => {
+      if (!panel?.isVisible()) togglePanel();
+    });
+    notice.show();
+  }
+}
+
+/** Shows the panel without taking focus, under the tray. Debug runs only, so a screenshot can be taken without a click. */
 function showWithoutFocus(): void {
   if (!panel) return;
   panel.setFocusable(false);
@@ -94,68 +123,14 @@ function showWithoutFocus(): void {
   panel.showInactive();
 }
 
-/** Opens the panel by itself when the computer turns slow, with "why it is slow" on top.
- *  Returns false when there is no panel to open, so the caller can fall back to a notification. */
-function popupIfSlow(snap: Snapshot): boolean {
-  if (!panel || panel.isDestroyed()) return false;
-  const now = Date.now();
-  const slowNow = new Set(reasons(snap).filter(([, slow]) => slow).map(([reason]) => reason));
-  for (const reason of ["memory", "cpu"] as Reason[]) {
-    if (!slowNow.has(reason)) popup.slowSince.delete(reason);
-    else if (!popup.slowSince.has(reason)) popup.slowSince.set(reason, now);
-  }
-  // Why: once the computer has recovered the popup has nothing left to say, so it closes itself.
-  if (popup.open && ![...popup.showing].some((reason) => slowNow.has(reason))) {
-    popup.open = false;
-    popup.showing.clear();
-    hidePanel();
-  }
-  const longEnough = (reason: Reason) => reason === "cpu" || now - (popup.slowSince.get(reason) ?? now) >= SLOW_MEMORY_FOR_MS;
-  const due = [...slowNow].filter(
-    (reason) => longEnough(reason) && popup.dismissed.get(reason) !== today() && !recently(popup.lastShown.get(reason)),
-  );
-  if (due.length === 0) return true;
-  for (const reason of due) popup.lastShown.set(reason, now);
-  // Why: when the user already has the panel open they see the reasons there; nothing more to pop up.
-  if (panel.isVisible()) return true;
-  popup.showing = new Set(due);
-  popup.open = true;
-  showWithoutFocus();
-  return true;
-}
-
-/** Closes a popup and keeps it closed for the same reason for the rest of the day. */
-function dismissPopup(): void {
-  if (!popup.open) return;
-  popup.open = false;
-  for (const reason of popup.showing) popup.dismissed.set(reason, today());
-  popup.showing.clear();
-}
-
 function hidePanel(): void {
   panel?.hide();
   panel?.setFocusable(true);
 }
 
-/** Shows a system notification when the computer turns slow, naming the apps most likely behind it.
- *  Why: kept for when there is no panel window to pop up. */
-function notifyIfSlow(snap: Snapshot): void {
-  for (const [reason, slow] of reasons(snap)) {
-    if (!slow || recently(noticed.get(reason))) continue;
-    const apps =
-      reason === "memory"
-        ? snap.topMemory.slice(0, NOTICE_APPS).map((a) => `${a.name} ${(a.memory / 1024 ** 3).toFixed(1)} GB`)
-        : snap.topCpu.slice(0, NOTICE_APPS).map((a) => `${a.name} ${Math.round(a.cpuPercent)}%`);
-    new Notification({ title: t(`notice.${reason}.title`), body: t("notice.body", { apps: apps.join(", ") }) }).show();
-    noticed.set(reason, Date.now());
-  }
-}
-
 function togglePanel(): void {
   if (!panel) return;
   if (panel.isVisible()) {
-    // Why: clicking the tray while the popup is up is the user saying "seen it".
-    dismissPopup();
     hidePanel();
     return;
   }
@@ -213,11 +188,11 @@ function refreshLinuxMenu(): void {
   tray.setContextMenu(menu);
 }
 
-/** The reading the panel gets: the newest one plus what only the app knows (popup, paused runners). */
+/** The reading the panel gets: the newest one plus what only the app knows (paused runners). */
 function panelSnapshot(): Snapshot | null {
   const base = DEMO ? latestDemo : latest;
   if (!base) return null;
-  const snap: Snapshot = { ...base, runners: base.runners.map((r) => ({ ...r })), popup: popup.open };
+  const snap: Snapshot = { ...base, runners: base.runners.map((r) => ({ ...r })) };
   const now = Date.now() / 1000;
   for (const [name, until] of paused) {
     if (until <= now) {
@@ -237,14 +212,15 @@ async function sampleLoop(): Promise<void> {
     const started = Date.now();
     try {
       const snap = JSON.parse(await sampler!.sample()) as Snapshot;
-      if (!popupIfSlow(snap)) notifyIfSlow(snap);
+      const { held, level } = trackSlow(snap);
+      notifyIfSlow(snap, held);
       latest = snap;
       if (DEMO) {
         const demo = sampler!.demoSnapshot(currentLocale() === "ko");
         latestDemo = demo ? (JSON.parse(demo) as Snapshot) : null;
       }
       // Why: in a demo run the menu-bar icon shows the made-up numbers too, so it matches the panel in a screenshot.
-      if (tray) showReading(tray, latestDemo ?? snap);
+      if (tray) showReading(tray, latestDemo ?? snap, latestDemo ? "warn" : level);
       refreshLinuxMenu();
     } catch (error) {
       console.error("sample:", error);
@@ -329,10 +305,6 @@ function registerIpc(): void {
     paused.set(String(name), until);
   });
   ipcMain.handle("monitor:translucent", () => TRANSLUCENT);
-  ipcMain.handle("monitor:closePopup", () => {
-    dismissPopup();
-    hidePanel();
-  });
   ipcMain.handle("monitor:version", () => displayVersion());
   ipcMain.handle("monitor:accentColor", () => accentColor());
   ipcMain.handle("monitor:menuState", () => menuState());
@@ -360,7 +332,7 @@ function registerIpc(): void {
 /** Debug runs only: `MONITOR_OPEN=panel|about|update` opens that window at launch, so it can be captured without
  *  clicking the tray (`update` / `update-progress` show the update question with the notes in RELEASE_NOTES.md, downloaded or still
  *  downloading, and install nothing), and
- *  `MONITOR_THEME=dark|light` forces the look, and `MONITOR_SOLID=1` turns the blur off so the desktop does not show through. The panel opens like the popup (no focus), so it stays up. */
+ *  `MONITOR_THEME=dark|light` forces the look, and `MONITOR_SOLID=1` turns the blur off so the desktop does not show through. The panel opens without focus, so it stays up. */
 function debugHooks(): void {
   const theme = process.env.MONITOR_THEME;
   if (theme === "dark" || theme === "light") nativeTheme.themeSource = theme;
@@ -388,8 +360,7 @@ function start(): void {
   sampler = new native.Sampler();
   panel = createPanel();
   panel.on("blur", () => {
-    // Why: the popup never takes focus, so a focus change elsewhere must not close it; it has its own close button.
-    if (popup.open || Date.now() - shownAt < BLUR_GRACE_MS) return;
+    if (Date.now() - shownAt < BLUR_GRACE_MS) return;
     hiddenByBlurAt = Date.now();
     hidePanel();
   });

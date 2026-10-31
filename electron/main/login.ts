@@ -1,4 +1,4 @@
-// "Open at login": Monitor starts with the computer so the slow-computer popup is never missed (decided default on).
+// "Open at login": Monitor starts with the computer so a slow computer is always shown on the tray (decided default on).
 // The first release run turns it on once; after that only the menu line changes it, so turning it off sticks.
 // macOS 13+ registers the app itself (listed by name under Login Items), Windows uses the Run key, Linux an
 // autostart .desktop file.

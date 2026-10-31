@@ -26,8 +26,6 @@ export type MonitorApi = {
   pauseRunner: (name: string) => Promise<void>;
   /** Whether the OS blurs what is behind the window; the page draws a solid background when it does not. */
   translucent: () => Promise<boolean>;
-  /** Closes the slow-computer popup and keeps it closed until the computer recovers. */
-  closePopup: () => Promise<void>;
   /** Sets the window's content height so it fits the page. */
   fitHeight: (height: number) => void;
   /** App version as people see it (2.6.1030.2). */

@@ -61,7 +61,6 @@
   "summary.runnersBusy": "{{count}} runner in build",
   "status.slowMemory": "Lento · memoria",
   "status.slowCpu": "Lento · CPU",
-  "popup.close": "Chiudi (non riappare finché la situazione non migliora)",
   "app.build": "Build in corso · {{amount}}",
   "app.buildIn": "Build di {{folder}} · {{amount}}",
   "app.simulator": "Simulatore · {{amount}}",

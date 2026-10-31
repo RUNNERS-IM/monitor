@@ -61,7 +61,6 @@
   "summary.runnersBusy": "러너 {{count}} 빌드 중",
   "status.slowMemory": "느림 · 메모리",
   "status.slowCpu": "느림 · CPU",
-  "popup.close": "닫기 (나아질 때까지 다시 안 뜸)",
   "app.build": "빌드 중 · {{amount}}",
   "app.buildIn": "{{folder}} 빌드 중 · {{amount}}",
   "app.simulator": "시뮬레이터 · {{amount}}",
