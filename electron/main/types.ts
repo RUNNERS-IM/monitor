@@ -1,7 +1,17 @@
 // The parts of a reading the main process reads. The full shape is in src/types.ts, which the panel uses.
 export type Pressure = "normal" | "warn" | "critical";
 
-export type AppUse = { name: string; cpuPercent: number; memory: number };
+export type AppKind = "app" | "build" | "simulator" | "devServer";
+
+export type AppUse = {
+  name: string;
+  cpuPercent: number;
+  memory: number;
+  quittable: boolean;
+  kind: AppKind;
+  folder: string | null;
+  runningSecs: number | null;
+};
 
 export type Runner = { name: string; busy: boolean; pausedUntil: number | null };
 

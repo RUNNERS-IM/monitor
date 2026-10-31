@@ -1,11 +1,11 @@
 ## 한국어
 
-- 컴퓨터가 느려져도 패널이 저절로 열리지 않습니다. 메모리가 계속 빠듯한 맥에서 패널이 30분마다 다시 열리던 문제를 고쳤습니다.
-- 대신 메뉴 막대 아이콘 색으로 보여 줍니다. 괜찮으면 초록, 느리면 주황, 메모리가 아주 모자라면 빨강입니다.
-- 느린 상태가 1분 넘게 이어지면 알림을 하루에 한 번만 보냅니다. 알림을 누르면 패널이 열립니다.
+- 패널 맨 위에 "지금 하면 좋은 것"이 나옵니다. 메모리가 모자라면 30분 넘게 안 쓴 큰 앱과 오래 켜 둔 개발 서버(nuxt dev · vite 등)를, 디스크가 85%를 넘으면 큰 정리 거리를 골라 단추 하나로 끄거나 비웁니다.
+- 느려짐 알림에 "끄기" 단추가 붙습니다. 알림에서 바로 가장 큰 앱을 끌 수 있습니다.
+- 앱마다 메모리를 활동 모니터의 "메모리" 열과 같은 값으로 셉니다. 압축된 몫까지 앱에 넣어서, "시스템"이 크게 보이던 것을 바로잡았습니다.
 
 ## English
 
-- The panel no longer opens by itself when the computer is slow. On Macs that stay short of memory it kept reopening every 30 minutes.
-- The menu bar icon shows it instead: green when fine, orange when slow, red when memory is critically short.
-- A notification comes at most once a day once the slowdown lasts over a minute. Clicking it opens the panel.
+- A "Worth doing now" box at the top of the panel suggests what to quit when memory is short (big apps unused for 30+ minutes, dev servers left running such as nuxt dev or vite) and what to empty when the disk is over 85%, each with one button.
+- The slow-computer notification has a Quit button for the biggest app.
+- Each app's memory now matches Activity Monitor's Memory column, compressed memory included, so "System" no longer looks oversized.

@@ -319,3 +319,44 @@ body,
 .rm-group .legend-note {
   margin: -6px 14px 4px 32px;
 }
+
+/* "Worth doing now": a tinted box under the heading, one line per suggestion with its button.
+   Why: tinted like the slow badge so it reads as the answer to that badge, not as one more row. */
+.suggest {
+  margin: 8px var(--rm-group-inset);
+  padding: 8px 0 4px;
+  border-radius: var(--rm-group-radius);
+  background: color-mix(in srgb, var(--rm-high) 16%, transparent);
+}
+
+.suggest-title {
+  margin: 0 14px 4px;
+  font-weight: 600;
+  color: var(--rm-high);
+}
+
+.suggest-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  margin: 0 14px;
+}
+
+.suggest-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.suggest-text span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggest-why {
+  color: var(--rm-text-secondary);
+  font-size: 11px;
+}

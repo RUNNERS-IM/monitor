@@ -99,5 +99,17 @@
   "empty.confirm.build": "Xóa {{size}} thư mục build?",
   "empty.detail.cache": "Sẽ xóa ngay, không qua Thùng rác. Ứng dụng sẽ tạo lại khi cần, nên lần dùng đầu có thể chậm hơn một chút.",
   "empty.detail.packages": "Sẽ xóa ngay, không qua Thùng rác. Các dự án dùng trong 7 ngày qua được giữ lại. Dự án đã xóa cần chạy pnpm install (hoặc npm install) trước khi chạy lại.",
-  "empty.detail.build": "Sẽ xóa ngay, không qua Thùng rác. Các thư mục dùng trong 7 ngày qua được giữ lại. Lần build tiếp theo của dự án đã xóa sẽ làm lại từ đầu và lâu hơn."
+  "empty.detail.build": "Sẽ xóa ngay, không qua Thùng rác. Các thư mục dùng trong 7 ngày qua được giữ lại. Lần build tiếp theo của dự án đã xóa sẽ làm lại từ đầu và lâu hơn.",
+  "suggest.title": "Nên làm ngay",
+  "suggest.quit": "Thoát {{name}}",
+  "suggest.quitDev": "Dừng máy chủ dev · {{name}}",
+  "suggest.empty": "Dọn {{kind}}",
+  "suggest.unused": "Không dùng hơn 30 phút",
+  "suggest.running": "Đã chạy {{time}}",
+  "suggest.frees": "giải phóng {{size}}",
+  "suggest.cpu": "CPU {{percent}}%",
+  "suggest.emptyWhy": "Ổ đĩa gần đầy · giải phóng {{size}}",
+  "suggest.quitDone": "Đã yêu cầu thoát",
+  "notice.suggest": "Thoát {{name}} giải phóng {{size}}.",
+  "notice.quit": "Thoát {{name}}"
 }

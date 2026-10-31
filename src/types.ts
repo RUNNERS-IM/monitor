@@ -3,11 +3,17 @@ import type { CleanupKind } from "../electron/preload/api";
 
 export type Pressure = "normal" | "warn" | "critical";
 
-export type AppKind = "app" | "build" | "simulator";
+export type AppKind = "app" | "build" | "simulator" | "devServer";
 export type AppUse = { name: string; cpuPercent: number; memory: number; quittable: boolean; kind: AppKind; folder: string | null;
   /** For the "claude" entry: how many claude processes it adds up. */
   sessions: number | null;
+  /** For a dev server: how long it has been running. */
+  runningSecs: number | null;
 };
+/** Something worth doing now, chosen by the app (electron/main/suggest.ts). */
+export type Suggestion =
+  | { action: "quit"; reason: "memory" | "cpu"; name: string; devServer: boolean; folder: string | null; runningSecs: number | null; bytes: number; cpuPercent: number }
+  | { action: "empty"; reason: "disk"; kind: CleanupKind; bytes: number };
 export type ClaudeSession = { pid: number; name: string | null; runningSecs: number; busy: boolean; human: boolean };
 export type Runner = { name: string; busy: boolean; pausedUntil: number | null };
 
@@ -35,6 +41,8 @@ export type Snapshot = {
   claudeSessions: ClaudeSession[];
   heavyJob: { name: string; command: string; runningSecs: number } | null;
   runners: Runner[];
+  /** What to quit or empty now; added by the app, empty when nothing is worth doing. */
+  suggestions: Suggestion[];
 };
 
 export type Cleanup = {

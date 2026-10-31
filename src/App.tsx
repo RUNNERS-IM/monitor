@@ -22,7 +22,7 @@ import {
 import { t } from "./i18n";
 import * as native from "./native";
 import type { CleanupKind, MenuCommand, MenuState } from "./native";
-import type { AppUse, Cleanup, Pressure, Snapshot } from "./types";
+import type { AppUse, Cleanup, Pressure, Snapshot, Suggestion } from "./types";
 import "./runners-menu.css";
 import "./App.css";
 
@@ -194,13 +194,19 @@ const CLAUDE_COLOUR = "#bf5af2";
 type Part = { key: string; label: string; amount: string; size: number; colour: string; app?: AppUse; empty?: CleanupKind };
 
 /** Colours for the apps in order: claude always purple, the others take the next free colour. */
+/** A dev server is named with its repository, so two of them (or one next to "node") can be told apart. */
+function appLabel(app: { name: string; folder: string | null; kind?: string; devServer?: boolean }): string {
+  const dev = app.kind === "devServer" || app.devServer;
+  return dev && app.folder ? `${app.name} · ${app.folder}` : app.name;
+}
+
 function appParts(apps: AppUse[], size: (app: AppUse) => number, amount: (app: AppUse) => string): Part[] {
   const claudeShown = apps.some((app) => app.sessions !== null);
   const palette = claudeShown ? APP_COLOURS.filter((colour) => colour !== CLAUDE_COLOUR) : APP_COLOURS;
   let next = 0;
   return apps.map((app) => ({
     key: `app-${app.name}`,
-    label: app.sessions !== null ? t("slow.claudeSessions", { count: app.sessions }) : app.name,
+    label: app.sessions !== null ? t("slow.claudeSessions", { count: app.sessions }) : appLabel(app),
     amount: appState(app, amount(app)),
     size: size(app),
     colour: app.sessions !== null ? CLAUDE_COLOUR : palette[next++ % palette.length],
@@ -211,7 +217,9 @@ function appParts(apps: AppUse[], size: (app: AppUse) => number, amount: (app: A
 /** The parts of memory, adding up to the total: top apps, system, cache, other apps and the free part (left empty). */
 function memoryParts(snap: Snapshot): { parts: Part[]; total: number } {
   const apps = appParts(snap.topMemory, (app) => app.memory, (app) => formatGb(app.memory));
-  const system = snap.memoryWired + snap.memoryCompressed;
+  // Why: each app's size already holds its compressed pages (Activity Monitor's Memory column), so only wired memory,
+  // which nothing can give back, is left for "System".
+  const system = snap.memoryWired;
   const known = apps.reduce((sum, part) => sum + part.size, 0) + system + snap.memoryCache + snap.memoryFree;
   const other = Math.max(0, snap.memoryTotal - known);
   const parts: Part[] = [
@@ -310,6 +318,51 @@ function Legend({ part }: { part: Part }) {
       {note && <div className="rm-note legend-note">{note}</div>}
       {error && <div className="rm-note rm-full">{t("action.failed", { error })}</div>}
     </>
+  );
+}
+
+/** One "worth doing now" line: what to do, why, and the button that does it. */
+function SuggestionLine({ item }: { item: Suggestion }) {
+  const [pending, setPending] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const run = () => {
+    setPending(true);
+    setError(null);
+    const work =
+      item.action === "quit"
+        ? native.quitApp(item.name).then(() => t("suggest.quitDone"))
+        : native.emptyCleanup(item.kind).then((freed) => (freed ? t("empty.done", { size: formatGb(freed.freed) }) : null));
+    work
+      .then((text) => text && setDone(text))
+      .catch((e) => setError(cleanError(e)))
+      .finally(() => setPending(false));
+  };
+  const what =
+    item.action === "empty"
+      ? t("suggest.empty", { kind: t(`disk.${item.kind}`) })
+      : item.devServer
+        ? t("suggest.quitDev", { name: appLabel(item) })
+        : t("suggest.quit", { name: item.name });
+  const why =
+    item.action === "empty"
+      ? t("suggest.emptyWhy", { size: formatGb(item.bytes) })
+      : [
+          item.runningSecs != null ? t("suggest.running", { time: formatDuration(item.runningSecs) }) : t("suggest.unused"),
+          item.reason === "cpu" ? t("suggest.cpu", { percent: Math.round(item.cpuPercent) }) : t("suggest.frees", { size: formatGb(item.bytes) }),
+        ].join(" · ");
+  return (
+    <div className="suggest-line">
+      <div className="suggest-text">
+        <span>{what}</span>
+        <span className="suggest-why">{done ?? (error ? t("action.failed", { error }) : why)}</span>
+      </div>
+      {!done && (
+        <button type="button" className="row-button" disabled={pending} onClick={run}>
+          {item.action === "quit" ? t("slow.quit") : pending ? t("empty.running") : t("empty.button")}
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -442,6 +495,14 @@ function App() {
         {slow && <span className={`badge ${snap.memoryPressure === "critical" ? "full" : "high"}`}>{t(`status.${status}`)}</span>}
       </header>
       <div className="rm-separator" />
+      {snap.suggestions.length > 0 && (
+        <section className="suggest" aria-label={t("suggest.title")}>
+          <div className="suggest-title">{t("suggest.title")}</div>
+          {snap.suggestions.map((item) => (
+            <SuggestionLine key={item.action === "quit" ? `quit-${item.name}` : `empty-${item.kind}`} item={item} />
+          ))}
+        </section>
+      )}
       <SummaryRow
         icon={Cpu}
         label={t("panel.cpu")}

@@ -99,5 +99,17 @@
   "empty.confirm.build": "ビルドフォルダ {{size}} を削除しますか?",
   "empty.detail.cache": "ゴミ箱を通さずにすぐ削除します。アプリが必要なときに作り直すので、最初の1回は少し遅くなることがあります。",
   "empty.detail.packages": "ゴミ箱を通さずにすぐ削除します。この7日間に使ったプロジェクトは残します。削除したプロジェクトは、次に pnpm install(または npm install)をするまで動きません。",
-  "empty.detail.build": "ゴミ箱を通さずにすぐ削除します。この7日間に使ったフォルダは残します。削除したプロジェクトの次のビルドは最初からやり直すので時間がかかります。"
+  "empty.detail.build": "ゴミ箱を通さずにすぐ削除します。この7日間に使ったフォルダは残します。削除したプロジェクトの次のビルドは最初からやり直すので時間がかかります。",
+  "suggest.title": "今やるとよいこと",
+  "suggest.quit": "{{name}} を終了",
+  "suggest.quitDev": "開発サーバーを終了 · {{name}}",
+  "suggest.empty": "{{kind}} を空にする",
+  "suggest.unused": "30分以上使っていない",
+  "suggest.running": "{{time}}実行中",
+  "suggest.frees": "{{size}} 空く",
+  "suggest.cpu": "CPU {{percent}}%",
+  "suggest.emptyWhy": "ディスクがほぼ満杯 · {{size}} 空く",
+  "suggest.quitDone": "終了を依頼しました",
+  "notice.suggest": "{{name}} を終了すると {{size}} 空きます。",
+  "notice.quit": "{{name}} を終了"
 }

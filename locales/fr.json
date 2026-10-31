@@ -99,5 +99,17 @@
   "empty.confirm.build": "Supprimer {{size}} de dossiers de build ?",
   "empty.detail.cache": "Ils sont supprimés tout de suite, sans passer par la Corbeille. Les apps les recréent au besoin, la première utilisation peut donc être un peu plus lente.",
   "empty.detail.packages": "Ils sont supprimés tout de suite, sans passer par la Corbeille. Les projets utilisés ces 7 derniers jours sont gardés. Un projet supprimé demande pnpm install (ou npm install) avant de tourner à nouveau.",
-  "empty.detail.build": "Ils sont supprimés tout de suite, sans passer par la Corbeille. Les dossiers utilisés ces 7 derniers jours sont gardés. Le prochain build d’un projet supprimé repart de zéro et prend plus de temps."
+  "empty.detail.build": "Ils sont supprimés tout de suite, sans passer par la Corbeille. Les dossiers utilisés ces 7 derniers jours sont gardés. Le prochain build d’un projet supprimé repart de zéro et prend plus de temps.",
+  "suggest.title": "À faire maintenant",
+  "suggest.quit": "Quitter {{name}}",
+  "suggest.quitDev": "Arrêter le serveur de dev · {{name}}",
+  "suggest.empty": "Vider {{kind}}",
+  "suggest.unused": "Inutilisé depuis 30 min+",
+  "suggest.running": "Lancé depuis {{time}}",
+  "suggest.frees": "libère {{size}}",
+  "suggest.cpu": "CPU {{percent}} %",
+  "suggest.emptyWhy": "Disque presque plein · libère {{size}}",
+  "suggest.quitDone": "Demande de fermeture envoyée",
+  "notice.suggest": "Quitter {{name}} libère {{size}}.",
+  "notice.quit": "Quitter {{name}}"
 }

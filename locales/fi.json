@@ -99,5 +99,17 @@
   "empty.confirm.build": "Poistetaanko {{size}} käännöskansioita?",
   "empty.detail.cache": "Ne poistetaan heti, ei roskakorin kautta. Apit luovat ne uudelleen tarvittaessa, joten ensimmäinen käyttö voi olla hieman hitaampi.",
   "empty.detail.packages": "Ne poistetaan heti, ei roskakorin kautta. Viimeisen 7 päivän aikana käytetyt projektit jäävät. Poistettu projekti tarvitsee pnpm install (tai npm install) ennen kuin se toimii taas.",
-  "empty.detail.build": "Ne poistetaan heti, ei roskakorin kautta. Viimeisen 7 päivän aikana käytetyt kansiot jäävät. Poistetun projektin seuraava käännös alkaa alusta ja kestää kauemmin."
+  "empty.detail.build": "Ne poistetaan heti, ei roskakorin kautta. Viimeisen 7 päivän aikana käytetyt kansiot jäävät. Poistetun projektin seuraava käännös alkaa alusta ja kestää kauemmin.",
+  "suggest.title": "Kannattaa nyt",
+  "suggest.quit": "Lopeta {{name}}",
+  "suggest.quitDev": "Pysäytä kehityspalvelin · {{name}}",
+  "suggest.empty": "Tyhjennä: {{kind}}",
+  "suggest.unused": "Käyttämättä yli 30 min",
+  "suggest.running": "Käynnissä {{time}}",
+  "suggest.frees": "vapauttaa {{size}}",
+  "suggest.cpu": "CPU {{percent}} %",
+  "suggest.emptyWhy": "Levy melkein täynnä · vapauttaa {{size}}",
+  "suggest.quitDone": "Pyydetty lopettamaan",
+  "notice.suggest": "{{name}}: lopettaminen vapauttaa {{size}}.",
+  "notice.quit": "Lopeta {{name}}"
 }

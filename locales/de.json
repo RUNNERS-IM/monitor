@@ -99,5 +99,17 @@
   "empty.confirm.build": "{{size}} Build-Ordner löschen?",
   "empty.detail.cache": "Sie werden sofort gelöscht, ohne Papierkorb. Apps legen sie bei Bedarf neu an, der erste Start kann etwas langsamer sein.",
   "empty.detail.packages": "Sie werden sofort gelöscht, ohne Papierkorb. Projekte der letzten 7 Tage bleiben. Ein gelöschtes Projekt braucht vor dem nächsten Start pnpm install (oder npm install).",
-  "empty.detail.build": "Sie werden sofort gelöscht, ohne Papierkorb. Ordner der letzten 7 Tage bleiben. Der nächste Build eines gelöschten Projekts beginnt von vorn und dauert länger."
+  "empty.detail.build": "Sie werden sofort gelöscht, ohne Papierkorb. Ordner der letzten 7 Tage bleiben. Der nächste Build eines gelöschten Projekts beginnt von vorn und dauert länger.",
+  "suggest.title": "Jetzt sinnvoll",
+  "suggest.quit": "{{name}} beenden",
+  "suggest.quitDev": "Dev-Server beenden · {{name}}",
+  "suggest.empty": "{{kind}} leeren",
+  "suggest.unused": "Über 30 Min. ungenutzt",
+  "suggest.running": "Läuft seit {{time}}",
+  "suggest.frees": "gibt {{size}} frei",
+  "suggest.cpu": "CPU {{percent}} %",
+  "suggest.emptyWhy": "Festplatte fast voll · gibt {{size}} frei",
+  "suggest.quitDone": "Zum Beenden aufgefordert",
+  "notice.suggest": "{{name}} beenden gibt {{size}} frei.",
+  "notice.quit": "{{name}} beenden"
 }

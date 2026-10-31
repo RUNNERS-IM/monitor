@@ -99,5 +99,17 @@
   "empty.confirm.build": "{{size}} aan buildmappen verwijderen?",
   "empty.detail.cache": "Ze worden meteen verwijderd, zonder Prullenmand. Apps maken ze opnieuw aan wanneer nodig, dus het eerste gebruik kan iets trager zijn.",
   "empty.detail.packages": "Ze worden meteen verwijderd, zonder Prullenmand. Projecten van de afgelopen 7 dagen blijven staan. Een verwijderd project heeft pnpm install (of npm install) nodig voordat het weer draait.",
-  "empty.detail.build": "Ze worden meteen verwijderd, zonder Prullenmand. Mappen van de afgelopen 7 dagen blijven staan. De volgende build van een verwijderd project begint opnieuw en duurt langer."
+  "empty.detail.build": "Ze worden meteen verwijderd, zonder Prullenmand. Mappen van de afgelopen 7 dagen blijven staan. De volgende build van een verwijderd project begint opnieuw en duurt langer.",
+  "suggest.title": "Nu de moeite waard",
+  "suggest.quit": "{{name}} stoppen",
+  "suggest.quitDev": "Dev-server stoppen · {{name}}",
+  "suggest.empty": "{{kind}} legen",
+  "suggest.unused": "30+ min niet gebruikt",
+  "suggest.running": "Draait al {{time}}",
+  "suggest.frees": "maakt {{size}} vrij",
+  "suggest.cpu": "CPU {{percent}}%",
+  "suggest.emptyWhy": "Schijf bijna vol · maakt {{size}} vrij",
+  "suggest.quitDone": "Gevraagd te stoppen",
+  "notice.suggest": "{{name}} stoppen maakt {{size}} vrij.",
+  "notice.quit": "{{name}} stoppen"
 }
