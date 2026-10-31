@@ -99,5 +99,17 @@
   "empty.confirm.build": "¿Eliminar {{size}} de carpetas de compilación?",
   "empty.detail.cache": "Se eliminan al momento, sin pasar por la Papelera. Las apps las vuelven a crear cuando las necesitan, así que el primer uso puede ser algo más lento.",
   "empty.detail.packages": "Se eliminan al momento, sin pasar por la Papelera. Se mantienen los proyectos usados en los últimos 7 días. Un proyecto eliminado necesita pnpm install (o npm install) antes de volver a funcionar.",
-  "empty.detail.build": "Se eliminan al momento, sin pasar por la Papelera. Se mantienen las carpetas usadas en los últimos 7 días. La siguiente compilación de un proyecto eliminado empieza de cero y tarda más."
+  "empty.detail.build": "Se eliminan al momento, sin pasar por la Papelera. Se mantienen las carpetas usadas en los últimos 7 días. La siguiente compilación de un proyecto eliminado empieza de cero y tarda más.",
+  "suggest.title": "Conviene hacer ahora",
+  "suggest.quit": "Salir de {{name}}",
+  "suggest.quitDev": "Parar servidor de desarrollo · {{name}}",
+  "suggest.empty": "Vaciar {{kind}}",
+  "suggest.unused": "Sin usar más de 30 min",
+  "suggest.running": "En marcha desde hace {{time}}",
+  "suggest.frees": "libera {{size}}",
+  "suggest.cpu": "CPU {{percent}}%",
+  "suggest.emptyWhy": "Disco casi lleno · libera {{size}}",
+  "suggest.quitDone": "Se pidió salir",
+  "notice.suggest": "Salir de {{name}} libera {{size}}.",
+  "notice.quit": "Salir de {{name}}"
 }

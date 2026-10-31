@@ -99,5 +99,17 @@
   "empty.confirm.build": "Apagar {{size}} de pastas de build?",
   "empty.detail.cache": "São apagadas de imediato, sem passar pelo Lixo. As apps voltam a criá-las quando precisam, por isso a primeira utilização pode ser um pouco mais lenta.",
   "empty.detail.packages": "São apagadas de imediato, sem passar pelo Lixo. Os projetos usados nos últimos 7 dias ficam. Um projeto apagado precisa de pnpm install (ou npm install) antes de voltar a correr.",
-  "empty.detail.build": "São apagadas de imediato, sem passar pelo Lixo. As pastas usadas nos últimos 7 dias ficam. O próximo build de um projeto apagado começa do zero e demora mais."
+  "empty.detail.build": "São apagadas de imediato, sem passar pelo Lixo. As pastas usadas nos últimos 7 dias ficam. O próximo build de um projeto apagado começa do zero e demora mais.",
+  "suggest.title": "Vale a pena agora",
+  "suggest.quit": "Encerrar {{name}}",
+  "suggest.quitDev": "Parar servidor de dev · {{name}}",
+  "suggest.empty": "Esvaziar {{kind}}",
+  "suggest.unused": "Sem uso há 30+ min",
+  "suggest.running": "Rodando há {{time}}",
+  "suggest.frees": "libera {{size}}",
+  "suggest.cpu": "CPU {{percent}}%",
+  "suggest.emptyWhy": "Disco quase cheio · libera {{size}}",
+  "suggest.quitDone": "Pedido para encerrar",
+  "notice.suggest": "Encerrar {{name}} libera {{size}}.",
+  "notice.quit": "Encerrar {{name}}"
 }

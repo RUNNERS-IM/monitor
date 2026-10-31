@@ -99,5 +99,17 @@
   "empty.confirm.build": "刪除 {{size}} 建置資料夾?",
   "empty.detail.cache": "會直接刪除,不經過垃圾桶。App 需要時會重新產生,所以第一次使用可能稍慢。",
   "empty.detail.packages": "會直接刪除,不經過垃圾桶。最近 7 天用過的專案會保留。被刪除的專案需要先執行 pnpm install(或 npm install)才能再次執行。",
-  "empty.detail.build": "會直接刪除,不經過垃圾桶。最近 7 天用過的資料夾會保留。被刪除專案的下一次建置會從頭開始,耗時更長。"
+  "empty.detail.build": "會直接刪除,不經過垃圾桶。最近 7 天用過的資料夾會保留。被刪除專案的下一次建置會從頭開始,耗時更長。",
+  "suggest.title": "現在值得做的",
+  "suggest.quit": "結束 {{name}}",
+  "suggest.quitDev": "停止開發伺服器 · {{name}}",
+  "suggest.empty": "清空{{kind}}",
+  "suggest.unused": "超過 30 分鐘未使用",
+  "suggest.running": "已執行 {{time}}",
+  "suggest.frees": "釋放 {{size}}",
+  "suggest.cpu": "CPU {{percent}}%",
+  "suggest.emptyWhy": "磁碟快滿了 · 釋放 {{size}}",
+  "suggest.quitDone": "已要求結束",
+  "notice.suggest": "結束 {{name}} 可釋放 {{size}}。",
+  "notice.quit": "結束 {{name}}"
 }

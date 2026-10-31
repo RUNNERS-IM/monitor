@@ -99,5 +99,17 @@
   "empty.confirm.build": "{{size}} derleme klasörü silinsin mi?",
   "empty.detail.cache": "Çöp Sepeti’ne gitmeden hemen silinir. Uygulamalar gerektiğinde yeniden oluşturur, bu yüzden ilk kullanım biraz yavaş olabilir.",
   "empty.detail.packages": "Çöp Sepeti’ne gitmeden hemen silinir. Son 7 günde kullanılan projeler kalır. Silinen bir proje yeniden çalışmadan önce pnpm install (veya npm install) ister.",
-  "empty.detail.build": "Çöp Sepeti’ne gitmeden hemen silinir. Son 7 günde kullanılan klasörler kalır. Silinen bir projenin sonraki derlemesi baştan başlar ve daha uzun sürer."
+  "empty.detail.build": "Çöp Sepeti’ne gitmeden hemen silinir. Son 7 günde kullanılan klasörler kalır. Silinen bir projenin sonraki derlemesi baştan başlar ve daha uzun sürer.",
+  "suggest.title": "Şimdi yapmaya değer",
+  "suggest.quit": "{{name}} uygulamasından çık",
+  "suggest.quitDev": "Geliştirme sunucusunu durdur · {{name}}",
+  "suggest.empty": "{{kind}} boşalt",
+  "suggest.unused": "30+ dk kullanılmadı",
+  "suggest.running": "{{time}} çalışıyor",
+  "suggest.frees": "{{size}} boşaltır",
+  "suggest.cpu": "CPU %{{percent}}",
+  "suggest.emptyWhy": "Disk neredeyse dolu · {{size}} boşaltır",
+  "suggest.quitDone": "Çıkması istendi",
+  "notice.suggest": "{{name}} kapatılırsa {{size}} boşalır.",
+  "notice.quit": "{{name}} kapat"
 }

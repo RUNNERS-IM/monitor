@@ -63,8 +63,6 @@ pub struct Snapshot {
     pub runners: Vec<Runner>,
     /// The heavy job holding the shared turn (`heavy-run` in claude-config), if any.
     pub heavy_job: Option<HeavyJob>,
-    /// The panel was opened by itself because the computer turned slow; set by the app, not by sampling.
-    pub popup: bool,
 }
 
 /// Whether memory is really short. macOS fills spare memory with cache, so "used" alone looks alarming when it is not.
@@ -90,8 +88,10 @@ pub struct AppUse {
     pub kind: AppKind,
     /// For the "claude" entry, how many claude processes it adds up; none for other apps.
     pub sessions: Option<u32>,
-    /// For a build tool, the repository it is building (the folder holding `.git` above its working folder).
+    /// For a build tool or dev server, the repository it works in (the folder holding `.git` above its working folder).
     pub folder: Option<String>,
+    /// For a dev server, how long it has been running.
+    pub running_secs: Option<u64>,
     #[serde(skip)]
     pub pids: Vec<Pid>,
     /// The `.app` bundle, so a Mac app can be asked to quit like ⌘Q instead of being sent a signal.
@@ -106,6 +106,9 @@ pub enum AppKind {
     App,
     Build,
     Simulator,
+    /// A development web server (`nuxt dev`, `vite`, `next dev` …) run by node. Why: one left running for hours often
+    /// holds a gigabyte or more, and quitting it is safe because it is started again with one command.
+    DevServer,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -167,6 +170,7 @@ impl Sampler {
                 .with_memory()
                 .with_exe(UpdateKind::OnlyIfNotSet)
                 .with_cwd(UpdateKind::OnlyIfNotSet)
+                .with_cmd(UpdateKind::OnlyIfNotSet)
                 .with_user(UpdateKind::OnlyIfNotSet),
         );
         self.disks.refresh(true);
@@ -237,7 +241,6 @@ impl Sampler {
             claude_sessions,
             runners,
             heavy_job: heavy_job(),
-            popup: false,
         }
     }
 
@@ -282,6 +285,9 @@ fn app_name(process: &Process) -> (String, Option<PathBuf>, AppKind) {
     if name.starts_with("qemu-system") || exe.contains("/Android/sdk/emulator/") {
         return ("Android Emulator".into(), None, AppKind::Simulator);
     }
+    if let Some(tool) = dev_server(process, &name) {
+        return (tool.to_owned(), None, AppKind::DevServer);
+    }
     if BUILD_TOOLS.contains(&name.as_str()) {
         return (process.name().to_string_lossy().into_owned(), None, AppKind::Build);
     }
@@ -294,6 +300,18 @@ fn app_name(process: &Process) -> (String, Option<PathBuf>, AppKind) {
     }
     let name = process.name().to_string_lossy();
     (name.strip_suffix(".exe").unwrap_or(&name).to_owned(), None, AppKind::App)
+}
+
+/// The dev server a node, bun or deno process runs, by the words its command line holds.
+fn dev_server(process: &Process, name: &str) -> Option<&'static str> {
+    if !matches!(name, "node" | "bun" | "deno") {
+        return None;
+    }
+    let cmd: Vec<String> = process.cmd().iter().map(|a| a.to_string_lossy().into_owned()).collect();
+    let has = |tool: &str, word: Option<&str>| {
+        cmd.iter().any(|a| a.rsplit('/').next() == Some(tool)) && word.is_none_or(|w| cmd.iter().any(|a| a == w))
+    };
+    DEV_SERVERS.iter().find(|(tool, word, _)| has(tool, *word)).map(|(_, _, label)| *label)
 }
 
 /// The repository a build tool works in: the nearest folder above its working folder that holds `.git`.
@@ -370,6 +388,37 @@ fn owned_by_me(_process: &Process) -> bool {
     true
 }
 
+/// (program, word that must follow it, name shown). Why: `nuxt build` or `vite build` finish on their own; only the
+/// long-running dev command is worth offering to quit.
+const DEV_SERVERS: &[(&str, Option<&str>, &str)] = &[
+    ("nuxt", Some("dev"), "nuxt dev"),
+    ("nuxi", Some("dev"), "nuxt dev"),
+    ("next", Some("dev"), "next dev"),
+    ("vite", None, "vite"),
+    ("electron-vite", Some("dev"), "electron-vite dev"),
+    ("astro", Some("dev"), "astro dev"),
+    ("webpack", Some("serve"), "webpack serve"),
+    ("remix", Some("dev"), "remix dev"),
+];
+
+/// What a process holds in memory, the way Activity Monitor's Memory column counts it: its resident pages plus the
+/// pages macOS has compressed for it. Why: on a Mac short of memory most of an idle app sits compressed, so counting
+/// resident pages alone made it look small and left its share under "System".
+#[cfg(target_os = "macos")]
+fn memory_of(pid: Pid, process: &Process) -> u64 {
+    let mut info: libc::rusage_info_v2 = unsafe { std::mem::zeroed() };
+    let ok = unsafe {
+        libc::proc_pid_rusage(pid.as_u32() as i32, libc::RUSAGE_INFO_V2, (&mut info as *mut libc::rusage_info_v2).cast())
+    } == 0;
+    // Why: other users' processes cannot be asked; their resident size is the best left.
+    if ok { info.ri_phys_footprint } else { process.memory() }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn memory_of(_pid: Pid, process: &Process) -> u64 {
+    process.memory()
+}
+
 fn top_apps(processes: &HashMap<Pid, Process>, cores: f32) -> (Vec<AppUse>, Vec<AppUse>) {
     let mut apps: HashMap<String, AppUse> = HashMap::new();
     for (pid, process) in processes {
@@ -382,12 +431,16 @@ fn top_apps(processes: &HashMap<Pid, Process>, cores: f32) -> (Vec<AppUse>, Vec<
             kind,
             sessions: None,
             folder: None,
+            running_secs: None,
             pids: Vec::new(),
             bundle,
         });
         // Why: sysinfo gives percent of one core, while the CPU bar is percent of the whole computer.
         entry.cpu_percent += process.cpu_usage() / cores;
-        entry.memory += process.memory();
+        entry.memory += memory_of(*pid, process);
+        if entry.kind == AppKind::DevServer {
+            entry.running_secs = entry.running_secs.max(Some(process.run_time()));
+        }
         // Why: one protected process (say a root helper) makes the whole app unsafe to quit from here.
         entry.quittable &= quittable(process);
         entry.pids.push(*pid);
@@ -404,7 +457,7 @@ fn top_apps(processes: &HashMap<Pid, Process>, cores: f32) -> (Vec<AppUse>, Vec<
     by_memory.sort_by_key(|a| std::cmp::Reverse(a.memory));
     by_memory.truncate(TOP_APPS);
     // Why: only the few entries on screen need their repository looked up, which touches the disk.
-    for app in by_cpu.iter_mut().chain(by_memory.iter_mut()).filter(|a| a.kind == AppKind::Build) {
+    for app in by_cpu.iter_mut().chain(by_memory.iter_mut()).filter(|a| matches!(a.kind, AppKind::Build | AppKind::DevServer)) {
         app.folder = app.pids.iter().filter_map(|pid| processes.get(pid)).find_map(repo_name);
     }
     (by_cpu, by_memory)

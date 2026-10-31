@@ -99,5 +99,17 @@
   "empty.confirm.build": "删除 {{size}} 构建文件夹?",
   "empty.detail.cache": "会直接删除,不经过废纸篓。应用需要时会重新生成,所以第一次使用可能稍慢。",
   "empty.detail.packages": "会直接删除,不经过废纸篓。最近 7 天用过的项目会保留。被删除的项目需要先运行 pnpm install(或 npm install)才能再次运行。",
-  "empty.detail.build": "会直接删除,不经过废纸篓。最近 7 天用过的文件夹会保留。被删除项目的下一次构建会从头开始,耗时更长。"
+  "empty.detail.build": "会直接删除,不经过废纸篓。最近 7 天用过的文件夹会保留。被删除项目的下一次构建会从头开始,耗时更长。",
+  "suggest.title": "现在值得做的",
+  "suggest.quit": "退出 {{name}}",
+  "suggest.quitDev": "停止开发服务器 · {{name}}",
+  "suggest.empty": "清空{{kind}}",
+  "suggest.unused": "超过 30 分钟未使用",
+  "suggest.running": "已运行 {{time}}",
+  "suggest.frees": "释放 {{size}}",
+  "suggest.cpu": "CPU {{percent}}%",
+  "suggest.emptyWhy": "磁盘快满了 · 释放 {{size}}",
+  "suggest.quitDone": "已请求退出",
+  "notice.suggest": "退出 {{name}} 可释放 {{size}}。",
+  "notice.quit": "退出 {{name}}"
 }

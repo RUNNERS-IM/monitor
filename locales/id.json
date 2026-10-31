@@ -99,5 +99,17 @@
   "empty.confirm.build": "Hapus {{size}} folder build?",
   "empty.detail.cache": "Langsung dihapus tanpa lewat Tong Sampah. Aplikasi membuatnya lagi saat perlu, jadi pemakaian pertama bisa sedikit lebih lambat.",
   "empty.detail.packages": "Langsung dihapus tanpa lewat Tong Sampah. Proyek yang dipakai dalam 7 hari terakhir dibiarkan. Proyek yang dihapus perlu pnpm install (atau npm install) sebelum bisa jalan lagi.",
-  "empty.detail.build": "Langsung dihapus tanpa lewat Tong Sampah. Folder yang dipakai dalam 7 hari terakhir dibiarkan. Build berikutnya untuk proyek yang dihapus mulai dari awal dan lebih lama."
+  "empty.detail.build": "Langsung dihapus tanpa lewat Tong Sampah. Folder yang dipakai dalam 7 hari terakhir dibiarkan. Build berikutnya untuk proyek yang dihapus mulai dari awal dan lebih lama.",
+  "suggest.title": "Layak dilakukan sekarang",
+  "suggest.quit": "Keluar dari {{name}}",
+  "suggest.quitDev": "Hentikan server dev · {{name}}",
+  "suggest.empty": "Kosongkan {{kind}}",
+  "suggest.unused": "Tak dipakai 30+ menit",
+  "suggest.running": "Berjalan {{time}}",
+  "suggest.frees": "membebaskan {{size}}",
+  "suggest.cpu": "CPU {{percent}}%",
+  "suggest.emptyWhy": "Disk hampir penuh · membebaskan {{size}}",
+  "suggest.quitDone": "Diminta keluar",
+  "notice.suggest": "Keluar dari {{name}} membebaskan {{size}}.",
+  "notice.quit": "Keluar dari {{name}}"
 }

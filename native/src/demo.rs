@@ -35,12 +35,19 @@ pub fn apply(snap: &mut Snapshot, korean: bool) {
         kind: AppKind::App,
         sessions: None,
         folder: None,
+        running_secs: None,
         pids: Vec::new(),
         bundle: None,
     };
     let mut claude = app("claude", 2.8, false);
     claude.sessions = Some(4);
-    snap.top_memory = vec![app("Google Chrome", 3.2, true), claude, app("Slack", 1.4, true), app("Prompt", 0.9, true)];
+    // Why: a dev server left running is the first thing the "worth doing now" card suggests, so the demo has one.
+    let mut server = app("nuxt dev", 1.6, true);
+    server.kind = AppKind::DevServer;
+    server.folder = Some("my-site".into());
+    server.running_secs = Some(18 * 3600);
+    snap.top_memory =
+        vec![app("Google Chrome", 3.2, true), claude, server, app("Slack", 1.4, true), app("Prompt", 0.9, true)];
     snap.top_cpu = snap.top_memory.clone();
     let session = |pid: u32, name: &str, mins: u64, busy: bool| ClaudeSession {
         pid,

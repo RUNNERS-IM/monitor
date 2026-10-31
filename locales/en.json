@@ -99,5 +99,17 @@
   "empty.confirm.build": "Delete {{size}} of build folders?",
   "empty.detail.cache": "They are deleted right away, without the Trash. Apps make them again when needed, so the first use may be a little slower.",
   "empty.detail.packages": "They are deleted right away, without the Trash. Projects used in the last 7 days are kept. A deleted project needs pnpm install (or npm install) before it runs again.",
-  "empty.detail.build": "They are deleted right away, without the Trash. Folders used in the last 7 days are kept. A deleted project's next build starts from scratch and takes longer."
+  "empty.detail.build": "They are deleted right away, without the Trash. Folders used in the last 7 days are kept. A deleted project's next build starts from scratch and takes longer.",
+  "suggest.title": "Worth doing now",
+  "suggest.quit": "Quit {{name}}",
+  "suggest.quitDev": "Stop dev server · {{name}}",
+  "suggest.empty": "Empty {{kind}}",
+  "suggest.unused": "Unused for 30+ min",
+  "suggest.running": "Running for {{time}}",
+  "suggest.frees": "frees {{size}}",
+  "suggest.cpu": "CPU {{percent}}%",
+  "suggest.emptyWhy": "Disk nearly full · frees {{size}}",
+  "suggest.quitDone": "Asked to quit",
+  "notice.suggest": "Quitting {{name}} frees {{size}}.",
+  "notice.quit": "Quit {{name}}"
 }

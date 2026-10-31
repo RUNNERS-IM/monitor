@@ -99,5 +99,17 @@
   "empty.confirm.build": "Eliminare {{size}} di cartelle di build?",
   "empty.detail.cache": "Vengono eliminate subito, senza passare dal Cestino. Le app le ricreano quando servono, quindi il primo uso può essere un po’ più lento.",
   "empty.detail.packages": "Vengono eliminate subito, senza passare dal Cestino. I progetti usati negli ultimi 7 giorni restano. Un progetto eliminato richiede pnpm install (o npm install) prima di ripartire.",
-  "empty.detail.build": "Vengono eliminate subito, senza passare dal Cestino. Le cartelle usate negli ultimi 7 giorni restano. La build successiva di un progetto eliminato riparte da zero e richiede più tempo."
+  "empty.detail.build": "Vengono eliminate subito, senza passare dal Cestino. Le cartelle usate negli ultimi 7 giorni restano. La build successiva di un progetto eliminato riparte da zero e richiede più tempo.",
+  "suggest.title": "Da fare ora",
+  "suggest.quit": "Esci da {{name}}",
+  "suggest.quitDev": "Ferma server di sviluppo · {{name}}",
+  "suggest.empty": "Svuota {{kind}}",
+  "suggest.unused": "Inutilizzato da 30+ min",
+  "suggest.running": "In esecuzione da {{time}}",
+  "suggest.frees": "libera {{size}}",
+  "suggest.cpu": "CPU {{percent}}%",
+  "suggest.emptyWhy": "Disco quasi pieno · libera {{size}}",
+  "suggest.quitDone": "Chiusura richiesta",
+  "notice.suggest": "Uscire da {{name}} libera {{size}}.",
+  "notice.quit": "Esci da {{name}}"
 }

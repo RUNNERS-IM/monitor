@@ -99,5 +99,17 @@
   "empty.confirm.build": "Usunąć {{size}} folderów kompilacji?",
   "empty.detail.cache": "Zostaną usunięte od razu, bez Kosza. Aplikacje utworzą je ponownie, gdy będą potrzebne, więc pierwsze użycie może być nieco wolniejsze.",
   "empty.detail.packages": "Zostaną usunięte od razu, bez Kosza. Projekty używane w ostatnich 7 dniach zostają. Usunięty projekt wymaga pnpm install (lub npm install), zanim znów zadziała.",
-  "empty.detail.build": "Zostaną usunięte od razu, bez Kosza. Foldery używane w ostatnich 7 dniach zostają. Następna kompilacja usuniętego projektu zacznie od zera i potrwa dłużej."
+  "empty.detail.build": "Zostaną usunięte od razu, bez Kosza. Foldery używane w ostatnich 7 dniach zostają. Następna kompilacja usuniętego projektu zacznie od zera i potrwa dłużej.",
+  "suggest.title": "Warto teraz",
+  "suggest.quit": "Zakończ {{name}}",
+  "suggest.quitDev": "Zatrzymaj serwer dev · {{name}}",
+  "suggest.empty": "Opróżnij: {{kind}}",
+  "suggest.unused": "Nieużywane 30+ min",
+  "suggest.running": "Działa od {{time}}",
+  "suggest.frees": "zwolni {{size}}",
+  "suggest.cpu": "CPU {{percent}}%",
+  "suggest.emptyWhy": "Dysk prawie pełny · zwolni {{size}}",
+  "suggest.quitDone": "Poproszono o zamknięcie",
+  "notice.suggest": "Zamknięcie {{name}} zwolni {{size}}.",
+  "notice.quit": "Zakończ {{name}}"
 }

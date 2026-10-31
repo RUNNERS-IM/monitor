@@ -10,6 +10,7 @@ import { buildMenu, forgetIcons, type Command, type MenuState } from "./menu";
 import { native, type Sampler } from "./native";
 import { releaseNoteLines } from "./releaseNotes";
 import { readSettings, writeSettings } from "./settings";
+import { noteFrontApp, suggestions, type Suggestion } from "./suggest";
 import { createTray, showReading, type Level } from "./tray";
 import type { Snapshot } from "./types";
 import { checkNow, displayVersion, startUpdates } from "./updates";
@@ -39,6 +40,8 @@ const DEMO = DEV && !!process.env.MONITOR_DEMO;
 if (DEV && process.env.MONITOR_LANG) app.commandLine.appendSwitch("lang", process.env.MONITOR_LANG);
 
 type Reason = "memory" | "cpu";
+/** What the panel gets: the reading plus what only the app knows. */
+type PanelSnapshot = Snapshot & { suggestions: Suggestion[] };
 
 let tray: Tray | null = null;
 let panel: BrowserWindow | null = null;
@@ -96,7 +99,7 @@ function trackSlow(snap: Snapshot): { held: Reason[]; level: Level } {
 /** Shows a system notification once a day per reason when the computer has stayed slow, naming the apps most likely
  *  behind it. Clicking it opens the panel. Why: the panel no longer opens by itself (it kept reopening on Macs that
  *  hover at the warning level), and the day is saved so a restart does not repeat it. */
-function notifyIfSlow(snap: Snapshot, held: Reason[]): void {
+function notifyIfSlow(snap: Snapshot, held: Reason[], suggested: Suggestion[]): void {
   const now = Date.now();
   for (const reason of held) {
     if (now - (slow.since.get(reason) ?? now) < SLOW_NOTICE_AFTER_MS) continue;
@@ -107,9 +110,21 @@ function notifyIfSlow(snap: Snapshot, held: Reason[]): void {
       reason === "memory"
         ? snap.topMemory.slice(0, NOTICE_APPS).map((a) => `${a.name} ${(a.memory / 1024 ** 3).toFixed(1)} GB`)
         : snap.topCpu.slice(0, NOTICE_APPS).map((a) => `${a.name} ${Math.round(a.cpuPercent)}%`);
-    const notice = new Notification({ title: t(`notice.${reason}.title`), body: t("notice.body", { apps: apps.join(", ") }) });
+    // Why: the first thing worth doing for this reason rides on the notice as a button, so it can be done right there.
+    const first = suggested.find((s) => s.action === "quit" && s.reason === reason);
+    const offer = first?.action === "quit" ? first : null;
+    const notice = new Notification({
+      title: t(`notice.${reason}.title`),
+      body: offer
+        ? t("notice.suggest", { name: offer.name, size: `${(offer.bytes / 1024 ** 3).toFixed(1)} GB` })
+        : t("notice.body", { apps: apps.join(", ") }),
+      actions: offer ? [{ type: "button", text: t("notice.quit", { name: offer.name }) }] : [],
+    });
     notice.on("click", () => {
       if (!panel?.isVisible()) togglePanel();
+    });
+    notice.on("action", () => {
+      if (offer) void sampler?.quitApp(offer.name).catch((error) => console.error("quit:", error));
     });
     notice.show();
   }
@@ -189,10 +204,14 @@ function refreshLinuxMenu(): void {
 }
 
 /** The reading the panel gets: the newest one plus what only the app knows (paused runners). */
-function panelSnapshot(): Snapshot | null {
+function panelSnapshot(): PanelSnapshot | null {
   const base = DEMO ? latestDemo : latest;
   if (!base) return null;
-  const snap: Snapshot = { ...base, runners: base.runners.map((r) => ({ ...r })) };
+  const snap: PanelSnapshot = {
+    ...base,
+    runners: base.runners.map((r) => ({ ...r })),
+    suggestions: suggestions(base, DEMO ? JSON.parse(native.demoCleanup() ?? "null") : latestCleanup),
+  };
   const now = Date.now() / 1000;
   for (const [name, until] of paused) {
     if (until <= now) {
@@ -213,7 +232,8 @@ async function sampleLoop(): Promise<void> {
     try {
       const snap = JSON.parse(await sampler!.sample()) as Snapshot;
       const { held, level } = trackSlow(snap);
-      notifyIfSlow(snap, held);
+      noteFrontApp();
+      notifyIfSlow(snap, held, suggestions(snap, latestCleanup));
       latest = snap;
       if (DEMO) {
         const demo = sampler!.demoSnapshot(currentLocale() === "ko");
