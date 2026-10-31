@@ -89,5 +89,16 @@
   "disk.packages": "node_modules",
   "disk.build": "Derleme klasörleri",
   "disk.rest": "Geri kalan her şey",
-  "disk.cleanupNote": "Renkli kısımlar temizlenebilir. Alttaki satır nerede olduklarını gösterir."
+  "disk.cleanupNote": "Renkli kısımlar temizlenebilir. Boşalt, Çöp Sepeti’ne gitmeden hemen siler.",
+  "empty.button": "Boşalt",
+  "empty.cancel": "Vazgeç",
+  "empty.running": "Boşaltılıyor…",
+  "empty.done": "{{size}} boşaltıldı.",
+  "empty.skipped": "Son 7 günde kullanılan {{count}} klasör bırakıldı.",
+  "empty.confirm.cache": "{{size}} önbellek boşaltılsın mı?",
+  "empty.confirm.packages": "{{size}} node_modules silinsin mi?",
+  "empty.confirm.build": "{{size}} derleme klasörü silinsin mi?",
+  "empty.detail.cache": "Çöp Sepeti’ne gitmeden hemen silinir. Uygulamalar gerektiğinde yeniden oluşturur, bu yüzden ilk kullanım biraz yavaş olabilir.",
+  "empty.detail.packages": "Çöp Sepeti’ne gitmeden hemen silinir. Son 7 günde kullanılan projeler kalır. Silinen bir proje yeniden çalışmadan önce pnpm install (veya npm install) ister.",
+  "empty.detail.build": "Çöp Sepeti’ne gitmeden hemen silinir. Son 7 günde kullanılan klasörler kalır. Silinen bir projenin sonraki derlemesi baştan başlar ve daha uzun sürer."
 }

@@ -89,5 +89,16 @@
   "disk.packages": "node_modules",
   "disk.build": "Build folders",
   "disk.rest": "Everything else",
-  "disk.cleanupNote": "The coloured parts can be cleaned up. The row below shows where they are."
+  "disk.cleanupNote": "The coloured parts can be cleaned up. Empty deletes right away, without the Trash.",
+  "empty.button": "Empty",
+  "empty.cancel": "Cancel",
+  "empty.running": "Emptying…",
+  "empty.done": "Freed {{size}}.",
+  "empty.skipped": "Kept {{count}} folders used in the last 7 days.",
+  "empty.confirm.cache": "Empty {{size}} of caches?",
+  "empty.confirm.packages": "Delete {{size}} of node_modules?",
+  "empty.confirm.build": "Delete {{size}} of build folders?",
+  "empty.detail.cache": "They are deleted right away, without the Trash. Apps make them again when needed, so the first use may be a little slower.",
+  "empty.detail.packages": "They are deleted right away, without the Trash. Projects used in the last 7 days are kept. A deleted project needs pnpm install (or npm install) before it runs again.",
+  "empty.detail.build": "They are deleted right away, without the Trash. Folders used in the last 7 days are kept. A deleted project's next build starts from scratch and takes longer."
 }

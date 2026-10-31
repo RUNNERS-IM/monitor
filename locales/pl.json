@@ -89,5 +89,16 @@
   "disk.packages": "node_modules",
   "disk.build": "Foldery kompilacji",
   "disk.rest": "Cała reszta",
-  "disk.cleanupNote": "Kolorowe części można wyczyścić. Wiersz poniżej pokazuje, gdzie są."
+  "disk.cleanupNote": "Kolorowe części można wyczyścić. Opróżnij usuwa od razu, bez Kosza.",
+  "empty.button": "Opróżnij",
+  "empty.cancel": "Anuluj",
+  "empty.running": "Opróżnianie…",
+  "empty.done": "Zwolniono {{size}}.",
+  "empty.skipped": "Zostawiono folderów używanych w ostatnich 7 dniach: {{count}}.",
+  "empty.confirm.cache": "Opróżnić {{size}} pamięci podręcznej?",
+  "empty.confirm.packages": "Usunąć {{size}} node_modules?",
+  "empty.confirm.build": "Usunąć {{size}} folderów kompilacji?",
+  "empty.detail.cache": "Zostaną usunięte od razu, bez Kosza. Aplikacje utworzą je ponownie, gdy będą potrzebne, więc pierwsze użycie może być nieco wolniejsze.",
+  "empty.detail.packages": "Zostaną usunięte od razu, bez Kosza. Projekty używane w ostatnich 7 dniach zostają. Usunięty projekt wymaga pnpm install (lub npm install), zanim znów zadziała.",
+  "empty.detail.build": "Zostaną usunięte od razu, bez Kosza. Foldery używane w ostatnich 7 dniach zostają. Następna kompilacja usuniętego projektu zacznie od zera i potrwa dłużej."
 }

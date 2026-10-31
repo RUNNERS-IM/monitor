@@ -89,5 +89,16 @@
   "disk.packages": "node_modules",
   "disk.build": "建置資料夾",
   "disk.rest": "其餘部分",
-  "disk.cleanupNote": "彩色部分可以清理。下面一列顯示它們的位置。"
+  "disk.cleanupNote": "彩色部分可以清理。「清空」會直接刪除,不經過垃圾桶。",
+  "empty.button": "清空",
+  "empty.cancel": "取消",
+  "empty.running": "正在清空…",
+  "empty.done": "已釋放 {{size}}。",
+  "empty.skipped": "保留了最近 7 天用過的 {{count}} 個資料夾。",
+  "empty.confirm.cache": "清空 {{size}} 快取?",
+  "empty.confirm.packages": "刪除 {{size}} node_modules?",
+  "empty.confirm.build": "刪除 {{size}} 建置資料夾?",
+  "empty.detail.cache": "會直接刪除,不經過垃圾桶。App 需要時會重新產生,所以第一次使用可能稍慢。",
+  "empty.detail.packages": "會直接刪除,不經過垃圾桶。最近 7 天用過的專案會保留。被刪除的專案需要先執行 pnpm install(或 npm install)才能再次執行。",
+  "empty.detail.build": "會直接刪除,不經過垃圾桶。最近 7 天用過的資料夾會保留。被刪除專案的下一次建置會從頭開始,耗時更長。"
 }

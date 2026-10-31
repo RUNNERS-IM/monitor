@@ -89,5 +89,16 @@
   "disk.packages": "node_modules",
   "disk.build": "Thư mục build",
   "disk.rest": "Phần còn lại",
-  "disk.cleanupNote": "Phần có màu có thể dọn được. Dòng bên dưới cho biết chúng ở đâu."
+  "disk.cleanupNote": "Phần có màu có thể dọn được. Dọn sẽ xóa ngay, không qua Thùng rác.",
+  "empty.button": "Dọn",
+  "empty.cancel": "Hủy",
+  "empty.running": "Đang dọn…",
+  "empty.done": "Đã giải phóng {{size}}.",
+  "empty.skipped": "Đã giữ lại {{count}} thư mục dùng trong 7 ngày qua.",
+  "empty.confirm.cache": "Dọn {{size}} bộ nhớ đệm?",
+  "empty.confirm.packages": "Xóa {{size}} node_modules?",
+  "empty.confirm.build": "Xóa {{size}} thư mục build?",
+  "empty.detail.cache": "Sẽ xóa ngay, không qua Thùng rác. Ứng dụng sẽ tạo lại khi cần, nên lần dùng đầu có thể chậm hơn một chút.",
+  "empty.detail.packages": "Sẽ xóa ngay, không qua Thùng rác. Các dự án dùng trong 7 ngày qua được giữ lại. Dự án đã xóa cần chạy pnpm install (hoặc npm install) trước khi chạy lại.",
+  "empty.detail.build": "Sẽ xóa ngay, không qua Thùng rác. Các thư mục dùng trong 7 ngày qua được giữ lại. Lần build tiếp theo của dự án đã xóa sẽ làm lại từ đầu và lâu hơn."
 }

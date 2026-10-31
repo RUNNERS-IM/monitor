@@ -89,5 +89,16 @@
   "disk.packages": "node_modules",
   "disk.build": "Folder build",
   "disk.rest": "Selebihnya",
-  "disk.cleanupNote": "Bagian berwarna bisa dibersihkan. Baris di bawah menunjukkan letaknya."
+  "disk.cleanupNote": "Bagian berwarna bisa dibersihkan. Kosongkan langsung menghapus tanpa lewat Tong Sampah.",
+  "empty.button": "Kosongkan",
+  "empty.cancel": "Batal",
+  "empty.running": "Mengosongkan…",
+  "empty.done": "{{size}} dibebaskan.",
+  "empty.skipped": "{{count}} folder yang dipakai dalam 7 hari terakhir dibiarkan.",
+  "empty.confirm.cache": "Kosongkan {{size}} cache?",
+  "empty.confirm.packages": "Hapus {{size}} node_modules?",
+  "empty.confirm.build": "Hapus {{size}} folder build?",
+  "empty.detail.cache": "Langsung dihapus tanpa lewat Tong Sampah. Aplikasi membuatnya lagi saat perlu, jadi pemakaian pertama bisa sedikit lebih lambat.",
+  "empty.detail.packages": "Langsung dihapus tanpa lewat Tong Sampah. Proyek yang dipakai dalam 7 hari terakhir dibiarkan. Proyek yang dihapus perlu pnpm install (atau npm install) sebelum bisa jalan lagi.",
+  "empty.detail.build": "Langsung dihapus tanpa lewat Tong Sampah. Folder yang dipakai dalam 7 hari terakhir dibiarkan. Build berikutnya untuk proyek yang dihapus mulai dari awal dan lebih lama."
 }

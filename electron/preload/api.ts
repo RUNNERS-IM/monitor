@@ -4,6 +4,11 @@ export type MenuCommand = "usage" | "login" | "autoUpdate" | "about" | "updates"
 
 export type MenuState = { openAtLogin: boolean; autoUpdate: boolean };
 
+export type CleanupKind = "cache" | "packages" | "build";
+
+/** What emptying did: bytes freed and recently used folders it kept. */
+export type Emptied = { freed: number; skipped: number };
+
 /** The update window's content: new version as people see it, the "What's new" lines (null hides the box) and the
  *  download's progress (0–100) while it runs. */
 export type UpdateOffer = { version: string; notes: string[] | null; downloading: boolean; percent: number };
@@ -15,6 +20,8 @@ export type MonitorApi = {
   cleanup: () => Promise<unknown>;
   /** Asks an app from the last reading to quit like ⌘Q; rejects with the reason when it cannot. */
   quitApp: (name: string) => Promise<void>;
+  /** Asks first, then deletes the cleanable folders of one kind; null when the person said no. */
+  emptyCleanup: (kind: CleanupKind) => Promise<Emptied | null>;
   /** Pauses a GitHub runner for an hour (macOS); rejects with the reason when it cannot. */
   pauseRunner: (name: string) => Promise<void>;
   /** Whether the OS blurs what is behind the window; the page draws a solid background when it does not. */

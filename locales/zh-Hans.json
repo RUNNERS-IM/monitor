@@ -89,5 +89,16 @@
   "disk.packages": "node_modules",
   "disk.build": "构建文件夹",
   "disk.rest": "其余部分",
-  "disk.cleanupNote": "彩色部分可以清理。下面一行显示它们的位置。"
+  "disk.cleanupNote": "彩色部分可以清理。“清空”会直接删除,不经过废纸篓。",
+  "empty.button": "清空",
+  "empty.cancel": "取消",
+  "empty.running": "正在清空…",
+  "empty.done": "已释放 {{size}}。",
+  "empty.skipped": "保留了最近 7 天用过的 {{count}} 个文件夹。",
+  "empty.confirm.cache": "清空 {{size}} 缓存?",
+  "empty.confirm.packages": "删除 {{size}} node_modules?",
+  "empty.confirm.build": "删除 {{size}} 构建文件夹?",
+  "empty.detail.cache": "会直接删除,不经过废纸篓。应用需要时会重新生成,所以第一次使用可能稍慢。",
+  "empty.detail.packages": "会直接删除,不经过废纸篓。最近 7 天用过的项目会保留。被删除的项目需要先运行 pnpm install(或 npm install)才能再次运行。",
+  "empty.detail.build": "会直接删除,不经过废纸篓。最近 7 天用过的文件夹会保留。被删除项目的下一次构建会从头开始,耗时更长。"
 }

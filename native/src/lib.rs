@@ -132,6 +132,23 @@ pub fn cleanup_measure(progress_path: Option<String>) -> AsyncTask<Work> {
     })
 }
 
+/// Deletes the cleanable folders of one kind (`cache`, `packages`, `build`) on a low-priority thread;
+/// resolves to `{"freed":bytes,"skipped":folders}`.
+#[napi(ts_return_type = "Promise<string>")]
+pub fn cleanup_empty(kind: String) -> AsyncTask<Work> {
+    Work::new(move || {
+        if !["cache", "packages", "build"].contains(&kind.as_str()) {
+            return Err(format!("unknown kind {kind}"));
+        }
+        std::thread::spawn(move || {
+            cleanup::run_in_background();
+            to_json(&cleanup::empty(&kind))
+        })
+        .join()
+        .map_err(|_| "emptying stopped".to_owned())?
+    })
+}
+
 #[napi]
 pub fn cleanup_save(path: String, json: String) -> Result<()> {
     let found: cleanup::Cleanup = serde_json::from_str(&json).map_err(|e| Error::from_reason(e.to_string()))?;
