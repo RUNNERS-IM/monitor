@@ -2,11 +2,13 @@
 // in a panel under it, pops the panel up by itself when the computer turns slow, and measures cleanable folders
 // every 30 minutes.
 import { app, BrowserWindow, ipcMain, nativeTheme, Notification, shell, systemPreferences, type Tray } from "electron";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { currentLocale, t } from "./i18n";
 import * as login from "./login";
 import { buildMenu, forgetIcons, type Command, type MenuState } from "./menu";
 import { native, type Sampler } from "./native";
+import { releaseNoteLines } from "./releaseNotes";
 import { readSettings, writeSettings } from "./settings";
 import { createTray, showReading } from "./tray";
 import type { Snapshot } from "./types";
@@ -20,6 +22,9 @@ const CLEANUP_FILE = "cleanup.json";
 const CLEANUP_PROGRESS_FILE = "cleanup-progress.json";
 // Why: a slow computer stays slow for a while, so the same warning is repeated at most this often.
 const SLOW_NOTICE_EVERY_MS = 30 * 60 * 1000;
+// Why: memory pressure flips to warning and back within seconds on a busy Mac, so the popup waits until it has stayed
+// short this long. The native CPU flag already means a full minute above the limit.
+const SLOW_MEMORY_FOR_MS = 60 * 1000;
 const NOTICE_APPS = 2;
 // Why: the tray click that opens the panel can also send it a focus-lost event right away, so blur is ignored this long after opening.
 const BLUR_GRACE_MS = 400;
@@ -30,6 +35,8 @@ const REOPEN_GUARD_MS = 300;
 /** Debug runs only: everything below that reads MONITOR_* is ignored in a packaged app. */
 const DEV = !app.isPackaged;
 const DEMO = DEV && !!process.env.MONITOR_DEMO;
+// Why: the windows read their language from navigator.language, which follows Chromium's --lang switch.
+if (DEV && process.env.MONITOR_LANG) app.commandLine.appendSwitch("lang", process.env.MONITOR_LANG);
 
 type Reason = "memory" | "cpu";
 
@@ -54,8 +61,10 @@ const popup = {
   /** Reasons the open popup is about, so closing it silences exactly those. */
   showing: new Set<Reason>(),
   lastShown: new Map<Reason, number>(),
-  /** Closed by the user; not shown again until that reason has cleared once. */
-  dismissed: new Set<Reason>(),
+  /** Closed by the user, with the day it was closed on; not shown again for that reason that day. */
+  dismissed: new Map<Reason, string>(),
+  /** When each reason turned slow, cleared when it recovers. */
+  slowSince: new Map<Reason, number>(),
 };
 const noticed = new Map<Reason, number>();
 
@@ -67,6 +76,8 @@ function reasons(snap: Snapshot): [Reason, boolean][] {
     ["cpu", snap.slowCpu],
   ];
 }
+
+const today = () => new Date().toDateString();
 
 function recently(at: number | undefined): boolean {
   return at !== undefined && Date.now() - at < SLOW_NOTICE_EVERY_MS;
@@ -84,12 +95,24 @@ function showWithoutFocus(): void {
  *  Returns false when there is no panel to open, so the caller can fall back to a notification. */
 function popupIfSlow(snap: Snapshot): boolean {
   if (!panel || panel.isDestroyed()) return false;
-  for (const [reason, slow] of reasons(snap)) if (!slow) popup.dismissed.delete(reason);
-  const due = reasons(snap)
-    .filter(([reason, slow]) => slow && !popup.dismissed.has(reason) && !recently(popup.lastShown.get(reason)))
-    .map(([reason]) => reason);
+  const now = Date.now();
+  const slowNow = new Set(reasons(snap).filter(([, slow]) => slow).map(([reason]) => reason));
+  for (const reason of ["memory", "cpu"] as Reason[]) {
+    if (!slowNow.has(reason)) popup.slowSince.delete(reason);
+    else if (!popup.slowSince.has(reason)) popup.slowSince.set(reason, now);
+  }
+  // Why: once the computer has recovered the popup has nothing left to say, so it closes itself.
+  if (popup.open && ![...popup.showing].some((reason) => slowNow.has(reason))) {
+    popup.open = false;
+    popup.showing.clear();
+    hidePanel();
+  }
+  const longEnough = (reason: Reason) => reason === "cpu" || now - (popup.slowSince.get(reason) ?? now) >= SLOW_MEMORY_FOR_MS;
+  const due = [...slowNow].filter(
+    (reason) => longEnough(reason) && popup.dismissed.get(reason) !== today() && !recently(popup.lastShown.get(reason)),
+  );
   if (due.length === 0) return true;
-  for (const reason of due) popup.lastShown.set(reason, Date.now());
+  for (const reason of due) popup.lastShown.set(reason, now);
   // Why: when the user already has the panel open they see the reasons there; nothing more to pop up.
   if (panel.isVisible()) return true;
   popup.showing = new Set(due);
@@ -98,11 +121,11 @@ function popupIfSlow(snap: Snapshot): boolean {
   return true;
 }
 
-/** Closes a popup and keeps it closed until the computer has recovered from the same reason. */
+/** Closes a popup and keeps it closed for the same reason for the rest of the day. */
 function dismissPopup(): void {
   if (!popup.open) return;
   popup.open = false;
-  for (const reason of popup.showing) popup.dismissed.add(reason);
+  for (const reason of popup.showing) popup.dismissed.set(reason, today());
   popup.showing.clear();
 }
 
@@ -212,12 +235,13 @@ async function sampleLoop(): Promise<void> {
     try {
       const snap = JSON.parse(await sampler!.sample()) as Snapshot;
       if (!popupIfSlow(snap)) notifyIfSlow(snap);
-      if (tray) showReading(tray, snap);
       latest = snap;
       if (DEMO) {
-        const demo = sampler!.demoSnapshot();
+        const demo = sampler!.demoSnapshot(currentLocale() === "ko");
         latestDemo = demo ? (JSON.parse(demo) as Snapshot) : null;
       }
+      // Why: in a demo run the menu-bar icon shows the made-up numbers too, so it matches the panel in a screenshot.
+      if (tray) showReading(tray, latestDemo ?? snap);
       refreshLinuxMenu();
     } catch (error) {
       console.error("sample:", error);
@@ -257,7 +281,7 @@ function accentColor(): string | null {
 
 function registerIpc(): void {
   ipcMain.handle("monitor:snapshot", () => panelSnapshot());
-  ipcMain.handle("monitor:cleanup", () => latestCleanup);
+  ipcMain.handle("monitor:cleanup", () => (DEMO ? JSON.parse(native.demoCleanup() ?? "null") : latestCleanup));
   ipcMain.handle("monitor:quitApp", async (_event, name: string) => {
     await sampler!.quitApp(String(name));
   });
@@ -295,9 +319,9 @@ function registerIpc(): void {
 }
 
 /** Debug runs only: `MONITOR_OPEN=panel|about|update` opens that window at launch, so it can be captured without
- *  clicking the tray (`update` / `update-progress` show the update question with made-up notes, downloaded or still
+ *  clicking the tray (`update` / `update-progress` show the update question with the notes in RELEASE_NOTES.md, downloaded or still
  *  downloading, and install nothing), and
- *  `MONITOR_THEME=dark|light` forces the look. The panel opens like the popup (no focus), so it stays up. */
+ *  `MONITOR_THEME=dark|light` forces the look, and `MONITOR_SOLID=1` turns the blur off so the desktop does not show through. The panel opens like the popup (no focus), so it stays up. */
 function debugHooks(): void {
   const theme = process.env.MONITOR_THEME;
   if (theme === "dark" || theme === "light") nativeTheme.themeSource = theme;
@@ -306,14 +330,12 @@ function debugHooks(): void {
   if (which === "about") setTimeout(showAbout, 1500);
   if (which === "panel") setTimeout(showWithoutFocus, 1500);
   if (which === "update" || which === "update-progress") {
-    const ko = currentLocale() === "ko";
-    const notes = ko
-      ? ["메뉴가 Split과 같은 모양이 되고 줄 사이가 넓어졌습니다.", "메모리가 모자라면 누가 쓰는지 한 줄 막대로 보여 주고 바로 끌 수 있습니다.", "업데이트를 받은 뒤 설치할지 묻고, 바뀐 점을 함께 보여 줍니다.", "20개 언어를 지원합니다.", "로그인할 때 이름과 아이콘이 보이게 열립니다.", "다섯 줄이 넘으면 이 칸 안에서 스크롤됩니다."]
-      : ["The menu now looks like Split's, with more room between rows.", "When memory runs short, one bar shows who uses it, with Quit buttons.", "Updates download first, then Monitor asks and shows what changed.", "20 languages.", "Opens at login with its name and icon.", "Past five lines this box scrolls."];
+    // Why: the window shows the notes the next release will carry, so screenshots match the real thing.
+    const notes = releaseNoteLines(readFileSync(join(app.getAppPath(), "RELEASE_NOTES.md"), "utf8"), currentLocale() === "ko" ? "ko" : "en");
     // Why: `update-progress` shows the menu check's download state, held at a made-up 42%.
     const downloading = which === "update-progress";
     setTimeout(() => {
-      const prompt = askUpdate({ version: "2.6.1031", notes, downloading, percent: downloading ? 42 : 100 }, false);
+      const prompt = askUpdate({ version: "2.6.1030.4", notes, downloading, percent: downloading ? 42 : 100 }, false);
       void prompt.answer.then((answer) => console.log("update answer:", answer));
     }, 1500);
   }

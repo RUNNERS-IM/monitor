@@ -13,8 +13,11 @@ const UPDATE_GUARD_MS = 1000;
 /** Space between the menu bar (or taskbar) and the panel. */
 const GAP = 4;
 
+/** Dev only: `MONITOR_SOLID=1` turns the blur off so screenshots do not show the desktop behind the window. */
+const SOLID = !app.isPackaged && process.env.MONITOR_SOLID === "1";
+
 /** Whether the OS blurs what is behind the panel; the page draws a solid background when it does not. */
-export const TRANSLUCENT = process.platform === "darwin" || process.platform === "win32";
+export const TRANSLUCENT = !SOLID && (process.platform === "darwin" || process.platform === "win32");
 
 function load(window: BrowserWindow, page: "panel" | "about" | "update"): void {
   if (process.env.ELECTRON_RENDERER_URL) void window.loadURL(`${process.env.ELECTRON_RENDERER_URL}#${page}`);
@@ -25,6 +28,7 @@ const preload = join(__dirname, "../preload/index.js");
 
 /** macOS gets the menu material Split's menu has, Windows gets Acrylic, Linux has no blur and stays solid. */
 function blur(): Electron.BrowserWindowConstructorOptions {
+  if (SOLID) return { backgroundColor: nativeTheme.shouldUseDarkColors ? "#2a2a2a" : "#ececec" };
   if (process.platform === "darwin") return { vibrancy: "menu", visualEffectState: "active", backgroundColor: "#00000000" };
   if (process.platform === "win32") return { backgroundMaterial: "acrylic", backgroundColor: "#00000000" };
   return { backgroundColor: nativeTheme.shouldUseDarkColors ? "#2a2a2a" : "#ececec" };

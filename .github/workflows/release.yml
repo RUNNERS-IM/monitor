@@ -311,6 +311,10 @@ jobs:
             cat repo/RELEASE_NOTES.md
             printf '\n## Downloads\n\nmacOS (Apple silicon, Intel), Windows, Linux. The Windows installer is not code signed yet, so Windows shows a SmartScreen warning the first time.\n'
           } > body.md
+          # Why: the homepage's download button links to releases/latest/download/<name>, which needs a name without
+          # the version. The versioned DMGs stay too, because the Homebrew cask downloads those.
+          cp "files/Monitor-$VERSION-mac-arm64.dmg" files/monitor-macos-arm64.dmg
+          cp "files/Monitor-$VERSION-mac-x64.dmg" files/monitor-macos-x64.dmg
           ls -la files
           gh release create "v$VERSION" files/* \
             --repo "$GITHUB_REPOSITORY" \

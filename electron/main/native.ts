@@ -9,8 +9,8 @@ import { join } from "node:path";
 export interface Sampler {
   /** One reading as JSON. */
   sample(): Promise<string>;
-  /** The last reading with made-up names (debug runs only, `MONITOR_DEMO=1`). */
-  demoSnapshot(): string | null;
+  /** The last reading with made-up names and numbers (debug runs only, `MONITOR_DEMO=1`); `korean` picks the session names. */
+  demoSnapshot(korean: boolean): string | null;
   quitApp(name: string): Promise<string>;
   /** Resolves to the Unix time the runner comes back, as text. */
   pauseRunner(name: string): Promise<string>;
@@ -21,6 +21,8 @@ export interface Native {
   cleanupLoad(path: string): string | null;
   cleanupMeasure(progressPath?: string): Promise<string>;
   cleanupSave(path: string, json: string): void;
+  /** A made-up cleanup result as JSON (debug runs only, `MONITOR_DEMO=1`). */
+  demoCleanup(): string | null;
   nowSecs(): number;
   barsPng(h0: number, h1: number, h2: number, r: number, g: number, b: number): Buffer;
   barHeight(fraction: number): number;
