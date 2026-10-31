@@ -17,7 +17,6 @@ import {
   SquareTerminal,
   SquareX,
   Workflow,
-  X,
   type LucideIcon,
 } from "lucide-react";
 import { t } from "./i18n";
@@ -441,11 +440,6 @@ function App() {
         <span className="os">{snap.os}</span>
         {/* Why: a "normal" badge on every open said nothing, so the badge shows only when something is wrong. */}
         {slow && <span className={`badge ${snap.memoryPressure === "critical" ? "full" : "high"}`}>{t(`status.${status}`)}</span>}
-        {snap.popup && (
-          <button type="button" className="close" aria-label={t("popup.close")} title={t("popup.close")} onClick={() => void native.closePopup()}>
-            <X size={12} strokeWidth={2} aria-hidden />
-          </button>
-        )}
       </header>
       <div className="rm-separator" />
       <SummaryRow

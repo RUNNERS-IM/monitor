@@ -9,7 +9,6 @@ const api: MonitorApi = {
   emptyCleanup: (kind) => ipcRenderer.invoke("monitor:emptyCleanup", kind),
   pauseRunner: (name) => ipcRenderer.invoke("monitor:pauseRunner", name),
   translucent: () => ipcRenderer.invoke("monitor:translucent"),
-  closePopup: () => ipcRenderer.invoke("monitor:closePopup"),
   fitHeight: (height) => ipcRenderer.send("monitor:fitHeight", height),
   version: () => ipcRenderer.invoke("monitor:version"),
   openExternal: (url) => ipcRenderer.invoke("monitor:openExternal", url),

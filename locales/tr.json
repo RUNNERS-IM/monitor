@@ -61,7 +61,6 @@
   "summary.runnersBusy": "{{count}} çalıştırıcı derliyor",
   "status.slowMemory": "Yavaş · bellek",
   "status.slowCpu": "Yavaş · CPU",
-  "popup.close": "Kapat (düzelene kadar yeniden açılmaz)",
   "app.build": "Derleniyor · {{amount}}",
   "app.buildIn": "{{folder}} derleniyor · {{amount}}",
   "app.simulator": "Simülatör · {{amount}}",

@@ -61,7 +61,6 @@
   "summary.runnersBusy": "रनर {{count}} बिल्ड कर रहे हैं",
   "status.slowMemory": "धीमा · मेमोरी",
   "status.slowCpu": "धीमा · CPU",
-  "popup.close": "बंद करें (ठीक होने तक दोबारा नहीं दिखेगा)",
   "app.build": "बिल्ड हो रहा है · {{amount}}",
   "app.buildIn": "{{folder}} बिल्ड हो रहा है · {{amount}}",
   "app.simulator": "सिम्युलेटर · {{amount}}",

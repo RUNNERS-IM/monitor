@@ -18,7 +18,6 @@ export type Snapshot = {
   topCpu: AppUse[];
   topMemory: AppUse[];
   runners: Runner[];
-  popup: boolean;
 };
 
 export function memoryPercent(snap: Snapshot): number {

@@ -52,28 +52,8 @@ body,
   text-overflow: ellipsis;
 }
 
-.head .badge,
-.head .close {
+.head .badge {
   align-self: center;
-}
-
-/* Why: a small circle at the end of the heading, like the close button of a macOS notification. */
-.close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: var(--rm-hover);
-  color: var(--rm-text);
-}
-
-.close:hover {
-  background: var(--rm-separator);
 }
 
 /* Summary rows: the label keeps its width and a long value (the Work row) is cut with an ellipsis instead.
