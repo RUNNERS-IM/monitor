@@ -21,7 +21,6 @@
   "runner.idle": "Czeka",
   "runner.busy": "Kompiluje",
   "tray.title": "{{value}}",
-  "panel.top": "Najwięcej: {{apps}}",
   "panel.pressure.warn": "Wysokie obciążenie",
   "panel.pressure.critical": "Krytyczne obciążenie",
   "panel.diskFree": "Wolne: {{free}}",
@@ -41,8 +40,6 @@
   "notice.memory.title": "Spowolnienie: brakuje pamięci",
   "notice.cpu.title": "Spowolnienie: CPU jest zajęty od ponad minuty",
   "notice.body": "Najbardziej obciążające aplikacje: {{apps}} · Możesz je zamknąć w aplikacji Monitor na pasku menu",
-  "slow.memoryTitle": "Kto używa {{size}} pamięci",
-  "slow.cpuTitle": "Kto używa procesora",
   "slow.system": "System",
   "slow.cache": "Pamięć podręczna (zwalniana sama)",
   "slow.other": "Inne aplikacje",
@@ -87,5 +84,10 @@
   "update.downloading": "Pobieranie… {{percent}}%",
   "update.installing": "Instalowanie…",
   "update.install": "Zainstaluj teraz",
-  "update.later": "Później"
+  "update.later": "Później",
+  "disk.cache": "Pamięć podręczna",
+  "disk.packages": "node_modules",
+  "disk.build": "Foldery kompilacji",
+  "disk.rest": "Cała reszta",
+  "disk.cleanupNote": "Kolorowe części można wyczyścić. Wiersz poniżej pokazuje, gdzie są."
 }

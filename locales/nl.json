@@ -21,7 +21,6 @@
   "runner.idle": "Wacht",
   "runner.busy": "Bouwt",
   "tray.title": "{{value}}",
-  "panel.top": "Grootste: {{apps}}",
   "panel.pressure.warn": "Hoge druk",
   "panel.pressure.critical": "Kritieke druk",
   "panel.diskFree": "{{free}} vrij",
@@ -41,8 +40,6 @@
   "notice.memory.title": "Traag: het geheugen raakt op",
   "notice.cpu.title": "Traag: de CPU is al meer dan een minuut druk",
   "notice.body": "Zwaarste apps: {{apps}} · U kunt ze stoppen via Monitor in de menubalk",
-  "slow.memoryTitle": "Wie {{size}} geheugen gebruikt",
-  "slow.cpuTitle": "Wie de CPU gebruikt",
   "slow.system": "Systeem",
   "slow.cache": "Cache (wordt vanzelf vrijgemaakt)",
   "slow.other": "Andere apps",
@@ -87,5 +84,10 @@
   "update.downloading": "Downloaden… {{percent}}%",
   "update.installing": "Installeren…",
   "update.install": "Nu installeren",
-  "update.later": "Later"
+  "update.later": "Later",
+  "disk.cache": "Caches",
+  "disk.packages": "node_modules",
+  "disk.build": "Buildmappen",
+  "disk.rest": "Al het andere",
+  "disk.cleanupNote": "De gekleurde delen kun je opruimen. De regel hieronder laat zien waar ze staan."
 }

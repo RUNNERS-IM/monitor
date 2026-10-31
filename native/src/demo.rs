@@ -2,7 +2,7 @@
 //! homepage show no real session names, runner names, folders or host name. Every number is made up too (a 16 GB Mac
 //! running short on memory, CPU 62 %, disk 71 %), so each screenshot shows the same believable picture.
 
-use crate::cleanup::{Candidate, Cleanup};
+use crate::cleanup::{Candidate, Cleanup, KindTotal};
 use crate::snapshot::{AppKind, AppUse, ClaudeSession, Pressure, Runner, Snapshot};
 
 const GB: u64 = 1024 * 1024 * 1024;
@@ -76,5 +76,7 @@ pub fn cleanup(measured_at: u64) -> Cleanup {
         Candidate { path: "~/Library/Developer/Xcode/DerivedData".into(), bytes: gb(9.8) },
         Candidate { path: "~/git/my-app/node_modules".into(), bytes: gb(6.2) },
     ];
-    Cleanup { total: gb(41.5), top, measured_at }
+    let kind = |kind: &str, size: f64| KindTotal { kind: kind.into(), bytes: gb(size) };
+    let kinds = vec![kind("cache", 22.1), kind("build", 13.2), kind("packages", 6.2)];
+    Cleanup { total: gb(41.5), top, kinds, measured_at }
 }

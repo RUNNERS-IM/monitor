@@ -21,7 +21,6 @@
   "runner.idle": "Boşta",
   "runner.busy": "Derleniyor",
   "tray.title": "{{value}}",
-  "panel.top": "En çok: {{apps}}",
   "panel.pressure.warn": "Baskı yüksek",
   "panel.pressure.critical": "Baskı kritik",
   "panel.diskFree": "{{free}} boş",
@@ -41,8 +40,6 @@
   "notice.memory.title": "Bellek yetersiz olduğu için yavaşladı",
   "notice.cpu.title": "CPU bir dakikadan uzun süredir meşgul olduğu için yavaşladı",
   "notice.body": "En çok kullanan uygulamalar: {{apps}} · Menü çubuğundaki Monitor'dan kapatabilirsiniz.",
-  "slow.memoryTitle": "{{size}} belleği kim kullanıyor",
-  "slow.cpuTitle": "CPU'yu kim kullanıyor",
   "slow.system": "Sistem",
   "slow.cache": "Önbellek (kendiliğinden boşalır)",
   "slow.other": "Diğer uygulamalar",
@@ -87,5 +84,10 @@
   "update.downloading": "İndiriliyor… %{{percent}}",
   "update.installing": "Yükleniyor…",
   "update.install": "Şimdi Yükle",
-  "update.later": "Daha sonra"
+  "update.later": "Daha sonra",
+  "disk.cache": "Önbellekler",
+  "disk.packages": "node_modules",
+  "disk.build": "Derleme klasörleri",
+  "disk.rest": "Geri kalan her şey",
+  "disk.cleanupNote": "Renkli kısımlar temizlenebilir. Alttaki satır nerede olduklarını gösterir."
 }

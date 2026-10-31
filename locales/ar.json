@@ -21,7 +21,6 @@
   "runner.idle": "في الانتظار",
   "runner.busy": "قيد البناء",
   "tray.title": "{{value}}",
-  "panel.top": "الأكثر: {{apps}}",
   "panel.pressure.warn": "ضغط مرتفع",
   "panel.pressure.critical": "ضغط حرج",
   "panel.diskFree": "{{free}} متاحة",
@@ -41,8 +40,6 @@
   "notice.memory.title": "بطء: الذاكرة توشك على النفاد",
   "notice.cpu.title": "بطء: CPU مشغول منذ أكثر من دقيقة",
   "notice.body": "أكثر التطبيقات استهلاكًا: {{apps}} · يمكنك إنهاؤها من Monitor في شريط القائمة",
-  "slow.memoryTitle": "من يستخدم {{size}} من الذاكرة",
-  "slow.cpuTitle": "من يستخدم المعالج",
   "slow.system": "النظام",
   "slow.cache": "ذاكرة التخزين المؤقت (تُفرَّغ تلقائيًا)",
   "slow.other": "تطبيقات أخرى",
@@ -87,5 +84,10 @@
   "update.downloading": "جارٍ التنزيل… {{percent}}%",
   "update.installing": "جارٍ التثبيت…",
   "update.install": "التثبيت الآن",
-  "update.later": "لاحقًا"
+  "update.later": "لاحقًا",
+  "disk.cache": "ذاكرات التخزين المؤقت",
+  "disk.packages": "node_modules",
+  "disk.build": "مجلدات البناء",
+  "disk.rest": "كل ما عدا ذلك",
+  "disk.cleanupNote": "يمكن تنظيف الأجزاء الملونة. يوضح الصف أدناه مكانها."
 }

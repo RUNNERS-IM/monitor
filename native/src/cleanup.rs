@@ -15,6 +15,10 @@ const TOP: usize = 3;
 pub struct Cleanup {
     pub total: u64,
     pub top: Vec<Candidate>,
+    /// The total split by what the folders hold, so the disk row can show which kind fills it.
+    /// Why default: a result saved by an older version has no split, and the panel then shows the total alone.
+    #[serde(default)]
+    pub kinds: Vec<KindTotal>,
     /// Unix time of the measurement, so a saved result knows how old it is.
     #[serde(default)]
     pub measured_at: u64,
@@ -28,12 +32,44 @@ pub struct Candidate {
     pub bytes: u64,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KindTotal {
+    /// `cache`, `packages` (node_modules) or `build`.
+    pub kind: String,
+    pub bytes: u64,
+}
+
+/// Which kind a measured folder is: package folders, build output, or a cache that fills again on use.
+fn kind_of(path: &str) -> &'static str {
+    if path.ends_with("/node_modules") {
+        "packages"
+    } else if path.ends_with("/DerivedData") || BUILD_FOLDERS.iter().any(|name| path.ends_with(&format!("/{name}"))) {
+        "build"
+    } else {
+        "cache"
+    }
+}
+
+fn kind_totals(candidates: &[Candidate]) -> Vec<KindTotal> {
+    let mut kinds: Vec<KindTotal> = ["cache", "packages", "build"]
+        .iter()
+        .map(|kind| KindTotal {
+            kind: kind.to_string(),
+            bytes: candidates.iter().filter(|c| kind_of(&c.path) == *kind).map(|c| c.bytes).sum(),
+        })
+        .filter(|total| total.bytes > 0)
+        .collect();
+    kinds.sort_by_key(|total| std::cmp::Reverse(total.bytes));
+    kinds
+}
+
 /// Measures every folder, writing each finished folder to `progress` so a restart picks up where it stopped.
 /// Why: a full measurement takes about four minutes, and a restart in that time (every code change in a dev run,
 /// a quit, a log-out) used to throw the work away, so `cleanup.json` was never written.
 pub fn measure(progress: Option<&Path>) -> Cleanup {
     let Some(home) = home_dir() else {
-        return Cleanup { total: 0, top: Vec::new(), measured_at: now() };
+        return Cleanup { total: 0, top: Vec::new(), kinds: Vec::new(), measured_at: now() };
     };
     let mut found: Vec<PathBuf> = [
         "Library/Developer/Xcode/DerivedData",
@@ -68,8 +104,9 @@ pub fn measure(progress: Option<&Path>) -> Cleanup {
     candidates.retain(|c| c.bytes > 0);
     candidates.sort_by_key(|c| std::cmp::Reverse(c.bytes));
     let total = candidates.iter().map(|c| c.bytes).sum();
+    let kinds = kind_totals(&candidates);
     candidates.truncate(TOP);
-    Cleanup { total, top: candidates, measured_at: now() }
+    Cleanup { total, top: candidates, kinds, measured_at: now() }
 }
 
 /// The last result saved in `file`. Why: measuring takes minutes, so a restart shows the saved numbers instead of "measuring".

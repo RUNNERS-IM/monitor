@@ -21,7 +21,6 @@
   "runner.idle": "En attente",
   "runner.busy": "Compilation",
   "tray.title": "{{value}}",
-  "panel.top": "En tête : {{apps}}",
   "panel.pressure.warn": "Pression élevée",
   "panel.pressure.critical": "Pression critique",
   "panel.diskFree": "{{free}} libres",
@@ -41,8 +40,6 @@
   "notice.memory.title": "Ralentissement : mémoire insuffisante",
   "notice.cpu.title": "Ralentissement : CPU occupé depuis plus d’une minute",
   "notice.body": "Apps les plus gourmandes : {{apps}} · Vous pouvez les quitter depuis Monitor dans la barre des menus",
-  "slow.memoryTitle": "Qui utilise les {{size}} de mémoire",
-  "slow.cpuTitle": "Qui utilise le processeur",
   "slow.system": "Système",
   "slow.cache": "Cache (vidé automatiquement)",
   "slow.other": "Autres apps",
@@ -87,5 +84,10 @@
   "update.downloading": "Téléchargement… {{percent}} %",
   "update.installing": "Installation…",
   "update.install": "Installer maintenant",
-  "update.later": "Plus tard"
+  "update.later": "Plus tard",
+  "disk.cache": "Caches",
+  "disk.packages": "node_modules",
+  "disk.build": "Dossiers de build",
+  "disk.rest": "Tout le reste",
+  "disk.cleanupNote": "Les parties en couleur peuvent être nettoyées. La ligne ci-dessous indique où elles se trouvent."
 }

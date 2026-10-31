@@ -21,7 +21,6 @@
   "runner.idle": "En espera",
   "runner.busy": "Compilando",
   "tray.title": "{{value}}",
-  "panel.top": "Más uso: {{apps}}",
   "panel.pressure.warn": "Presión alta",
   "panel.pressure.critical": "Presión crítica",
   "panel.diskFree": "{{free}} libres",
@@ -41,8 +40,6 @@
   "notice.memory.title": "Lento: falta memoria",
   "notice.cpu.title": "Lento: la CPU lleva más de un minuto ocupada",
   "notice.body": "Apps que más consumen: {{apps}} · Puede cerrarlas desde Monitor en la barra de menús",
-  "slow.memoryTitle": "Quién usa los {{size}} de memoria",
-  "slow.cpuTitle": "Quién usa la CPU",
   "slow.system": "Sistema",
   "slow.cache": "Caché (se vacía sola)",
   "slow.other": "Otras apps",
@@ -87,5 +84,10 @@
   "update.downloading": "Descargando… {{percent}} %",
   "update.installing": "Instalando…",
   "update.install": "Instalar ahora",
-  "update.later": "Más tarde"
+  "update.later": "Más tarde",
+  "disk.cache": "Cachés",
+  "disk.packages": "node_modules",
+  "disk.build": "Carpetas de compilación",
+  "disk.rest": "Todo lo demás",
+  "disk.cleanupNote": "Las partes de color se pueden limpiar. La fila de abajo muestra dónde están."
 }

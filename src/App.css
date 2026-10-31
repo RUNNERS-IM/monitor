@@ -163,37 +163,21 @@ body,
   stroke-linejoin: round;
 }
 
-.details .spark,
-.details .meter-track {
-  width: auto;
+.details .spark {
+  /* Why: width auto gave the SVG its own default width, so the line stopped halfway across the box. */
+  width: calc(100% - 28px);
   margin: 2px 14px 4px;
 }
 
-.meter-track {
-  height: 6px;
-  border-radius: 3px;
-  background: var(--rm-separator);
-  overflow: hidden;
-}
-
-.meter-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.4s ease;
-}
-
-.mini-fill.ok,
-.meter-fill.ok {
+.mini-fill.ok {
   background: var(--rm-ok);
 }
 
-.mini-fill.high,
-.meter-fill.high {
+.mini-fill.high {
   background: var(--rm-high);
 }
 
-.mini-fill.full,
-.meter-fill.full {
+.mini-fill.full {
   background: var(--rm-full);
 }
 
@@ -291,6 +275,11 @@ body,
   /* Why: the free part is left empty, so the track shows where the bar ends. */
   background: var(--rm-separator);
   overflow: hidden;
+}
+
+/* Why: in a row's details the bar sits under a note line, so it needs a little air above. */
+.details .stack {
+  margin-top: 6px;
 }
 
 .stack span {

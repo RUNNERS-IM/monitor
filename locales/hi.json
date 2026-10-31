@@ -21,7 +21,6 @@
   "runner.idle": "प्रतीक्षा में",
   "runner.busy": "बिल्ड हो रहा है",
   "tray.title": "{{value}}",
-  "panel.top": "सबसे ज़्यादा: {{apps}}",
   "panel.pressure.warn": "दबाव ज़्यादा",
   "panel.pressure.critical": "दबाव गंभीर",
   "panel.diskFree": "{{free}} खाली",
@@ -41,8 +40,6 @@
   "notice.memory.title": "धीमा: मेमोरी कम पड़ रही है",
   "notice.cpu.title": "धीमा: CPU एक मिनट से ज़्यादा समय से व्यस्त है",
   "notice.body": "सबसे ज़्यादा इस्तेमाल करने वाले ऐप: {{apps}} · आप इन्हें मेनू बार में Monitor से बंद कर सकते हैं",
-  "slow.memoryTitle": "{{size}} मेमोरी कौन इस्तेमाल कर रहा है",
-  "slow.cpuTitle": "CPU कौन इस्तेमाल कर रहा है",
   "slow.system": "सिस्टम",
   "slow.cache": "कैश (अपने आप खाली होता है)",
   "slow.other": "दूसरे ऐप",
@@ -87,5 +84,10 @@
   "update.downloading": "डाउनलोड हो रहा है… {{percent}}%",
   "update.installing": "इंस्टॉल हो रहा है…",
   "update.install": "अभी इंस्टॉल करें",
-  "update.later": "बाद में"
+  "update.later": "बाद में",
+  "disk.cache": "कैश",
+  "disk.packages": "node_modules",
+  "disk.build": "बिल्ड फ़ोल्डर",
+  "disk.rest": "बाकी सब",
+  "disk.cleanupNote": "रंगीन हिस्से साफ़ किए जा सकते हैं। नीचे की पंक्ति बताती है कि वे कहाँ हैं।"
 }
