@@ -26,6 +26,12 @@ export declare function barHeight(fraction: number): number
 /** The tray picture as a 36×36 PNG with the three bars at the given heights (grid units from `barHeight`). */
 export declare function barsPng(h0: number, h1: number, h2: number, r: number, g: number, b: number): Buffer
 
+/**
+ * Deletes the cleanable folders of one kind (`cache`, `packages`, `build`) on a low-priority thread;
+ * resolves to `{"freed":bytes,"skipped":folders}`.
+ */
+export declare function cleanupEmpty(kind: string): Promise<string>
+
 /** The last cleanup result saved in `path`, as JSON, or null when there is none. */
 export declare function cleanupLoad(path: string): string | null
 
