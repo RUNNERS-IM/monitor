@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { t } from "./i18n";
 import * as native from "./native";
-import type { MenuCommand, MenuState } from "./native";
+import type { CleanupKind, MenuCommand, MenuState } from "./native";
 import type { AppUse, Cleanup, Pressure, Snapshot } from "./types";
 import "./runners-menu.css";
 import "./App.css";
@@ -114,7 +114,7 @@ function Row({
     setError(null);
     action
       .run()
-      .catch((e) => setError(String(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, "") : e)))
+      .catch((e) => setError(cleanError(e)))
       .finally(() => setPending(false));
   };
   return (
@@ -191,7 +191,7 @@ function formatClock(unixSecs: number): string {
 const APP_COLOURS = ["#ff9f0a", "#bf5af2", "#64d2ff", "#30d158"];
 const CLAUDE_COLOUR = "#bf5af2";
 
-type Part = { key: string; label: string; amount: string; size: number; colour: string; app?: AppUse };
+type Part = { key: string; label: string; amount: string; size: number; colour: string; app?: AppUse; empty?: CleanupKind };
 
 /** Colours for the apps in order: claude always purple, the others take the next free colour. */
 function appParts(apps: AppUse[], size: (app: AppUse) => number, amount: (app: AppUse) => string): Part[] {
@@ -249,17 +249,36 @@ function diskParts(snap: Snapshot, cleanup: Cleanup | null): { parts: Part[]; to
     amount: formatGb(item.bytes),
     size: item.bytes,
     colour: KIND_COLOURS[item.kind],
+    // Why: an older saved result has no split, and emptying everything at once was not offered.
+    empty: cleanup?.kinds?.length ? item.kind : undefined,
   }));
   const rest = Math.max(0, snap.diskUsed - cleanable.reduce((sum, part) => sum + part.size, 0));
   const parts: Part[] = [...cleanable, { key: "rest", label: t("disk.rest"), amount: formatGb(rest), size: rest, colour: "#8e8e93" }];
   return { parts: parts.filter((part) => part.size > 0), total: snap.diskTotal };
 }
 
-/** One line under the bar: colour square, name, amount, and Quit for an app that can be quit. */
+const cleanError = (e: unknown) => String(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, "") : e);
+
+/** One line under the bar: colour square, name, amount, and Quit for an app or Empty for a cleanable kind. */
 function Legend({ part }: { part: Part }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
   const app = part.app;
+  const empty = () => {
+    if (!part.empty) return;
+    setPending(true);
+    setError(null);
+    native
+      .emptyCleanup(part.empty)
+      .then((done) => {
+        if (!done) return;
+        const freed = t("empty.done", { size: formatGb(done.freed) });
+        setResult(done.skipped > 0 ? `${freed} ${t("empty.skipped", { count: done.skipped })}` : freed);
+      })
+      .catch((e) => setError(cleanError(e)))
+      .finally(() => setPending(false));
+  };
   const quit = () => {
     if (!app) return;
     setPending(true);
@@ -281,7 +300,13 @@ function Legend({ part }: { part: Part }) {
             {t("slow.quit")}
           </button>
         )}
+        {part.empty && (
+          <button type="button" className="row-button" disabled={pending} onClick={empty}>
+            {pending ? t("empty.running") : t("empty.button")}
+          </button>
+        )}
       </div>
+      {result && <div className="rm-note legend-note">{result}</div>}
       {note && <div className="rm-note legend-note">{note}</div>}
       {error && <div className="rm-note rm-full">{t("action.failed", { error })}</div>}
     </>

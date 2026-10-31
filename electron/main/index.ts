@@ -1,7 +1,7 @@
 // Monitor's main process: a tray app that samples this computer every 3 seconds, shows the reading on the tray and
 // in a panel under it, pops the panel up by itself when the computer turns slow, and measures cleanable folders
 // every 30 minutes.
-import { app, BrowserWindow, ipcMain, nativeTheme, Notification, shell, systemPreferences, type Tray } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, Notification, shell, systemPreferences, type Tray } from "electron";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { currentLocale, t } from "./i18n";
@@ -48,7 +48,10 @@ let sampler: Sampler | null = null;
 let latest: Snapshot | null = null;
 /** Debug runs only: the same reading with made-up names, shown in the panel for public screenshots. */
 let latestDemo: Snapshot | null = null;
-let latestCleanup: unknown = null;
+type CleanupResult = { total: number; kinds?: { kind: string; bytes: number }[]; measuredAt: number };
+let latestCleanup: CleanupResult | null = null;
+/** Ends the cleanup loop's wait early, so a measurement right after emptying shows what is left. */
+let measureNow: (() => void) | null = null;
 let shownAt = 0;
 let hiddenByBlurAt = 0;
 /** Runners paused from the panel, by name, with the Unix time they come back.
@@ -257,9 +260,9 @@ async function cleanupLoop(): Promise<void> {
   // Why: measuring takes minutes, so a restart shows the saved numbers; the Tauri build's file counts too.
   const found = native.cleanupLoad(saved) ?? native.cleanupLoad(join(app.getPath("appData"), "im.runners.monitor", CLEANUP_FILE));
   if (found) {
-    const parsed = JSON.parse(found) as { measuredAt: number };
+    const parsed = JSON.parse(found) as CleanupResult;
     latestCleanup = parsed;
-    await sleep(Math.max(0, CLEANUP_EVERY_MS - (native.nowSecs() - parsed.measuredAt) * 1000));
+    await waitForMeasure(Math.max(0, CLEANUP_EVERY_MS - (native.nowSecs() - parsed.measuredAt) * 1000));
   }
   for (;;) {
     try {
@@ -269,8 +272,43 @@ async function cleanupLoop(): Promise<void> {
     } catch (error) {
       console.error("cleanup:", error);
     }
-    await sleep(CLEANUP_EVERY_MS);
+    await waitForMeasure(CLEANUP_EVERY_MS);
   }
+}
+
+function waitForMeasure(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, ms);
+    measureNow = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+  });
+}
+
+/** Asks before deleting, since the folders skip the Trash, then deletes one kind and takes it off the shown numbers. */
+async function emptyCleanup(kind: string): Promise<{ freed: number; skipped: number } | null> {
+  const part = latestCleanup?.kinds?.find((item) => item.kind === kind);
+  if (!latestCleanup || !part || DEMO) return null;
+  const size = `${(part.bytes / 1024 ** 3).toFixed(1)} GB`;
+  const { response } = await dialog.showMessageBox({
+    type: "warning",
+    message: t(`empty.confirm.${kind}`, { size }),
+    detail: t(`empty.detail.${kind}`),
+    buttons: [t("empty.button"), t("empty.cancel")],
+    defaultId: 1,
+    cancelId: 1,
+  });
+  if (response !== 0) return null;
+  const done = JSON.parse(await native.cleanupEmpty(kind)) as { freed: number; skipped: number };
+  // Why: the next measurement takes minutes, so the freed bytes come off the shown numbers right away.
+  latestCleanup = {
+    ...latestCleanup,
+    total: Math.max(0, latestCleanup.total - done.freed),
+    kinds: latestCleanup.kinds?.map((item) => (item.kind === kind ? { ...item, bytes: Math.max(0, item.bytes - done.freed) } : item)),
+  };
+  measureNow?.();
+  return done;
 }
 
 function accentColor(): string | null {
@@ -285,6 +323,7 @@ function registerIpc(): void {
   ipcMain.handle("monitor:quitApp", async (_event, name: string) => {
     await sampler!.quitApp(String(name));
   });
+  ipcMain.handle("monitor:emptyCleanup", (_event, kind: string) => emptyCleanup(String(kind)));
   ipcMain.handle("monitor:pauseRunner", async (_event, name: string) => {
     const until = Number(await sampler!.pauseRunner(String(name)));
     paused.set(String(name), until);

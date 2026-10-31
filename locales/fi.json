@@ -89,5 +89,16 @@
   "disk.packages": "node_modules",
   "disk.build": "Käännöskansiot",
   "disk.rest": "Kaikki muu",
-  "disk.cleanupNote": "Väritetyt osat voi siivota. Alla oleva rivi näyttää, missä ne ovat."
+  "disk.cleanupNote": "Väritetyt osat voi siivota. Tyhjennä poistaa heti, ei roskakorin kautta.",
+  "empty.button": "Tyhjennä",
+  "empty.cancel": "Kumoa",
+  "empty.running": "Tyhjennetään…",
+  "empty.done": "Vapautettiin {{size}}.",
+  "empty.skipped": "{{count}} kansiota, joita on käytetty viimeisen 7 päivän aikana, jätettiin.",
+  "empty.confirm.cache": "Tyhjennetäänkö {{size}} välimuisteja?",
+  "empty.confirm.packages": "Poistetaanko {{size}} node_modules-kansioita?",
+  "empty.confirm.build": "Poistetaanko {{size}} käännöskansioita?",
+  "empty.detail.cache": "Ne poistetaan heti, ei roskakorin kautta. Apit luovat ne uudelleen tarvittaessa, joten ensimmäinen käyttö voi olla hieman hitaampi.",
+  "empty.detail.packages": "Ne poistetaan heti, ei roskakorin kautta. Viimeisen 7 päivän aikana käytetyt projektit jäävät. Poistettu projekti tarvitsee pnpm install (tai npm install) ennen kuin se toimii taas.",
+  "empty.detail.build": "Ne poistetaan heti, ei roskakorin kautta. Viimeisen 7 päivän aikana käytetyt kansiot jäävät. Poistetun projektin seuraava käännös alkaa alusta ja kestää kauemmin."
 }

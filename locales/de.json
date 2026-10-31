@@ -89,5 +89,16 @@
   "disk.packages": "node_modules",
   "disk.build": "Build-Ordner",
   "disk.rest": "Alles andere",
-  "disk.cleanupNote": "Die farbigen Teile lassen sich aufräumen. Die Zeile darunter zeigt, wo sie liegen."
+  "disk.cleanupNote": "Die farbigen Teile lassen sich aufräumen. Leeren löscht sofort, ohne Papierkorb.",
+  "empty.button": "Leeren",
+  "empty.cancel": "Abbrechen",
+  "empty.running": "Wird geleert…",
+  "empty.done": "{{size}} freigegeben.",
+  "empty.skipped": "{{count}} Ordner, die in den letzten 7 Tagen benutzt wurden, bleiben.",
+  "empty.confirm.cache": "{{size}} Caches leeren?",
+  "empty.confirm.packages": "{{size}} node_modules löschen?",
+  "empty.confirm.build": "{{size}} Build-Ordner löschen?",
+  "empty.detail.cache": "Sie werden sofort gelöscht, ohne Papierkorb. Apps legen sie bei Bedarf neu an, der erste Start kann etwas langsamer sein.",
+  "empty.detail.packages": "Sie werden sofort gelöscht, ohne Papierkorb. Projekte der letzten 7 Tage bleiben. Ein gelöschtes Projekt braucht vor dem nächsten Start pnpm install (oder npm install).",
+  "empty.detail.build": "Sie werden sofort gelöscht, ohne Papierkorb. Ordner der letzten 7 Tage bleiben. Der nächste Build eines gelöschten Projekts beginnt von vorn und dauert länger."
 }

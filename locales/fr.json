@@ -89,5 +89,16 @@
   "disk.packages": "node_modules",
   "disk.build": "Dossiers de build",
   "disk.rest": "Tout le reste",
-  "disk.cleanupNote": "Les parties en couleur peuvent être nettoyées. La ligne ci-dessous indique où elles se trouvent."
+  "disk.cleanupNote": "Les parties en couleur peuvent être nettoyées. Vider supprime tout de suite, sans passer par la Corbeille.",
+  "empty.button": "Vider",
+  "empty.cancel": "Annuler",
+  "empty.running": "Vidage…",
+  "empty.done": "{{size}} libérés.",
+  "empty.skipped": "{{count}} dossiers utilisés ces 7 derniers jours ont été gardés.",
+  "empty.confirm.cache": "Vider {{size}} de caches ?",
+  "empty.confirm.packages": "Supprimer {{size}} de node_modules ?",
+  "empty.confirm.build": "Supprimer {{size}} de dossiers de build ?",
+  "empty.detail.cache": "Ils sont supprimés tout de suite, sans passer par la Corbeille. Les apps les recréent au besoin, la première utilisation peut donc être un peu plus lente.",
+  "empty.detail.packages": "Ils sont supprimés tout de suite, sans passer par la Corbeille. Les projets utilisés ces 7 derniers jours sont gardés. Un projet supprimé demande pnpm install (ou npm install) avant de tourner à nouveau.",
+  "empty.detail.build": "Ils sont supprimés tout de suite, sans passer par la Corbeille. Les dossiers utilisés ces 7 derniers jours sont gardés. Le prochain build d’un projet supprimé repart de zéro et prend plus de temps."
 }

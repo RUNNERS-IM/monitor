@@ -6,6 +6,7 @@ const api: MonitorApi = {
   snapshot: () => ipcRenderer.invoke("monitor:snapshot"),
   cleanup: () => ipcRenderer.invoke("monitor:cleanup"),
   quitApp: (name) => ipcRenderer.invoke("monitor:quitApp", name),
+  emptyCleanup: (kind) => ipcRenderer.invoke("monitor:emptyCleanup", kind),
   pauseRunner: (name) => ipcRenderer.invoke("monitor:pauseRunner", name),
   translucent: () => ipcRenderer.invoke("monitor:translucent"),
   closePopup: () => ipcRenderer.invoke("monitor:closePopup"),

@@ -21,6 +21,8 @@ export interface Native {
   cleanupLoad(path: string): string | null;
   cleanupMeasure(progressPath?: string): Promise<string>;
   cleanupSave(path: string, json: string): void;
+  /** Deletes the cleanable folders of one kind; resolves to `{"freed":bytes,"skipped":folders}` as JSON. */
+  cleanupEmpty(kind: string): Promise<string>;
   /** A made-up cleanup result as JSON (debug runs only, `MONITOR_DEMO=1`). */
   demoCleanup(): string | null;
   nowSecs(): number;

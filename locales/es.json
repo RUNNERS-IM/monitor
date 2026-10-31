@@ -89,5 +89,16 @@
   "disk.packages": "node_modules",
   "disk.build": "Carpetas de compilación",
   "disk.rest": "Todo lo demás",
-  "disk.cleanupNote": "Las partes de color se pueden limpiar. La fila de abajo muestra dónde están."
+  "disk.cleanupNote": "Las partes de color se pueden limpiar. Vaciar elimina al momento, sin pasar por la Papelera.",
+  "empty.button": "Vaciar",
+  "empty.cancel": "Cancelar",
+  "empty.running": "Vaciando…",
+  "empty.done": "{{size}} liberados.",
+  "empty.skipped": "Se mantuvieron {{count}} carpetas usadas en los últimos 7 días.",
+  "empty.confirm.cache": "¿Vaciar {{size}} de cachés?",
+  "empty.confirm.packages": "¿Eliminar {{size}} de node_modules?",
+  "empty.confirm.build": "¿Eliminar {{size}} de carpetas de compilación?",
+  "empty.detail.cache": "Se eliminan al momento, sin pasar por la Papelera. Las apps las vuelven a crear cuando las necesitan, así que el primer uso puede ser algo más lento.",
+  "empty.detail.packages": "Se eliminan al momento, sin pasar por la Papelera. Se mantienen los proyectos usados en los últimos 7 días. Un proyecto eliminado necesita pnpm install (o npm install) antes de volver a funcionar.",
+  "empty.detail.build": "Se eliminan al momento, sin pasar por la Papelera. Se mantienen las carpetas usadas en los últimos 7 días. La siguiente compilación de un proyecto eliminado empieza de cero y tarda más."
 }

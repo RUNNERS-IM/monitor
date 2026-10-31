@@ -89,5 +89,16 @@
   "disk.packages": "node_modules",
   "disk.build": "Buildmappen",
   "disk.rest": "Al het andere",
-  "disk.cleanupNote": "De gekleurde delen kun je opruimen. De regel hieronder laat zien waar ze staan."
+  "disk.cleanupNote": "De gekleurde delen kun je opruimen. Legen verwijdert meteen, zonder Prullenmand.",
+  "empty.button": "Legen",
+  "empty.cancel": "Annuleren",
+  "empty.running": "Bezig met legen…",
+  "empty.done": "{{size}} vrijgemaakt.",
+  "empty.skipped": "{{count}} mappen die de afgelopen 7 dagen zijn gebruikt, zijn bewaard.",
+  "empty.confirm.cache": "{{size}} aan caches legen?",
+  "empty.confirm.packages": "{{size}} aan node_modules verwijderen?",
+  "empty.confirm.build": "{{size}} aan buildmappen verwijderen?",
+  "empty.detail.cache": "Ze worden meteen verwijderd, zonder Prullenmand. Apps maken ze opnieuw aan wanneer nodig, dus het eerste gebruik kan iets trager zijn.",
+  "empty.detail.packages": "Ze worden meteen verwijderd, zonder Prullenmand. Projecten van de afgelopen 7 dagen blijven staan. Een verwijderd project heeft pnpm install (of npm install) nodig voordat het weer draait.",
+  "empty.detail.build": "Ze worden meteen verwijderd, zonder Prullenmand. Mappen van de afgelopen 7 dagen blijven staan. De volgende build van een verwijderd project begint opnieuw en duurt langer."
 }

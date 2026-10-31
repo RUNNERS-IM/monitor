@@ -89,5 +89,16 @@
   "disk.packages": "node_modules",
   "disk.build": "Pastas de build",
   "disk.rest": "Todo o resto",
-  "disk.cleanupNote": "As partes coloridas podem ser limpas. A linha abaixo mostra onde estão."
+  "disk.cleanupNote": "As partes coloridas podem ser limpas. Esvaziar apaga de imediato, sem passar pelo Lixo.",
+  "empty.button": "Esvaziar",
+  "empty.cancel": "Cancelar",
+  "empty.running": "A esvaziar…",
+  "empty.done": "{{size}} libertados.",
+  "empty.skipped": "Foram mantidas {{count}} pastas usadas nos últimos 7 dias.",
+  "empty.confirm.cache": "Esvaziar {{size}} de caches?",
+  "empty.confirm.packages": "Apagar {{size}} de node_modules?",
+  "empty.confirm.build": "Apagar {{size}} de pastas de build?",
+  "empty.detail.cache": "São apagadas de imediato, sem passar pelo Lixo. As apps voltam a criá-las quando precisam, por isso a primeira utilização pode ser um pouco mais lenta.",
+  "empty.detail.packages": "São apagadas de imediato, sem passar pelo Lixo. Os projetos usados nos últimos 7 dias ficam. Um projeto apagado precisa de pnpm install (ou npm install) antes de voltar a correr.",
+  "empty.detail.build": "São apagadas de imediato, sem passar pelo Lixo. As pastas usadas nos últimos 7 dias ficam. O próximo build de um projeto apagado começa do zero e demora mais."
 }

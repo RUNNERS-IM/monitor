@@ -1,4 +1,6 @@
 // One reading of this computer, as the native module sends it (native/src/snapshot.rs, camelCase JSON).
+import type { CleanupKind } from "../electron/preload/api";
+
 export type Pressure = "normal" | "warn" | "critical";
 
 export type AppKind = "app" | "build" | "simulator";
@@ -40,6 +42,6 @@ export type Cleanup = {
   total: number;
   top: { path: string; bytes: number }[];
   /** The total split by kind; empty in a result an older version saved. */
-  kinds: { kind: "cache" | "packages" | "build"; bytes: number }[];
+  kinds: { kind: CleanupKind; bytes: number }[];
   measuredAt: number;
 };

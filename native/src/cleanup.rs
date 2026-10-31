@@ -71,18 +71,7 @@ pub fn measure(progress: Option<&Path>) -> Cleanup {
     let Some(home) = home_dir() else {
         return Cleanup { total: 0, top: Vec::new(), kinds: Vec::new(), measured_at: now() };
     };
-    let mut found: Vec<PathBuf> = [
-        "Library/Developer/Xcode/DerivedData",
-        "Library/Caches",
-        "Library/pnpm/store",
-        ".npm",
-        ".cache",
-    ]
-    .iter()
-    .map(|p| home.join(p))
-    .filter(|p| p.is_dir())
-    .collect();
-    find_build_folders(&home.join("git"), 0, &mut found);
+    let found = cleanable_folders(&home);
 
     // Why: a folder deleted since the unfinished run must not be counted from the saved progress.
     let wanted: Vec<String> = found.iter().map(|folder| tilde(folder, &home)).collect();
@@ -107,6 +96,86 @@ pub fn measure(progress: Option<&Path>) -> Cleanup {
     let kinds = kind_totals(&candidates);
     candidates.truncate(TOP);
     Cleanup { total, top: candidates, kinds, measured_at: now() }
+}
+
+/// Every folder Monitor counts as cleanable: the fixed caches, then build and package folders under ~/git.
+fn cleanable_folders(home: &Path) -> Vec<PathBuf> {
+    let mut found: Vec<PathBuf> = [
+        "Library/Developer/Xcode/DerivedData",
+        "Library/Caches",
+        "Library/pnpm/store",
+        ".npm",
+        ".cache",
+    ]
+    .iter()
+    .map(|p| home.join(p))
+    .filter(|p| p.is_dir())
+    .collect();
+    find_build_folders(&home.join("git"), 0, &mut found);
+    found
+}
+
+/// What emptying one kind did: bytes freed and folders left alone because they were used recently.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Emptied {
+    pub freed: u64,
+    pub skipped: u32,
+}
+
+/// Build and package folders touched within this many days are kept, so a project someone works on keeps building.
+pub const KEEP_RECENT_DAYS: u64 = 7;
+
+/// Deletes the folders of one kind, without the Trash, since only deleting frees the space.
+/// Caches keep their folder and lose what is inside (apps fill it again on use); build and package folders
+/// go whole, except those used within `KEEP_RECENT_DAYS`, which a running build or an open project still needs.
+pub fn empty(kind: &str) -> Emptied {
+    let mut done = Emptied { freed: 0, skipped: 0 };
+    let Some(home) = home_dir() else { return done };
+    let keep_after = now().saturating_sub(KEEP_RECENT_DAYS * 86_400);
+    for folder in cleanable_folders(&home) {
+        if kind_of(&tilde(&folder, &home)) != kind {
+            continue;
+        }
+        if kind == "cache" {
+            let Ok(entries) = fs::read_dir(&folder) else { continue };
+            for entry in entries.flatten() {
+                done.freed += remove(&entry.path());
+            }
+        } else if last_used(&folder) > keep_after {
+            done.skipped += 1;
+        } else {
+            done.freed += remove(&folder);
+        }
+    }
+    done
+}
+
+/// Removes a file or folder and returns the space it took. Errors (a file the system protects) leave that part in place.
+fn remove(path: &Path) -> u64 {
+    let Ok(meta) = path.symlink_metadata() else { return 0 };
+    if meta.is_dir() {
+        let size = folder_size(path);
+        // Why: a folder that could only partly go still freed part of its size, so measure what is left.
+        if fs::remove_dir_all(path).is_ok() { size } else { size.saturating_sub(folder_size(path)) }
+    } else {
+        let size = disk_bytes(&meta);
+        if fs::remove_file(path).is_ok() { size } else { 0 }
+    }
+}
+
+/// The newest change time of a folder and the folders right inside it (`target/debug`, `node_modules/.pnpm`),
+/// as Unix seconds. Why: a build writes below the top folder, so the top folder's own time alone looks old.
+fn last_used(folder: &Path) -> u64 {
+    let modified = |path: &Path| {
+        path.metadata()
+            .and_then(|meta| meta.modified())
+            .ok()
+            .and_then(|time| time.duration_since(std::time::UNIX_EPOCH).ok())
+            .map_or(0, |since| since.as_secs())
+    };
+    let children = fs::read_dir(folder).into_iter().flatten().flatten().filter(|entry| entry.path().is_dir());
+    children.map(|entry| modified(&entry.path())).chain([modified(folder)]).max().unwrap_or(0)
 }
 
 /// The last result saved in `file`. Why: measuring takes minutes, so a restart shows the saved numbers instead of "measuring".
@@ -214,4 +283,38 @@ fn disk_bytes(meta: &fs::Metadata) -> u64 {
 #[cfg(not(unix))]
 fn disk_bytes(meta: &fs::Metadata) -> u64 {
     meta.len()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sorts_folders_into_kinds() {
+        assert_eq!(kind_of("~/git/acme/web/node_modules"), "packages");
+        assert_eq!(kind_of("~/git/acme/app/target"), "build");
+        assert_eq!(kind_of("~/git/acme/app/dist.noindex"), "build");
+        assert_eq!(kind_of("~/Library/Developer/Xcode/DerivedData"), "build");
+        assert_eq!(kind_of("~/Library/Caches"), "cache");
+        assert_eq!(kind_of("~/Library/pnpm/store"), "cache");
+    }
+
+    #[test]
+    fn remove_returns_the_space_it_freed() {
+        let dir = std::env::temp_dir().join(format!("monitor-remove-{}", std::process::id()));
+        fs::create_dir_all(dir.join("inner")).unwrap();
+        fs::write(dir.join("inner/file"), vec![0u8; 64 * 1024]).unwrap();
+        let size = folder_size(&dir);
+        assert!(size >= 64 * 1024);
+        assert_eq!(remove(&dir), size);
+        assert!(!dir.exists());
+    }
+
+    #[test]
+    fn a_folder_just_written_counts_as_recently_used() {
+        let dir = std::env::temp_dir().join(format!("monitor-used-{}", std::process::id()));
+        fs::create_dir_all(dir.join("debug")).unwrap();
+        assert!(last_used(&dir) + 60 > now());
+        let _ = fs::remove_dir_all(&dir);
+    }
 }

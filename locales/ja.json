@@ -89,5 +89,16 @@
   "disk.packages": "node_modules",
   "disk.build": "ビルドフォルダ",
   "disk.rest": "その他すべて",
-  "disk.cleanupNote": "色の付いた部分は片付けられます。下の行で場所を確認できます。"
+  "disk.cleanupNote": "色の付いた部分は片付けられます。「空にする」はゴミ箱を通さずにすぐ削除します。",
+  "empty.button": "空にする",
+  "empty.cancel": "キャンセル",
+  "empty.running": "空にしています…",
+  "empty.done": "{{size}} を空けました。",
+  "empty.skipped": "この7日間に使ったフォルダ {{count}} 個は残しました。",
+  "empty.confirm.cache": "キャッシュ {{size}} を空にしますか?",
+  "empty.confirm.packages": "node_modules {{size}} を削除しますか?",
+  "empty.confirm.build": "ビルドフォルダ {{size}} を削除しますか?",
+  "empty.detail.cache": "ゴミ箱を通さずにすぐ削除します。アプリが必要なときに作り直すので、最初の1回は少し遅くなることがあります。",
+  "empty.detail.packages": "ゴミ箱を通さずにすぐ削除します。この7日間に使ったプロジェクトは残します。削除したプロジェクトは、次に pnpm install(または npm install)をするまで動きません。",
+  "empty.detail.build": "ゴミ箱を通さずにすぐ削除します。この7日間に使ったフォルダは残します。削除したプロジェクトの次のビルドは最初からやり直すので時間がかかります。"
 }
