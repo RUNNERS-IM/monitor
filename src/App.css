@@ -99,6 +99,18 @@ body,
   text-overflow: ellipsis;
 }
 
+/* Why: in Polish and Russian the percentage was cut to "8…"; a number never shrinks, the badge gives way instead. */
+.summary-row .value.number {
+  flex: none;
+}
+
+.summary-row .badge {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .summary-row .chevron {
   flex: none;
   opacity: 0.7;

@@ -43,7 +43,8 @@ const MIN_TOP_CPU = 1;
 const SPOTLIGHT = /^(mds|mds_stores|mdworker|mdworker_shared)$/i;
 
 function formatGb(bytes: number): string {
-  return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+  // Why: in Arabic the page reads right to left and "3.2 GB" came out as "GB 3.2"; the isolate marks keep it in order.
+  return `\u2066${(bytes / 1024 ** 3).toFixed(1)} GB\u2069`;
 }
 
 function percent(used: number, total: number): number {
@@ -167,7 +168,7 @@ function SummaryRow({
         <span className="rm-trailing">
           {badge && <span className={`badge ${badge.tone}`}>{badge.text}</span>}
           {gauge}
-          <span className={`value ${tone && tone !== "ok" ? `rm-${tone}` : ""}`}>{value}</span>
+          <span className={`value ${gauge ? "number" : ""} ${tone && tone !== "ok" ? `rm-${tone}` : ""}`}>{value}</span>
           <Chevron size={12} strokeWidth={ICON_STROKE} className="chevron" aria-hidden />
         </span>
       </button>
@@ -478,7 +479,7 @@ function App() {
         onToggle={() => toggle("memory")}
       >
         <Sparkline values={snap.memoryHistory} tone={memoryTone} />
-        <div className="rm-note">{`${formatGb(snap.memoryUsed)} / ${formatGb(snap.memoryTotal)}`}</div>
+        <div className="rm-note">{`\u2066${formatGb(snap.memoryUsed)} / ${formatGb(snap.memoryTotal)}\u2069`}</div>
         <Breakdown {...memoryBreakdown} label={t("panel.memory")} />
         {snap.swapUsed > 0 && <div className="rm-note">{t("slow.swap", { size: formatGb(snap.swapUsed) })}</div>}
         {quitNote(memoryBreakdown.parts)}
@@ -493,7 +494,7 @@ function App() {
         onToggle={() => toggle("disk")}
       >
         <div className="rm-note">
-          {`${formatGb(snap.diskUsed)} / ${formatGb(snap.diskTotal)} · ${t("panel.diskFree", { free: formatGb(snap.diskTotal - snap.diskUsed) })}`}
+          {`\u2066${formatGb(snap.diskUsed)} / ${formatGb(snap.diskTotal)}\u2069 · ${t("panel.diskFree", { free: formatGb(snap.diskTotal - snap.diskUsed) })}`}
         </div>
         <Breakdown {...diskParts(snap, cleanup)} label={t("panel.disk")} />
         <div className="rm-note">{cleanup ? t("disk.cleanupNote") : t("panel.cleanupMeasuringNote")}</div>
