@@ -20,6 +20,9 @@ libc = "0.2"
 # Why: draws the menu-bar bars picture at runtime, so the moving bars need no image files.
 # Pinned to the same version as Remote so every RUNNERS app renders the shared frame with the same pixels.
 tiny-skia = { version = "=0.12.0", default-features = false, features = ["std", "simd", "png-format"] }
+# Why: on macOS the memory number is drawn into the tray picture so it can take the same dark colour as the icon
+# (a tray title only takes eight bright ANSI colours). It reads the system font at runtime, so no font is bundled.
+ab_glyph = "=0.2.32"
 
 [build-dependencies]
 napi-build = "2"
