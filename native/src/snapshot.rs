@@ -374,7 +374,7 @@ fn heavy_job() -> Option<HeavyJob> {
 fn quittable(process: &Process) -> bool {
     let name = plain_name(process);
     let own = process.pid().as_u32() == std::process::id();
-    !own && name != "claude" && name != "monitor" && !SYSTEM_PROCESSES.contains(&name.as_str()) && owned_by_me(process)
+    !own && name != "claude" && !name.eq_ignore_ascii_case("monitor") && !SYSTEM_PROCESSES.contains(&name.as_str()) && owned_by_me(process)
 }
 
 #[cfg(unix)]

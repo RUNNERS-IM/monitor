@@ -26,8 +26,7 @@ const shownVersion = sameDay === "0" ? base : buildVersion;
 module.exports = {
   appId: "im.runners.monitor",
   productName: "Monitor",
-  // Why: the Tauri build's binary was Contents/MacOS/monitor; keeping the name lets a Tauri copy that installs
-  // this build through its own updater restart into it, and keeps `pkill -x monitor` working.
+  // Why: Windows and Linux keep the lower-case "monitor" command the Tauri build had.
   executableName: "monitor",
   buildVersion,
   copyright: "© 2026 RUNNERS. All rights reserved.",
@@ -45,6 +44,10 @@ module.exports = {
   // Why: no npm package with native code ships; the one native module is built by cargo above.
   npmRebuild: false,
   mac: {
+    // Why: executableName also names the app bundle, so without this the Mac app would be "monitor.app" (electron-builder 26.15).
+    // A Tauri copy restarts into Contents/MacOS/monitor after its update, which still finds "Monitor" on the
+    // case-insensitive Mac disk.
+    executableName: "Monitor",
     category: "public.app-category.utilities",
     icon: "build/icon.icns",
     target: [
