@@ -3,6 +3,8 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+use crate::extra;
+
 /// Folders that only hold things a build or package manager can make again, so they are safe places to free disk.
 const BUILD_FOLDERS: &[&str] = &["node_modules", "target", "target.noindex", "build.noindex", "dist.noindex"];
 // Why: projects sit at ~/git/<org>/<repo>, so four levels reach a repo's own build folders without crawling the whole tree.
@@ -35,14 +37,16 @@ pub struct Candidate {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KindTotal {
-    /// `cache`, `packages` (node_modules) or `build`.
+    /// `cache`, `packages` (node_modules), `build`, or one of the kinds in `extra::KINDS`.
     pub kind: String,
     pub bytes: u64,
 }
 
 /// Which kind a measured folder is: package folders, build output, or a cache that fills again on use.
 fn kind_of(path: &str) -> &'static str {
-    if path.ends_with("/node_modules") {
+    if let Some(kind) = extra::kind_of(path) {
+        kind
+    } else if path.ends_with("/node_modules") {
         "packages"
     } else if path.ends_with("/DerivedData") || BUILD_FOLDERS.iter().any(|name| path.ends_with(&format!("/{name}"))) {
         "build"
@@ -54,6 +58,7 @@ fn kind_of(path: &str) -> &'static str {
 fn kind_totals(candidates: &[Candidate]) -> Vec<KindTotal> {
     let mut kinds: Vec<KindTotal> = ["cache", "packages", "build"]
         .iter()
+        .chain(extra::KINDS)
         .map(|kind| KindTotal {
             kind: kind.to_string(),
             bytes: candidates.iter().filter(|c| kind_of(&c.path) == *kind).map(|c| c.bytes).sum(),
@@ -74,7 +79,8 @@ pub fn measure(progress: Option<&Path>) -> Cleanup {
     let found = cleanable_folders(&home);
 
     // Why: a folder deleted since the unfinished run must not be counted from the saved progress.
-    let wanted: Vec<String> = found.iter().map(|folder| tilde(folder, &home)).collect();
+    let mut wanted: Vec<String> = found.iter().map(|folder| tilde(folder, &home)).collect();
+    wanted.extend(extra::KINDS.iter().map(|kind| extra::shown_path(kind).to_owned()));
     let mut candidates: Vec<Candidate> = progress.and_then(load_progress).unwrap_or_default();
     candidates.retain(|c| wanted.contains(&c.path));
     for folder in found {
@@ -87,10 +93,20 @@ pub fn measure(progress: Option<&Path>) -> Cleanup {
             write_json(file, &candidates);
         }
     }
+    for kind in extra::KINDS {
+        let path = extra::shown_path(kind).to_owned();
+        if candidates.iter().any(|c| c.path == path) {
+            continue;
+        }
+        candidates.push(Candidate { bytes: extra::measure(kind, &home), path });
+        if let Some(file) = progress {
+            write_json(file, &candidates);
+        }
+    }
     if let Some(file) = progress {
         let _ = fs::remove_file(file);
     }
-    candidates.retain(|c| c.bytes > 0);
+    candidates.retain(|c| c.bytes > 0 && (extra::kind_of(&c.path).is_none() || c.bytes >= extra::MIN_SHOWN));
     candidates.sort_by_key(|c| std::cmp::Reverse(c.bytes));
     let total = candidates.iter().map(|c| c.bytes).sum();
     let kinds = kind_totals(&candidates);
@@ -99,6 +115,7 @@ pub fn measure(progress: Option<&Path>) -> Cleanup {
 }
 
 /// Every folder Monitor counts as cleanable: the fixed caches, then build and package folders under ~/git.
+/// The kinds in `extra` are measured by their own rules after these.
 fn cleanable_folders(home: &Path) -> Vec<PathBuf> {
     let mut found: Vec<PathBuf> = [
         "Library/Developer/Xcode/DerivedData",
@@ -132,6 +149,9 @@ pub const KEEP_RECENT_DAYS: u64 = 7;
 pub fn empty(kind: &str) -> Emptied {
     let mut done = Emptied { freed: 0, skipped: 0 };
     let Some(home) = home_dir() else { return done };
+    if extra::KINDS.contains(&kind) {
+        return extra::empty(kind, &home);
+    }
     let keep_after = now().saturating_sub(KEEP_RECENT_DAYS * 86_400);
     for folder in cleanable_folders(&home) {
         if kind_of(&tilde(&folder, &home)) != kind {
@@ -152,7 +172,7 @@ pub fn empty(kind: &str) -> Emptied {
 }
 
 /// Removes a file or folder and returns the space it took. Errors (a file the system protects) leave that part in place.
-fn remove(path: &Path) -> u64 {
+pub(crate) fn remove(path: &Path) -> u64 {
     let Ok(meta) = path.symlink_metadata() else { return 0 };
     if meta.is_dir() {
         let size = folder_size(path);
@@ -256,7 +276,7 @@ fn find_build_folders(dir: &Path, depth: usize, found: &mut Vec<PathBuf>) {
 }
 
 /// Space a folder takes on disk. Symbolic links are not followed, so nothing is counted twice through a link.
-fn folder_size(dir: &Path) -> u64 {
+pub(crate) fn folder_size(dir: &Path) -> u64 {
     let mut total = 0;
     let mut stack = vec![dir.to_path_buf()];
     while let Some(dir) = stack.pop() {
@@ -274,14 +294,14 @@ fn folder_size(dir: &Path) -> u64 {
 }
 
 #[cfg(unix)]
-fn disk_bytes(meta: &fs::Metadata) -> u64 {
+pub(crate) fn disk_bytes(meta: &fs::Metadata) -> u64 {
     use std::os::unix::fs::MetadataExt;
     // Why: blocks match what `du` and Finder report; length overcounts sparse files and undercounts tiny ones.
     meta.blocks() * 512
 }
 
 #[cfg(not(unix))]
-fn disk_bytes(meta: &fs::Metadata) -> u64 {
+pub(crate) fn disk_bytes(meta: &fs::Metadata) -> u64 {
     meta.len()
 }
 
