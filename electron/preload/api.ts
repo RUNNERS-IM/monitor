@@ -4,7 +4,7 @@ export type MenuCommand = "usage" | "login" | "autoUpdate" | "about" | "updates"
 
 export type MenuState = { openAtLogin: boolean; autoUpdate: boolean };
 
-export type CleanupKind = "cache" | "packages" | "build";
+export type CleanupKind = "cache" | "packages" | "build" | "trash" | "docker" | "simulators" | "wallpapers" | "vms" | "models";
 
 /** What emptying did: bytes freed and recently used folders it kept. */
 export type Emptied = { freed: number; skipped: number };

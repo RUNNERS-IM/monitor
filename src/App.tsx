@@ -245,7 +245,19 @@ function cpuParts(snap: Snapshot): { parts: Part[]; total: number } {
   return { parts: parts.filter((part) => part.size > 0), total: Math.max(100, used + other) };
 }
 
-const KIND_COLOURS = { cache: "#ff9f0a", packages: "#64d2ff", build: "#bf5af2" } as const;
+const KIND_COLOURS = {
+  cache: "#ff9f0a",
+  packages: "#64d2ff",
+  build: "#bf5af2",
+  trash: "#ac8e68",
+  docker: "#0a84ff",
+  simulators: "#30d158",
+  wallpapers: "#ffd60a",
+  vms: "#ff375f",
+  models: "#5e5ce6",
+} as const;
+/** Kinds that keep recently used folders; the others keep only what is in use. */
+const KEEPS_RECENT: CleanupKind[] = ["packages", "build"];
 
 /** The parts of the disk: what could be cleaned, by kind, then the rest of the used space (the free part left empty). */
 function diskParts(snap: Snapshot, cleanup: Cleanup | null): { parts: Part[]; total: number } {
@@ -282,7 +294,8 @@ function Legend({ part }: { part: Part }) {
       .then((done) => {
         if (!done) return;
         const freed = t("empty.done", { size: formatGb(done.freed) });
-        setResult(done.skipped > 0 ? `${freed} ${t("empty.skipped", { count: done.skipped })}` : freed);
+        const kept = part.empty && KEEPS_RECENT.includes(part.empty) ? "empty.skipped" : "empty.skippedInUse";
+        setResult(done.skipped > 0 ? `${freed} ${t(kept, { count: done.skipped })}` : freed);
       })
       .catch((e) => setError(cleanError(e)))
       .finally(() => setPending(false));

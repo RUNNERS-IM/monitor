@@ -7,6 +7,7 @@ mod actions;
 mod bars;
 mod cleanup;
 mod demo;
+mod extra;
 mod snapshot;
 
 use std::path::Path;
@@ -132,12 +133,12 @@ pub fn cleanup_measure(progress_path: Option<String>) -> AsyncTask<Work> {
     })
 }
 
-/// Deletes the cleanable folders of one kind (`cache`, `packages`, `build`) on a low-priority thread;
-/// resolves to `{"freed":bytes,"skipped":folders}`.
+/// Deletes one cleanable kind (`cache`, `packages`, `build`, or a kind in `extra::KINDS`) on a low-priority thread;
+/// resolves to `{"freed":bytes,"skipped":parts left}`.
 #[napi(ts_return_type = "Promise<string>")]
 pub fn cleanup_empty(kind: String) -> AsyncTask<Work> {
     Work::new(move || {
-        if !["cache", "packages", "build"].contains(&kind.as_str()) {
+        if !["cache", "packages", "build"].contains(&kind.as_str()) && !extra::KINDS.contains(&kind.as_str()) {
             return Err(format!("unknown kind {kind}"));
         }
         std::thread::spawn(move || {
