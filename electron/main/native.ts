@@ -27,6 +27,9 @@ export interface Native {
   demoCleanup(): string | null;
   nowSecs(): number;
   barsPng(h0: number, h1: number, h2: number, r: number, g: number, b: number): Buffer;
+  /** The tray picture with `label` drawn after it in the same colour (macOS: needs the system font, see `canLabel`). */
+  barsLabelPng(h0: number, h1: number, h2: number, r: number, g: number, b: number, label: string): Buffer;
+  canLabel(): boolean;
   barHeight(fraction: number): number;
   easeOut(t: number): number;
 }

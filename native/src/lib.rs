@@ -174,6 +174,18 @@ pub fn bars_png(h0: f64, h1: f64, h2: f64, r: u8, g: u8, b: u8) -> Buffer {
     bars::png([h0 as f32, h1 as f32, h2 as f32], [r, g, b]).into()
 }
 
+/// The tray picture with `label` drawn after it in the same colour (36 px high, as wide as the label needs).
+#[napi]
+pub fn bars_label_png(h0: f64, h1: f64, h2: f64, r: u8, g: u8, b: u8, label: String) -> Buffer {
+    bars::png_with_label([h0 as f32, h1 as f32, h2 as f32], [r, g, b], &label).into()
+}
+
+/// Whether `barsLabelPng` can draw text here (it needs the macOS system font).
+#[napi]
+pub fn can_label() -> bool {
+    bars::can_label()
+}
+
 /// Bar height on the 24 grid for a usage fraction (0 – 1).
 #[napi]
 pub fn bar_height(fraction: f64) -> f64 {

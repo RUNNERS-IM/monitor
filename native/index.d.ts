@@ -23,8 +23,14 @@ export declare class Sampler {
 /** Bar height on the 24 grid for a usage fraction (0 – 1). */
 export declare function barHeight(fraction: number): number
 
+/** The tray picture with `label` drawn after it in the same colour (36 px high, as wide as the label needs). */
+export declare function barsLabelPng(h0: number, h1: number, h2: number, r: number, g: number, b: number, label: string): Buffer
+
 /** The tray picture as a 36×36 PNG with the three bars at the given heights (grid units from `barHeight`). */
 export declare function barsPng(h0: number, h1: number, h2: number, r: number, g: number, b: number): Buffer
+
+/** Whether `barsLabelPng` can draw text here (it needs the macOS system font). */
+export declare function canLabel(): boolean
 
 /**
  * Deletes the cleanable folders of one kind (`cache`, `packages`, `build`) on a low-priority thread;
