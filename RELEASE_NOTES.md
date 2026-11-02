@@ -1,11 +1,15 @@
 ## 한국어
 
-- 패널 맨 위에 "지금 하면 좋은 것"이 나옵니다. 메모리가 모자라면 30분 넘게 안 쓴 큰 앱과 오래 켜 둔 개발 서버(nuxt dev · vite 등)를, 디스크가 85%를 넘으면 큰 정리 거리를 골라 단추 하나로 끄거나 비웁니다.
-- 느려짐 알림에 "끄기" 단추가 붙습니다. 알림에서 바로 가장 큰 앱을 끌 수 있습니다.
-- 앱마다 메모리를 활동 모니터의 "메모리" 열과 같은 값으로 셉니다. 압축된 몫까지 앱에 넣어서, "시스템"이 크게 보이던 것을 바로잡았습니다.
+- "모든 컴퓨터" 창이 생겼습니다. 같은 Tailscale 망에서 Monitor가 켜진 컴퓨터마다 CPU · 메모리 · 디스크를 카드로 보여 주고, 카드를 누르면 메모리를 많이 쓰는 앱과 정리할 거리가 나옵니다. 보기만 할 수 있고, 서버를 거치지 않고 컴퓨터끼리 직접 주고받습니다.
+- 패널에 "다른 컴퓨터" 줄이 생겨 느려진 컴퓨터 이름을 바로 보여 줍니다. 누르면 "모든 컴퓨터" 창이 열립니다.
+- 패널은 열 때마다 줄이 접힌 채로 시작해서 화면 아래까지 길게 내려오지 않습니다.
+- "로그인할 때 열기"와 "업데이트 자동 확인"이 패널에서는 오른쪽 스위치로, 오른쪽 클릭 메뉴에서는 체크 표시로 바뀌었습니다.
+- 작업 줄의 claude 세션은 이름과 명령 없이 개수와 시간만 보여 줍니다.
 
 ## English
 
-- A "Worth doing now" box at the top of the panel suggests what to quit when memory is short (big apps unused for 30+ minutes, dev servers left running such as nuxt dev or vite) and what to empty when the disk is over 85%, each with one button.
-- The slow-computer notification has a Quit button for the biggest app.
-- Each app's memory now matches Activity Monitor's Memory column, compressed memory included, so "System" no longer looks oversized.
+- New All Computers window: a card for every computer on the same Tailscale network that runs Monitor, with CPU, memory and disk; choose one to see its biggest apps and what could be emptied. View only, and the numbers go straight between the computers, through no server.
+- The panel has an "Other computers" line that names the slow ones and opens the All Computers window.
+- The panel opens with every row folded, so it no longer reaches the bottom of the screen.
+- Open at Login and Check for Updates Automatically are switches in the panel and check marks in the right-click menu.
+- claude sessions in the Jobs row show only how many and how long, without names or commands.
