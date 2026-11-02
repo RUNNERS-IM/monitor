@@ -111,5 +111,19 @@
   "suggest.emptyWhy": "Disk hampir penuh · membebaskan {{size}}",
   "suggest.quitDone": "Diminta keluar",
   "notice.suggest": "Keluar dari {{name}} membebaskan {{size}}.",
-  "notice.quit": "Keluar dari {{name}}"
+  "notice.quit": "Keluar dari {{name}}",
+  "computers.title": "Semua Komputer",
+  "computers.row": "Komputer lain: {{count}}",
+  "computers.allFine": "Semua baik",
+  "computers.slowOne": "{{name}} lambat",
+  "computers.slowMany": "{{name}} dan {{more}} lainnya lambat",
+  "computers.thisComputer": "Komputer ini",
+  "computers.offline": "Mati",
+  "computers.noMonitor": "Tanpa Monitor",
+  "computers.empty": "Tidak ada komputer lain di Tailscale.",
+  "computers.apps": "App yang paling banyak memakai memori",
+  "computers.seen": "Per {{time}}",
+  "computers.note": "Komputer di jaringan Tailscale yang sama yang menjalankan Monitor tampil di sini. Hanya lihat.",
+  "computers.free": "kosong",
+  "computers.noneRunning": "Tidak ada yang menjalankan Monitor"
 }

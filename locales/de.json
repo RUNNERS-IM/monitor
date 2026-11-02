@@ -111,5 +111,19 @@
   "suggest.emptyWhy": "Festplatte fast voll · gibt {{size}} frei",
   "suggest.quitDone": "Zum Beenden aufgefordert",
   "notice.suggest": "{{name}} beenden gibt {{size}} frei.",
-  "notice.quit": "{{name}} beenden"
+  "notice.quit": "{{name}} beenden",
+  "computers.title": "Alle Computer",
+  "computers.row": "Andere Computer: {{count}}",
+  "computers.allFine": "Alles in Ordnung",
+  "computers.slowOne": "{{name}} ist langsam",
+  "computers.slowMany": "{{name}} und {{more}} weitere sind langsam",
+  "computers.thisComputer": "Dieser Computer",
+  "computers.offline": "Aus",
+  "computers.noMonitor": "Kein Monitor",
+  "computers.empty": "Keine anderen Computer in Tailscale.",
+  "computers.apps": "Apps mit dem meisten Speicher",
+  "computers.seen": "Stand {{time}}",
+  "computers.note": "Hier erscheinen Computer im selben Tailscale-Netz, auf denen Monitor läuft. Nur Ansicht.",
+  "computers.free": "frei",
+  "computers.noneRunning": "Nirgends läuft Monitor"
 }

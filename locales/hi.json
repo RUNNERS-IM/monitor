@@ -111,5 +111,19 @@
   "suggest.emptyWhy": "डिस्क लगभग भरी · {{size}} खाली होगा",
   "suggest.quitDone": "बंद करने को कहा गया",
   "notice.suggest": "{{name}} बंद करने से {{size}} खाली होगा।",
-  "notice.quit": "{{name}} बंद करें"
+  "notice.quit": "{{name}} बंद करें",
+  "computers.title": "सभी कंप्यूटर",
+  "computers.row": "अन्य कंप्यूटर: {{count}}",
+  "computers.allFine": "सब ठीक",
+  "computers.slowOne": "{{name}} धीमा है",
+  "computers.slowMany": "{{name}} और {{more}} अन्य धीमे हैं",
+  "computers.thisComputer": "यह कंप्यूटर",
+  "computers.offline": "बंद",
+  "computers.noMonitor": "Monitor नहीं",
+  "computers.empty": "Tailscale पर कोई अन्य कंप्यूटर नहीं।",
+  "computers.apps": "सबसे ज़्यादा मेमोरी वाले ऐप",
+  "computers.seen": "{{time}} तक",
+  "computers.note": "उसी Tailscale नेटवर्क के वे कंप्यूटर यहाँ दिखते हैं जिन पर Monitor चल रहा है। केवल देखने के लिए।",
+  "computers.free": "खाली",
+  "computers.noneRunning": "किसी पर Monitor नहीं चल रहा"
 }

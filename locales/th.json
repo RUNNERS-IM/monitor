@@ -111,5 +111,19 @@
   "suggest.emptyWhy": "ดิสก์ใกล้เต็ม · ได้คืน {{size}}",
   "suggest.quitDone": "ส่งคำสั่งปิดแล้ว",
   "notice.suggest": "ปิด {{name}} จะได้คืน {{size}}",
-  "notice.quit": "ปิด {{name}}"
+  "notice.quit": "ปิด {{name}}",
+  "computers.title": "คอมพิวเตอร์ทั้งหมด",
+  "computers.row": "คอมพิวเตอร์อื่น {{count}} เครื่อง",
+  "computers.allFine": "ปกติทั้งหมด",
+  "computers.slowOne": "{{name}} ช้า",
+  "computers.slowMany": "{{name}} และอีก {{more}} เครื่องช้า",
+  "computers.thisComputer": "คอมพิวเตอร์เครื่องนี้",
+  "computers.offline": "ปิด",
+  "computers.noMonitor": "ไม่มี Monitor",
+  "computers.empty": "ไม่มีคอมพิวเตอร์อื่นใน Tailscale",
+  "computers.apps": "แอปที่ใช้หน่วยความจำมากที่สุด",
+  "computers.seen": "ณ {{time}}",
+  "computers.note": "คอมพิวเตอร์ในเครือข่าย Tailscale เดียวกันที่เปิด Monitor จะแสดงที่นี่ ดูได้อย่างเดียว",
+  "computers.free": "ว่าง",
+  "computers.noneRunning": "ไม่มีเครื่องที่เปิด Monitor"
 }

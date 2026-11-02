@@ -111,5 +111,19 @@
   "suggest.emptyWhy": "磁盘快满了 · 释放 {{size}}",
   "suggest.quitDone": "已请求退出",
   "notice.suggest": "退出 {{name}} 可释放 {{size}}。",
-  "notice.quit": "退出 {{name}}"
+  "notice.quit": "退出 {{name}}",
+  "computers.title": "所有电脑",
+  "computers.row": "其他电脑 {{count}} 台",
+  "computers.allFine": "全部正常",
+  "computers.slowOne": "{{name}} 变慢",
+  "computers.slowMany": "{{name}} 等 {{more}} 台变慢",
+  "computers.thisComputer": "这台电脑",
+  "computers.offline": "已关机",
+  "computers.noMonitor": "没有 Monitor",
+  "computers.empty": "Tailscale 上没有其他电脑。",
+  "computers.apps": "内存占用最多的 App",
+  "computers.seen": "截至 {{time}}",
+  "computers.note": "这里显示同一 Tailscale 网络中运行 Monitor 的电脑。仅供查看。",
+  "computers.free": "可用",
+  "computers.noneRunning": "都没有运行 Monitor"
 }

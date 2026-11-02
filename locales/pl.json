@@ -111,5 +111,19 @@
   "suggest.emptyWhy": "Dysk prawie pełny · zwolni {{size}}",
   "suggest.quitDone": "Poproszono o zamknięcie",
   "notice.suggest": "Zamknięcie {{name}} zwolni {{size}}.",
-  "notice.quit": "Zakończ {{name}}"
+  "notice.quit": "Zakończ {{name}}",
+  "computers.title": "Wszystkie komputery",
+  "computers.row": "Inne komputery: {{count}}",
+  "computers.allFine": "Wszystko w porządku",
+  "computers.slowOne": "{{name}} działa wolno",
+  "computers.slowMany": "{{name}} i {{more}} innych działa wolno",
+  "computers.thisComputer": "Ten komputer",
+  "computers.offline": "Wyłączony",
+  "computers.noMonitor": "Brak Monitora",
+  "computers.empty": "Brak innych komputerów w Tailscale.",
+  "computers.apps": "Aplikacje zużywające najwięcej pamięci",
+  "computers.seen": "Stan na {{time}}",
+  "computers.note": "Tu widać komputery z tej samej sieci Tailscale z uruchomionym Monitorem. Tylko podgląd.",
+  "computers.free": "wolne",
+  "computers.noneRunning": "Monitor nie działa nigdzie"
 }

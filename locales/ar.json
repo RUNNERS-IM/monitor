@@ -111,5 +111,19 @@
   "suggest.emptyWhy": "القرص ممتلئ تقريبًا · يحرّر {{size}}",
   "suggest.quitDone": "طُلب الإنهاء",
   "notice.suggest": "إنهاء {{name}} يحرّر {{size}}.",
-  "notice.quit": "إنهاء {{name}}"
+  "notice.quit": "إنهاء {{name}}",
+  "computers.title": "كل الحواسيب",
+  "computers.row": "حواسيب أخرى: {{count}}",
+  "computers.allFine": "الكل بخير",
+  "computers.slowOne": "{{name}} بطيء",
+  "computers.slowMany": "{{name}} و{{more}} آخرون بطيئون",
+  "computers.thisComputer": "هذا الحاسوب",
+  "computers.offline": "مطفأ",
+  "computers.noMonitor": "لا يوجد Monitor",
+  "computers.empty": "لا توجد حواسيب أخرى على Tailscale.",
+  "computers.apps": "التطبيقات الأكثر استخدامًا للذاكرة",
+  "computers.seen": "حتى {{time}}",
+  "computers.note": "تظهر هنا الحواسيب على شبكة Tailscale نفسها التي يعمل عليها Monitor. للعرض فقط.",
+  "computers.free": "متاح",
+  "computers.noneRunning": "لا يعمل Monitor على أي منها"
 }

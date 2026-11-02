@@ -19,7 +19,7 @@ const SOLID = !app.isPackaged && process.env.MONITOR_SOLID === "1";
 /** Whether the OS blurs what is behind the panel; the page draws a solid background when it does not. */
 export const TRANSLUCENT = !SOLID && (process.platform === "darwin" || process.platform === "win32");
 
-function load(window: BrowserWindow, page: "panel" | "about" | "update"): void {
+function load(window: BrowserWindow, page: "panel" | "about" | "update" | "computers"): void {
   if (process.env.ELECTRON_RENDERER_URL) void window.loadURL(`${process.env.ELECTRON_RENDERER_URL}#${page}`);
   else void window.loadFile(join(__dirname, "../renderer/index.html"), { hash: page });
 }
@@ -84,6 +84,61 @@ export function placeUnderTray(panel: BrowserWindow, tray: Tray | null): void {
 }
 
 let about: BrowserWindow | null = null;
+let computers: BrowserWindow | null = null;
+const COMPUTERS_WIDTH = 760;
+const COMPUTERS_HEIGHT = 560;
+
+/** Opens the All Computers window (an ordinary window people can leave open), or brings the open one forward.
+ *  `onOpen(true)` while it is open, so the other computers are asked more often only then. */
+/** Debug runs only: the All Computers window loaded but never shown, for screenshots (see MONITOR_CAPTURE). */
+export function showComputersHidden(): BrowserWindow {
+  const window = new BrowserWindow({
+    width: COMPUTERS_WIDTH,
+    height: COMPUTERS_HEIGHT,
+    show: false,
+    backgroundColor: nativeTheme.shouldUseDarkColors ? "#1e1e1e" : "#ececec",
+    webPreferences: { preload, sandbox: true, contextIsolation: true, backgroundThrottling: false },
+  });
+  load(window, "computers");
+  return window;
+}
+
+export function showComputers(onOpen: (open: boolean) => void): void {
+  if (computers && !computers.isDestroyed()) {
+    computers.show();
+    computers.focus();
+    return;
+  }
+  computers = new BrowserWindow({
+    width: COMPUTERS_WIDTH,
+    height: COMPUTERS_HEIGHT,
+    minWidth: 480,
+    minHeight: 360,
+    show: false,
+    fullscreenable: false,
+    title: t("computers.title"),
+    ...(process.platform === "darwin"
+      ? { vibrancy: "under-window" as const, visualEffectState: "active" as const, backgroundColor: "#00000000" }
+      : process.platform === "win32"
+        ? { backgroundMaterial: "acrylic" as const, backgroundColor: "#00000000" }
+        : {}),
+    autoHideMenuBar: true,
+    webPreferences: { preload, sandbox: true, contextIsolation: true },
+  });
+  computers.setMenu(null);
+  computers.on("page-title-updated", (event) => event.preventDefault());
+  computers.once("ready-to-show", () => {
+    computers?.center();
+    computers?.show();
+    computers?.focus();
+  });
+  onOpen(true);
+  computers.on("closed", () => {
+    computers = null;
+    onOpen(false);
+  });
+  load(computers, "computers");
+}
 
 /** Opens the About window, or brings the open one to the front. An ordinary window with a title bar. */
 export function showAbout(): void {

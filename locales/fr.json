@@ -111,5 +111,19 @@
   "suggest.emptyWhy": "Disque presque plein · libère {{size}}",
   "suggest.quitDone": "Demande de fermeture envoyée",
   "notice.suggest": "Quitter {{name}} libère {{size}}.",
-  "notice.quit": "Quitter {{name}}"
+  "notice.quit": "Quitter {{name}}",
+  "computers.title": "Tous les ordinateurs",
+  "computers.row": "Autres ordinateurs : {{count}}",
+  "computers.allFine": "Tout va bien",
+  "computers.slowOne": "{{name}} est lent",
+  "computers.slowMany": "{{name}} et {{more}} autres sont lents",
+  "computers.thisComputer": "Cet ordinateur",
+  "computers.offline": "Éteint",
+  "computers.noMonitor": "Pas de Monitor",
+  "computers.empty": "Aucun autre ordinateur sur Tailscale.",
+  "computers.apps": "Apps qui utilisent le plus de mémoire",
+  "computers.seen": "À {{time}}",
+  "computers.note": "Les ordinateurs du même réseau Tailscale où Monitor tourne apparaissent ici. Lecture seule.",
+  "computers.free": "libre",
+  "computers.noneRunning": "Monitor ne tourne nulle part"
 }
