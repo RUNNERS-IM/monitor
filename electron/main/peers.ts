@@ -138,3 +138,39 @@ export function peerList(): Peer[] {
 export function topApps<T extends { name: string; memory: number }>(apps: T[]): { name: string; memory: number }[] {
   return apps.slice(0, TOP_APPS).map((app) => ({ name: app.name, memory: app.memory }));
 }
+
+/** Debug runs only: made-up computers for the homepage screenshots, with no real names or numbers. */
+export function demoPeers(korean: boolean): Peer[] {
+  const gb = 1024 ** 3;
+  const make = (name: string, cpu: number, mem: number, disk: number, slow: boolean, apps: [string, number][], claude: number, busy: number): Peer => ({
+    name,
+    state: "ok",
+    at: Date.now() - 20_000,
+    usage: {
+      host: name,
+      os: "macOS 26.5 Tahoe",
+      version: "2.6.1102",
+      cpuPercent: cpu,
+      memoryUsed: (mem / 100) * 32 * gb,
+      memoryTotal: 32 * gb,
+      memoryPressure: slow ? "warn" : "normal",
+      diskUsed: (disk / 100) * 1000 * gb,
+      diskTotal: 1000 * gb,
+      slowMemory: slow,
+      slowCpu: false,
+      topMemory: apps.map(([app, size]) => ({ name: app, memory: size * gb })),
+      claudeSessions: claude,
+      runnersBusy: busy,
+      runnersIdle: 1 - busy,
+      cleanable: 38.4 * gb,
+    },
+  });
+  const office = korean ? ["디자인 맥", "빌드 맥", "회의실 맥", "서버 맥"] : ["Design Mac", "Build Mac", "Meeting Room Mac", "Server Mac"];
+  return [
+    make(office[1], 71, 91, 64, true, [["Xcode", 7.4], ["Simulator", 4.1], ["Google Chrome", 2.6]], 3, 1),
+    make(office[0], 18, 52, 41, false, [["Figma", 3.2], ["Google Chrome", 2.1], ["Slack", 0.9]], 1, 0),
+    make(office[3], 34, 63, 72, false, [["Docker", 6.3], ["node", 1.8], ["Terminal", 0.4]], 2, 0),
+    make(office[2], 6, 38, 29, false, [["Zoom", 1.2], ["Keynote", 0.8], ["Safari", 0.7]], 0, 0),
+    { name: korean ? "노트북" : "Laptop", state: "offline", usage: null, at: null },
+  ];
+}

@@ -8,7 +8,7 @@ import { currentLocale, t } from "./i18n";
 import * as login from "./login";
 import { buildMenu, forgetIcons, type Command, type MenuState } from "./menu";
 import { native, type Sampler } from "./native";
-import { askLoop, peerList, setFast, startServing, topApps, type Usage } from "./peers";
+import { askLoop, demoPeers, peerList, setFast, startServing, topApps, type Usage } from "./peers";
 import { tailnet } from "./tailnet";
 import { releaseNoteLines } from "./releaseNotes";
 import { readSettings, writeSettings } from "./settings";
@@ -16,7 +16,7 @@ import { noteFrontApp, suggestions, type Suggestion } from "./suggest";
 import { createTray, showReading, type Level } from "./tray";
 import type { Snapshot } from "./types";
 import { checkNow, displayVersion, startUpdates } from "./updates";
-import { answerUpdate, askUpdate, createPanel, placeUnderTray, showAbout, showComputers, showComputersHidden, TRANSLUCENT, updateOffer } from "./windows";
+import { answerUpdate, askUpdate, createPanel, placeUnderTray, showAbout, showComputers, showComputersHidden, hiddenPage, TRANSLUCENT, updateOffer } from "./windows";
 
 const ISSUES_URL = "https://github.com/RUNNERS-IM/monitor/issues";
 const REFRESH_MS = 3000;
@@ -38,6 +38,8 @@ const REOPEN_GUARD_MS = 300;
 /** Debug runs only: everything below that reads MONITOR_* is ignored in a packaged app. */
 const DEV = !app.isPackaged;
 const DEMO = DEV && !!process.env.MONITOR_DEMO;
+const DEMO_OS = "macOS 26.5 Tahoe";
+const DEMO_VERSION = "2.6.1102";
 // Why: the windows read their language from navigator.language, which follows Chromium's --lang switch.
 if (DEV && process.env.MONITOR_LANG) app.commandLine.appendSwitch("lang", process.env.MONITOR_LANG);
 
@@ -215,7 +217,9 @@ function panelSnapshot(): PanelSnapshot | null {
   const snap: PanelSnapshot = {
     ...base,
     runners: base.runners.map((r) => ({ ...r })),
-    suggestions: suggestions(base, DEMO ? JSON.parse(native.demoCleanup() ?? "null") : latestCleanup),
+    suggestions: suggestions(base, DEMO ? JSON.parse(native.demoCleanup() ?? "null") : latestCleanup, DEMO),
+    // Why: an older native module's demo reading keeps the real system name; screenshots show the made-up one.
+    ...(DEMO ? { os: DEMO_OS } : {}),
   };
   const now = Date.now() / 1000;
   for (const [name, until] of paused) {
@@ -319,14 +323,14 @@ function accentColor(): string | null {
 }
 
 /** What this computer tells the other Monitors on the tailnet: names and numbers only. */
-function usage(): Usage | null {
-  if (!latest) return null;
-  const snap = latest as Snapshot & { os?: string; claudeSessions?: unknown[] };
+function usage(from: Snapshot | null = latest): Usage | null {
+  if (!from) return null;
+  const snap = from as Snapshot & { os?: string; claudeSessions?: unknown[] };
   const running = snap.runners.filter((r) => !paused.has(r.name));
   return {
     host: snap.host,
-    os: snap.os ?? "",
-    version: displayVersion(),
+    os: DEMO ? DEMO_OS : (snap.os ?? ""),
+    version: DEMO ? DEMO_VERSION : displayVersion(),
     cpuPercent: snap.cpuPercent,
     memoryUsed: snap.memoryUsed,
     memoryTotal: snap.memoryTotal,
@@ -359,9 +363,13 @@ function registerIpc(): void {
     const until = Number(await sampler!.pauseRunner(String(name)));
     paused.set(String(name), until);
   });
-  ipcMain.handle("monitor:peers", () => peerList());
+  // Why: demo names follow the page's language (`?lang=` in screenshot runs), not the app's.
+  ipcMain.handle("monitor:peers", (event) =>
+    DEMO ? demoPeers((new URL(event.sender.getURL()).searchParams.get("lang") ?? currentLocale()) === "ko") : peerList(),
+  );
   // Why: the cards are named as Tailscale names the computers (m1-pro-2), not by the system host name.
   ipcMain.handle("monitor:selfUsage", async () => {
+    if (DEMO) return usage(latestDemo);
     const mine = usage();
     const net = await tailnet();
     return mine && net ? { ...mine, host: net.self.name } : mine;
@@ -403,6 +411,10 @@ function debugHooks(): void {
   // Why: screenshots for review must not pop windows up on the screen of the person working at this computer.
   const captureTo = process.env.MONITOR_CAPTURE;
   if (captureTo) setTimeout(() => void captureHidden(captureTo), 8000);
+  // `MONITOR_DEMO=1 MONITOR_SHOTS=<folder>` saves the homepage pictures for every homepage language in both looks,
+  // never showing a window: popup (panel folded, "Worth doing now" on top), sessions (Jobs open) and computers.
+  const shotsTo = process.env.MONITOR_SHOTS;
+  if (shotsTo && DEMO) setTimeout(() => void homepageShots(shotsTo), 8000);
   const which = process.env.MONITOR_OPEN;
   // Why: the tray icon needs a moment before it reports where it sits.
   if (which === "about") setTimeout(showAbout, 1500);
@@ -417,6 +429,31 @@ function debugHooks(): void {
       void prompt.answer.then((answer) => console.log("update answer:", answer));
     }, 1500);
   }
+}
+
+const HOMEPAGE_LANGS = ["ar", "de", "en", "es", "fr", "hi", "id", "it", "ja", "ko", "nl", "pl", "pt", "ru", "th", "vi", "zh"];
+
+async function homepageShots(folder: string): Promise<void> {
+  const shots: [string, "panel" | "computers", string][] = [
+    ["popup", "panel", ""],
+    ["sessions", "panel", "&expand=work"],
+    ["computers", "computers", ""],
+  ];
+  for (const theme of ["dark", "light"] as const) {
+    nativeTheme.themeSource = theme;
+    for (const lang of HOMEPAGE_LANGS) {
+      // Why: the homepage says "zh" for simplified Chinese.
+      const code = lang === "zh" ? "zh-Hans" : lang;
+      for (const [name, page, extra] of shots.filter(([n]) => !process.env.MONITOR_SHOTS_ONLY || n === process.env.MONITOR_SHOTS_ONLY)) {
+        const window = hiddenPage(page, `lang=${code}${extra}`);
+        await sleep(page === "computers" ? 2500 : 1800);
+        const image = await window.webContents.capturePage(undefined, { stayHidden: true });
+        writeFileSync(join(folder, `${name}-${lang}-${theme}.png`), image.toPNG());
+        window.destroy();
+      }
+    }
+  }
+  app.quit();
 }
 
 async function captureHidden(folder: string): Promise<void> {
@@ -459,7 +496,7 @@ function start(): void {
   void sampleLoop();
   void cleanupLoop();
   if (!DEMO) {
-    startServing(usage);
+    startServing(() => usage());
     void askLoop();
   }
   startUpdates();

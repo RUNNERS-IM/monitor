@@ -90,6 +90,24 @@ const COMPUTERS_HEIGHT = 560;
 
 /** Opens the All Computers window (an ordinary window people can leave open), or brings the open one forward.
  *  `onOpen(true)` while it is open, so the other computers are asked more often only then. */
+/** Debug runs only: a page in a window that is never shown, at the panel's width or the All Computers window's size,
+ *  in one language (`?lang=`), for the homepage screenshots (MONITOR_SHOTS). */
+export function hiddenPage(page: "panel" | "computers", query: string): BrowserWindow {
+  const window = new BrowserWindow({
+    width: page === "panel" ? PANEL_WIDTH : COMPUTERS_WIDTH,
+    // Why: taller than the real window, so no language's last box is cut; the picture is trimmed afterwards.
+    height: page === "panel" ? 360 : COMPUTERS_HEIGHT + 400,
+    useContentSize: true,
+    show: false,
+    frame: page !== "panel",
+    backgroundColor: page === "panel" ? (nativeTheme.shouldUseDarkColors ? "#2a2a2a" : "#ececec") : nativeTheme.shouldUseDarkColors ? "#1e1e1e" : "#ececec",
+    webPreferences: { preload, sandbox: true, contextIsolation: true, backgroundThrottling: false },
+  });
+  const url = process.env.ELECTRON_RENDERER_URL;
+  if (url) void window.loadURL(`${url}?${query}#${page}`);
+  return window;
+}
+
 /** Debug runs only: the All Computers window loaded but never shown, for screenshots (see MONITOR_CAPTURE). */
 export function showComputersHidden(): BrowserWindow {
   const window = new BrowserWindow({

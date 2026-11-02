@@ -482,7 +482,9 @@ function App() {
   const snap = usePolling<Snapshot>(native.snapshot, REFRESH_MS);
   const cleanup = usePolling<Cleanup>(native.cleanup, CLEANUP_REFRESH_MS);
   // Why: a debug run can start with a row open (`VITE_MONITOR_EXPAND=work`) so it can be captured without clicking.
-  const debugOpen = import.meta.env.DEV ? ((import.meta.env.VITE_MONITOR_EXPAND as Section | undefined) ?? null) : null;
+  const debugOpen = import.meta.env.DEV
+    ? ((new URLSearchParams(location.search).get("expand") ?? import.meta.env.VITE_MONITOR_EXPAND) as Section | undefined) ?? null
+    : null;
   const [open, setOpen] = useState<Section | null>(debugOpen);
   const panelRef = useRef<HTMLElement>(null);
   useFitWindow(panelRef);

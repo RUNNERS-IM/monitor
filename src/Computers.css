@@ -95,7 +95,7 @@
 }
 .c-bar {
   flex: none;
-  width: 44px;
+  width: 32px;
   height: 4px;
   border-radius: 2px;
   background: var(--rw-control-bg);
