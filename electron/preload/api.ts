@@ -13,6 +13,14 @@ export type Emptied = { freed: number; skipped: number };
  *  download's progress (0–100) while it runs. */
 export type UpdateOffer = { version: string; notes: string[] | null; downloading: boolean; percent: number };
 
+/** Another computer on the tailnet (electron/main/peers.ts). */
+export type PeerUsage = {
+  host: string; os: string; version: string; cpuPercent: number; memoryUsed: number; memoryTotal: number;
+  memoryPressure: "normal" | "warn" | "critical"; diskUsed: number; diskTotal: number; slowMemory: boolean; slowCpu: boolean;
+  topMemory: { name: string; memory: number }[]; claudeSessions: number; runnersBusy: number; runnersIdle: number; cleanable: number | null;
+};
+export type Peer = { name: string; state: "ok" | "noMonitor" | "offline"; usage: PeerUsage | null; at: number | null };
+
 export type MonitorApi = {
   /** The newest reading (JSON shape in src/types.ts), or null before the first one. */
   snapshot: () => Promise<unknown>;
@@ -24,6 +32,14 @@ export type MonitorApi = {
   emptyCleanup: (kind: CleanupKind) => Promise<Emptied | null>;
   /** Pauses a GitHub runner for an hour (macOS); rejects with the reason when it cannot. */
   pauseRunner: (name: string) => Promise<void>;
+  /** The other computers on the tailnet, slow ones first; empty when Tailscale is off. */
+  peers: () => Promise<Peer[]>;
+  /** This computer in the same shape, for the first card of the All Computers window. */
+  selfUsage: () => Promise<PeerUsage | null>;
+  /** Opens the All Computers window (and closes the panel). */
+  openComputers: () => Promise<void>;
+  /** Calls back each time the panel is about to show; returns a function that stops it. */
+  onShown: (listener: () => void) => () => void;
   /** Whether the OS blurs what is behind the window; the page draws a solid background when it does not. */
   translucent: () => Promise<boolean>;
   /** Sets the window's content height so it fits the page. */

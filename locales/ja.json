@@ -130,5 +130,19 @@
   "suggest.emptyWhy": "ディスクがほぼ満杯 · {{size}} 空く",
   "suggest.quitDone": "終了を依頼しました",
   "notice.suggest": "{{name}} を終了すると {{size}} 空きます。",
-  "notice.quit": "{{name}} を終了"
+  "notice.quit": "{{name}} を終了",
+  "computers.title": "すべてのコンピュータ",
+  "computers.row": "ほかのコンピュータ {{count}}台",
+  "computers.allFine": "すべて正常",
+  "computers.slowOne": "{{name}} が遅い",
+  "computers.slowMany": "{{name}} ほか{{more}}台が遅い",
+  "computers.thisComputer": "このコンピュータ",
+  "computers.offline": "オフ",
+  "computers.noMonitor": "Monitor なし",
+  "computers.empty": "Tailscale にほかのコンピュータがありません。",
+  "computers.apps": "メモリを多く使うアプリ",
+  "computers.seen": "{{time}} 時点",
+  "computers.note": "同じ Tailscale ネットワークで Monitor が動いているコンピュータが表示されます。表示のみです。",
+  "computers.free": "空き",
+  "computers.noneRunning": "Monitor が動いている機器なし"
 }

@@ -130,5 +130,19 @@
   "suggest.emptyWhy": "Disk neredeyse dolu · {{size}} boşaltır",
   "suggest.quitDone": "Çıkması istendi",
   "notice.suggest": "{{name}} kapatılırsa {{size}} boşalır.",
-  "notice.quit": "{{name}} kapat"
+  "notice.quit": "{{name}} kapat",
+  "computers.title": "Tüm Bilgisayarlar",
+  "computers.row": "Diğer bilgisayarlar: {{count}}",
+  "computers.allFine": "Hepsi iyi",
+  "computers.slowOne": "{{name}} yavaş",
+  "computers.slowMany": "{{name}} ve {{more}} tane daha yavaş",
+  "computers.thisComputer": "Bu bilgisayar",
+  "computers.offline": "Kapalı",
+  "computers.noMonitor": "Monitor yok",
+  "computers.empty": "Tailscale'de başka bilgisayar yok.",
+  "computers.apps": "En çok bellek kullanan uygulamalar",
+  "computers.seen": "{{time}} itibarıyla",
+  "computers.note": "Aynı Tailscale ağında Monitor çalışan bilgisayarlar burada görünür. Yalnızca görüntüleme.",
+  "computers.free": "boş",
+  "computers.noneRunning": "Hiçbirinde Monitor çalışmıyor"
 }

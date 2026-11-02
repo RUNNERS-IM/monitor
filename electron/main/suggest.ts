@@ -31,14 +31,16 @@ export function noteFrontApp(): void {
   });
 }
 
-function recentlyUsed(app: AppUse, now: number): boolean {
+function wasRecentlyUsed(app: AppUse, now: number): boolean {
   if (process.platform !== "darwin" || now - watchingSince < RECENT_MS) return app.kind !== "devServer";
   return now - (lastFront.get(app.name) ?? 0) < RECENT_MS;
 }
 
 /** Up to two apps to quit and two kinds to empty, biggest win first. */
-export function suggestions(snap: Snapshot, cleanup: { kinds?: { kind: string; bytes: number }[] } | null): Suggestion[] {
+export function suggestions(snap: Snapshot, cleanup: { kinds?: { kind: string; bytes: number }[] } | null, demo = false): Suggestion[] {
   const now = Date.now();
+  // Why: a demo run has watched nothing, so for screenshots every made-up app counts as unused.
+  const recentlyUsed = (app: AppUse, at: number) => !demo && wasRecentlyUsed(app, at);
   const quit = (reason: "memory" | "cpu", app: AppUse): Suggestion => ({
     action: "quit",
     reason,

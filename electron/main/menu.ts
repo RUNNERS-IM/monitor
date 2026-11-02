@@ -37,12 +37,6 @@ function status(snap: Snapshot): { key: string; dot: string } {
   return { key: "menu.status.warn", dot: "dot-yellow" };
 }
 
-/** Why: a native check mark cannot sit next to an icon, and every line has a Lucide icon (shared spec), so a
- *  checked or empty Lucide square stands in for it. */
-function box(on: boolean): string {
-  return on ? "square-check" : "square";
-}
-
 export function buildMenu(snap: Snapshot | null, state: MenuState, run: (command: Command) => void): Menu {
   const percent = (value: number) => `${Math.round(value)}%`;
   const dash = "–";
@@ -60,14 +54,18 @@ export function buildMenu(snap: Snapshot | null, state: MenuState, run: (command
       registerAccelerator: false,
       click: () => run(id),
     });
+  const toggle = (id: Command, key: string, checked: boolean) =>
+    new MenuItem({ id, label: t(key), type: "checkbox", checked, click: () => run(id) });
   const separator = () => new MenuItem({ type: "separator" });
   return Menu.buildFromTemplate([
     { label: readout, icon: icon("chart-column"), enabled: false },
     { label: t(level.key, { name: snap?.host ?? "" }), icon: icon(level.dot), enabled: false },
     separator(),
     line("usage", "menu.showUsage", "chart-column"),
-    line("login", "menu.openAtLogin", box(state.openAtLogin)),
-    line("autoUpdate", "menu.autoUpdate", box(state.autoUpdate)),
+    // Why: on/off lines use the system check mark, as every RUNNERS app's native menu does (shared decision 2A);
+    // a native check cannot sit next to an icon, so these two have none.
+    toggle("login", "menu.openAtLogin", state.openAtLogin),
+    toggle("autoUpdate", "menu.autoUpdate", state.autoUpdate),
     separator(),
     line("about", "menu.about", "info"),
     line("updates", "menu.checkUpdates", "refresh-cw"),

@@ -130,5 +130,19 @@
   "suggest.emptyWhy": "磁碟快滿了 · 釋放 {{size}}",
   "suggest.quitDone": "已要求結束",
   "notice.suggest": "結束 {{name}} 可釋放 {{size}}。",
-  "notice.quit": "結束 {{name}}"
+  "notice.quit": "結束 {{name}}",
+  "computers.title": "所有電腦",
+  "computers.row": "其他電腦 {{count}} 台",
+  "computers.allFine": "全部正常",
+  "computers.slowOne": "{{name}} 變慢",
+  "computers.slowMany": "{{name}} 等 {{more}} 台變慢",
+  "computers.thisComputer": "這台電腦",
+  "computers.offline": "已關機",
+  "computers.noMonitor": "沒有 Monitor",
+  "computers.empty": "Tailscale 上沒有其他電腦。",
+  "computers.apps": "記憶體用量最多的 App",
+  "computers.seen": "截至 {{time}}",
+  "computers.note": "這裡顯示同一 Tailscale 網路中執行 Monitor 的電腦。僅供檢視。",
+  "computers.free": "可用",
+  "computers.noneRunning": "都沒有執行 Monitor"
 }

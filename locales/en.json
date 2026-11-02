@@ -130,5 +130,19 @@
   "suggest.emptyWhy": "Disk nearly full · frees {{size}}",
   "suggest.quitDone": "Asked to quit",
   "notice.suggest": "Quitting {{name}} frees {{size}}.",
-  "notice.quit": "Quit {{name}}"
+  "notice.quit": "Quit {{name}}",
+  "computers.title": "All Computers",
+  "computers.row": "Other computers: {{count}}",
+  "computers.allFine": "All fine",
+  "computers.slowOne": "{{name}} is slow",
+  "computers.slowMany": "{{name}} and {{more}} more are slow",
+  "computers.thisComputer": "This computer",
+  "computers.offline": "Off",
+  "computers.noMonitor": "No Monitor",
+  "computers.empty": "No other computers on Tailscale.",
+  "computers.apps": "Apps using the most memory",
+  "computers.seen": "As of {{time}}",
+  "computers.note": "Computers on the same Tailscale network with Monitor running show here. View only.",
+  "computers.free": "free",
+  "computers.noneRunning": "None running Monitor"
 }

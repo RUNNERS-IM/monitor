@@ -130,5 +130,19 @@
   "suggest.emptyWhy": "Disco quasi pieno · libera {{size}}",
   "suggest.quitDone": "Chiusura richiesta",
   "notice.suggest": "Uscire da {{name}} libera {{size}}.",
-  "notice.quit": "Esci da {{name}}"
+  "notice.quit": "Esci da {{name}}",
+  "computers.title": "Tutti i computer",
+  "computers.row": "Altri computer: {{count}}",
+  "computers.allFine": "Tutto bene",
+  "computers.slowOne": "{{name}} è lento",
+  "computers.slowMany": "{{name}} e altri {{more}} sono lenti",
+  "computers.thisComputer": "Questo computer",
+  "computers.offline": "Spento",
+  "computers.noMonitor": "Nessun Monitor",
+  "computers.empty": "Nessun altro computer su Tailscale.",
+  "computers.apps": "App che usano più memoria",
+  "computers.seen": "Alle {{time}}",
+  "computers.note": "Qui compaiono i computer della stessa rete Tailscale con Monitor attivo. Solo visualizzazione.",
+  "computers.free": "libero",
+  "computers.noneRunning": "Monitor non è attivo su nessuno"
 }

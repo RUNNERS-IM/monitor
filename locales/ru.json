@@ -130,5 +130,19 @@
   "suggest.emptyWhy": "Диск почти заполнен · освободит {{size}}",
   "suggest.quitDone": "Запрошено завершение",
   "notice.suggest": "Завершение {{name}} освободит {{size}}.",
-  "notice.quit": "Завершить {{name}}"
+  "notice.quit": "Завершить {{name}}",
+  "computers.title": "Все компьютеры",
+  "computers.row": "Другие компьютеры: {{count}}",
+  "computers.allFine": "Всё в порядке",
+  "computers.slowOne": "{{name}} тормозит",
+  "computers.slowMany": "{{name}} и ещё {{more}} тормозят",
+  "computers.thisComputer": "Этот компьютер",
+  "computers.offline": "Выкл.",
+  "computers.noMonitor": "Нет Monitor",
+  "computers.empty": "В Tailscale нет других компьютеров.",
+  "computers.apps": "Приложения, занимающие больше всего памяти",
+  "computers.seen": "На {{time}}",
+  "computers.note": "Здесь видны компьютеры той же сети Tailscale с запущенным Monitor. Только просмотр.",
+  "computers.free": "свободно",
+  "computers.noneRunning": "Monitor нигде не запущен"
 }

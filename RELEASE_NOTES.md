@@ -1,11 +1,15 @@
 ## 한국어
 
-- 메뉴 막대 아이콘과 숫자(메모리 %)가 같은 진한 색으로 함께 바뀝니다. 괜찮으면 초록, 느리면 주황, 메모리가 아주 모자라면 빨강입니다.
-- 맥 앱 이름이 소문자 "monitor"로 보이던 것을 "Monitor"로 고쳤습니다.
-- 정리할 거리에 휴지통, 안 쓰는 Docker 이미지, 꺼진 시뮬레이터, 배경 화면 영상, 30일 넘게 안 쓴 lima 가상 머신과 ollama 모델이 더해졌습니다. 디스크가 거의 차면 큰 것부터 비우기를 권하고, 쓰는 중인 것은 남깁니다.
+- "모든 컴퓨터" 창이 생겼습니다. 같은 Tailscale 망에서 Monitor가 켜진 컴퓨터마다 CPU · 메모리 · 디스크를 카드로 보여 주고, 카드를 누르면 메모리를 많이 쓰는 앱과 정리할 거리가 나옵니다. 보기만 할 수 있고, 서버를 거치지 않고 컴퓨터끼리 직접 주고받습니다.
+- 패널에 "다른 컴퓨터" 줄이 생겨 느려진 컴퓨터 이름을 바로 보여 줍니다. 누르면 "모든 컴퓨터" 창이 열립니다.
+- 패널은 열 때마다 줄이 접힌 채로 시작해서 화면 아래까지 길게 내려오지 않습니다.
+- "로그인할 때 열기"와 "업데이트 자동 확인"이 패널에서는 오른쪽 스위치로, 오른쪽 클릭 메뉴에서는 체크 표시로 바뀌었습니다.
+- 작업 줄의 claude 세션은 이름과 명령 없이 개수와 시간만 보여 줍니다.
 
 ## English
 
-- The menu bar icon and the number next to it (memory %) change colour together, in deep shades: green when fine, orange when slow, red when memory is critically short.
-- The Mac app is named "Monitor" again instead of the lower-case "monitor".
-- Cleanup now also finds the Trash, unused Docker images, shut-down simulators, wallpaper videos, and lima virtual machines and ollama models unused for over 30 days. When the disk is nearly full it suggests the biggest first, and anything in use is kept.
+- New All Computers window: a card for every computer on the same Tailscale network that runs Monitor, with CPU, memory and disk; choose one to see its biggest apps and what could be emptied. View only, and the numbers go straight between the computers, through no server.
+- The panel has an "Other computers" line that names the slow ones and opens the All Computers window.
+- The panel opens with every row folded, so it no longer reaches the bottom of the screen.
+- Open at Login and Check for Updates Automatically are switches in the panel and check marks in the right-click menu.
+- claude sessions in the Jobs row show only how many and how long, without names or commands.

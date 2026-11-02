@@ -20,7 +20,9 @@ function pickLocale(tag: string): string {
   return language in tables ? language : "en";
 }
 
-export const locale = pickLocale(navigator.language || "en");
+// Why: a debug run can pick the language per window (`?lang=ja`), so one run can capture every language for the homepage.
+const debugLang = import.meta.env.DEV ? new URLSearchParams(location.search).get("lang") : null;
+export const locale = pickLocale(debugLang || navigator.language || "en");
 const table: Table = tables[locale];
 
 document.documentElement.lang = locale;

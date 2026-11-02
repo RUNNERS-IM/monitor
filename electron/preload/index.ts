@@ -8,6 +8,14 @@ const api: MonitorApi = {
   quitApp: (name) => ipcRenderer.invoke("monitor:quitApp", name),
   emptyCleanup: (kind) => ipcRenderer.invoke("monitor:emptyCleanup", kind),
   pauseRunner: (name) => ipcRenderer.invoke("monitor:pauseRunner", name),
+  peers: () => ipcRenderer.invoke("monitor:peers"),
+  selfUsage: () => ipcRenderer.invoke("monitor:selfUsage"),
+  openComputers: () => ipcRenderer.invoke("monitor:openComputers"),
+  onShown: (listener) => {
+    const relay = () => listener();
+    ipcRenderer.on("monitor:shown", relay);
+    return () => ipcRenderer.off("monitor:shown", relay);
+  },
   translucent: () => ipcRenderer.invoke("monitor:translucent"),
   fitHeight: (height) => ipcRenderer.send("monitor:fitHeight", height),
   version: () => ipcRenderer.invoke("monitor:version"),

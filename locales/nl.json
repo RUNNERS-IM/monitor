@@ -130,5 +130,19 @@
   "suggest.emptyWhy": "Schijf bijna vol · maakt {{size}} vrij",
   "suggest.quitDone": "Gevraagd te stoppen",
   "notice.suggest": "{{name}} stoppen maakt {{size}} vrij.",
-  "notice.quit": "{{name}} stoppen"
+  "notice.quit": "{{name}} stoppen",
+  "computers.title": "Alle computers",
+  "computers.row": "Andere computers: {{count}}",
+  "computers.allFine": "Alles in orde",
+  "computers.slowOne": "{{name}} is traag",
+  "computers.slowMany": "{{name}} en {{more}} andere zijn traag",
+  "computers.thisComputer": "Deze computer",
+  "computers.offline": "Uit",
+  "computers.noMonitor": "Geen Monitor",
+  "computers.empty": "Geen andere computers in Tailscale.",
+  "computers.apps": "Apps die het meeste geheugen gebruiken",
+  "computers.seen": "Om {{time}}",
+  "computers.note": "Computers in hetzelfde Tailscale-netwerk waarop Monitor draait, staan hier. Alleen bekijken.",
+  "computers.free": "vrij",
+  "computers.noneRunning": "Nergens draait Monitor"
 }

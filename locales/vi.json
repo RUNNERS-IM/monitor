@@ -130,5 +130,19 @@
   "suggest.emptyWhy": "Ổ đĩa gần đầy · giải phóng {{size}}",
   "suggest.quitDone": "Đã yêu cầu thoát",
   "notice.suggest": "Thoát {{name}} giải phóng {{size}}.",
-  "notice.quit": "Thoát {{name}}"
+  "notice.quit": "Thoát {{name}}",
+  "computers.title": "Tất cả máy tính",
+  "computers.row": "Máy tính khác: {{count}}",
+  "computers.allFine": "Tất cả ổn",
+  "computers.slowOne": "{{name}} đang chậm",
+  "computers.slowMany": "{{name}} và {{more}} máy khác đang chậm",
+  "computers.thisComputer": "Máy tính này",
+  "computers.offline": "Tắt",
+  "computers.noMonitor": "Không có Monitor",
+  "computers.empty": "Không có máy tính khác trên Tailscale.",
+  "computers.apps": "Ứng dụng dùng nhiều bộ nhớ nhất",
+  "computers.seen": "Lúc {{time}}",
+  "computers.note": "Các máy cùng mạng Tailscale đang chạy Monitor hiện ở đây. Chỉ xem.",
+  "computers.free": "trống",
+  "computers.noneRunning": "Không máy nào chạy Monitor"
 }

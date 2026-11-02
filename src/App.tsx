@@ -10,10 +10,10 @@ import {
   HardDrive,
   Info,
   MemoryStick,
+  Network,
+  Power,
   Recycle,
   RefreshCw,
-  Square,
-  SquareCheck,
   SquareTerminal,
   SquareX,
   Workflow,
@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { t } from "./i18n";
 import * as native from "./native";
-import type { CleanupKind, MenuCommand, MenuState } from "./native";
+import type { CleanupKind, MenuCommand, MenuState, Peer } from "./native";
 import type { AppUse, Cleanup, Pressure, Snapshot, Suggestion } from "./types";
 import "./runners-menu.css";
 import "./App.css";
@@ -33,6 +33,8 @@ type Level = "ok" | "high" | "full";
 const REFRESH_MS = 3000;
 // Why: the cleanup numbers change only every 30 minutes, so the panel asks for them far less often.
 const CLEANUP_REFRESH_MS = 60_000;
+/** The main process asks the other computers every 30 s; the panel only reads what it has. */
+const PEERS_REFRESH_MS = 5000;
 // Why: the same stroke as Prompt and Split so the three apps' icons look equally light.
 const ICON_STROKE = 1.5;
 const ICON_SIZE = 16;
@@ -173,6 +175,30 @@ function SummaryRow({
       </button>
       {open && <div className="rm-group details">{children}</div>}
     </>
+  );
+}
+
+/** One line for the other computers on the tailnet: the slow ones by name, or that all are fine. Opens the window. */
+function OthersRow({ peers }: { peers: Peer[] }) {
+  const slow = peers.filter((p) => p.usage && (p.usage.slowMemory || p.usage.slowCpu)).map((p) => p.name);
+  const answering = peers.filter((p) => p.state === "ok").length;
+  const value =
+    answering === 0
+      ? t("computers.noneRunning")
+      : slow.length === 0
+      ? t("computers.allFine")
+      : slow.length === 1
+        ? t("computers.slowOne", { name: slow[0] })
+        : t("computers.slowMany", { name: slow[0], more: slow.length - 1 });
+  return (
+    <button type="button" className="rm-item summary-row" onClick={() => void native.openComputers()}>
+      <Icon icon={Network} />
+      <span className="rm-label">{t("computers.row", { count: peers.length })}</span>
+      <span className="rm-trailing">
+        <span className={`value ${slow.length > 0 ? "rm-high" : ""}`}>{value}</span>
+        <ChevronRight size={12} strokeWidth={ICON_STROKE} className="chevron" aria-hidden />
+      </span>
+    </button>
   );
 }
 
@@ -412,10 +438,20 @@ function Commands() {
       <span className="rm-label">{label}</span>
     </button>
   );
+  // Why: on/off lines are the icon for what they do and a switch at the right, like System Settings
+  // (shared decision 2026-11-02 "[PROGRAM] 켬 끔 토글" 1B; icons from the shared table: power, refresh-cw).
+  const toggle = (name: MenuCommand, icon: LucideIcon, label: string, on: boolean) => (
+    <label className="rm-item switch">
+      <Icon icon={icon} />
+      <span className="rm-label">{label}</span>
+      <input type="checkbox" checked={on} onChange={() => run(name)} />
+      <span className="knob" aria-hidden />
+    </label>
+  );
   return (
     <>
-      {line("login", state?.openAtLogin ? SquareCheck : Square, t("menu.openAtLogin"))}
-      {line("autoUpdate", state?.autoUpdate ? SquareCheck : Square, t("menu.autoUpdate"))}
+      {toggle("login", Power, t("menu.openAtLogin"), !!state?.openAtLogin)}
+      {toggle("autoUpdate", RefreshCw, t("menu.autoUpdate"), !!state?.autoUpdate)}
       <div className="rm-separator" />
       {line("about", Info, t("menu.about"))}
       {line("updates", RefreshCw, t("menu.checkUpdates"))}
@@ -459,15 +495,16 @@ function App() {
   const snap = usePolling<Snapshot>(native.snapshot, REFRESH_MS);
   const cleanup = usePolling<Cleanup>(native.cleanup, CLEANUP_REFRESH_MS);
   // Why: a debug run can start with a row open (`VITE_MONITOR_EXPAND=work`) so it can be captured without clicking.
-  const debugOpen = import.meta.env.DEV ? ((import.meta.env.VITE_MONITOR_EXPAND as Section | undefined) ?? null) : null;
+  const debugOpen = import.meta.env.DEV
+    ? ((new URLSearchParams(location.search).get("expand") ?? import.meta.env.VITE_MONITOR_EXPAND) as Section | undefined) ?? null
+    : null;
   const [open, setOpen] = useState<Section | null>(debugOpen);
   const panelRef = useRef<HTMLElement>(null);
   useFitWindow(panelRef);
-  // Why: the slow box at the top repeated what the row shows, so a slow computer now opens the row that is short instead.
-  const slowRow: Section | null = snap?.slowMemory ? "memory" : snap?.slowCpu ? "cpu" : null;
-  useEffect(() => {
-    if (slowRow && !debugOpen) setOpen(slowRow);
-  }, [slowRow, debugOpen]);
+  // Why: every open starts folded, so the panel stays short (shared decision 2026-11-02 "[MONITOR] 패널 나누기" 1A);
+  // the reason a computer is slow shows in the heading badge and "Worth doing now" instead.
+  useEffect(() => native.onShown(() => setOpen(debugOpen)), [debugOpen]);
+  const others = usePolling<Peer[]>(native.peers, PEERS_REFRESH_MS);
 
   if (!snap) {
     return (
@@ -571,7 +608,7 @@ function App() {
         {snap.heavyJob && (
           <>
             <Row
-              text={t("panel.heavyRow", { name: snap.heavyJob.name || "claude", command: snap.heavyJob.command })}
+              text={t("summary.heavy")}
               state={formatDuration(snap.heavyJob.runningSecs)}
               tone="busy"
             />
@@ -583,7 +620,9 @@ function App() {
         {snap.claudeSessions.map((session) => (
           <Row
             key={session.pid}
-            text={t("panel.claudeRow", { name: session.name ?? (session.human ? "claude" : t("panel.claudeJob")), time: formatDuration(session.runningSecs) })}
+            // Why: Monitor shows how much is running, never what a session is called or doing (shared decision 2026-11-02
+            // "[PROGRAM] 앱 연동 걷기" 4A); sessions belong to Prompt.
+            text={t("panel.claudeRow", { name: session.human ? "claude" : t("panel.claudeJob"), time: formatDuration(session.runningSecs) })}
             state={t(session.busy ? "panel.claudeBusy" : "panel.claudeIdle")}
             tone={session.busy ? "busy" : "quiet"}
           />
@@ -621,6 +660,7 @@ function App() {
           {cleanup ? t("panel.cleanupNote", { time: formatClock(cleanup.measuredAt) }) : t("panel.cleanupMeasuringNote")}
         </div>
       </SummaryRow>
+      {others && others.length > 0 && <OthersRow peers={others} />}
       <div className="rm-separator" />
       <Commands />
     </main>
