@@ -11,7 +11,7 @@
     "dev": "electron-vite dev",
     "build": "pnpm typecheck && electron-vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
-    "native": "napi build --manifest-path native/Cargo.toml --package-json-path native/package.json --platform --release --output-dir native --no-js",
+    "native": "napi build --manifest-path native/Cargo.toml --package-json-path native/package.json --platform --release --target-dir native/target.noindex --output-dir native --no-js",
     "check:locales": "node scripts/check-locales.mjs",
     "notices": "node scripts/third-party-notices.mjs",
     "dist": "pnpm build && electron-builder --config electron-builder.config.cjs"

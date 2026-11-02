@@ -7,6 +7,7 @@ mod actions;
 mod bars;
 mod cleanup;
 mod demo;
+mod extra;
 mod snapshot;
 
 use std::path::Path;
@@ -132,12 +133,12 @@ pub fn cleanup_measure(progress_path: Option<String>) -> AsyncTask<Work> {
     })
 }
 
-/// Deletes the cleanable folders of one kind (`cache`, `packages`, `build`) on a low-priority thread;
-/// resolves to `{"freed":bytes,"skipped":folders}`.
+/// Deletes one cleanable kind (`cache`, `packages`, `build`, or a kind in `extra::KINDS`) on a low-priority thread;
+/// resolves to `{"freed":bytes,"skipped":parts left}`.
 #[napi(ts_return_type = "Promise<string>")]
 pub fn cleanup_empty(kind: String) -> AsyncTask<Work> {
     Work::new(move || {
-        if !["cache", "packages", "build"].contains(&kind.as_str()) {
+        if !["cache", "packages", "build"].contains(&kind.as_str()) && !extra::KINDS.contains(&kind.as_str()) {
             return Err(format!("unknown kind {kind}"));
         }
         std::thread::spawn(move || {
@@ -172,6 +173,18 @@ pub fn now_secs() -> f64 {
 #[napi]
 pub fn bars_png(h0: f64, h1: f64, h2: f64, r: u8, g: u8, b: u8) -> Buffer {
     bars::png([h0 as f32, h1 as f32, h2 as f32], [r, g, b]).into()
+}
+
+/// The tray picture with `label` drawn after it in the same colour (36 px high, as wide as the label needs).
+#[napi]
+pub fn bars_label_png(h0: f64, h1: f64, h2: f64, r: u8, g: u8, b: u8, label: String) -> Buffer {
+    bars::png_with_label([h0 as f32, h1 as f32, h2 as f32], [r, g, b], &label).into()
+}
+
+/// Whether `barsLabelPng` can draw text here (it needs the macOS system font).
+#[napi]
+pub fn can_label() -> bool {
+    bars::can_label()
 }
 
 /// Bar height on the 24 grid for a usage fraction (0 – 1).

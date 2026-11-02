@@ -4,7 +4,10 @@
 //! Drawn with tiny-skia at the same pinned version as Remote, so every RUNNERS app renders the shared frame
 //! with the same pixels.
 
-use tiny_skia::{FillRule, Paint, PathBuilder, Pixmap, Stroke, Transform};
+use std::sync::OnceLock;
+
+use ab_glyph::{Font, FontVec, PxScale, ScaleFont, VariableFont};
+use tiny_skia::{FillRule, Paint, PathBuilder, Pixmap, PixmapPaint, Stroke, Transform};
 
 /// Width and height of the image in pixels: 18 pt at 2×.
 pub const SIZE: u32 = 36;
@@ -43,6 +46,78 @@ pub fn render(heights: [f32; 3], color: [u8; 3]) -> Vec<u8> {
 /// The same picture as a PNG file, which Electron's `nativeImage.createFromBuffer` reads.
 pub fn png(heights: [f32; 3], color: [u8; 3]) -> Vec<u8> {
     draw(heights, color).encode_png().unwrap_or_default()
+}
+
+/// The system font the label is drawn in; `None` where it cannot be read (then the app keeps a plain title).
+const LABEL_FONT: &str = "/System/Library/Fonts/SFNS.ttf";
+/// Label size in pixels at 2×: 13 pt, the menu bar's own title size.
+const LABEL_PX: f32 = 26.0;
+/// Medium weight: a coloured number needs a little more ink than black text to read as well.
+const LABEL_WEIGHT: f32 = 510.0;
+/// Space between the picture's frame and the label, and after the label, in pixels.
+const LABEL_GAP: f32 = 3.0;
+const LABEL_TRAIL: f32 = 2.0;
+
+fn label_font() -> Option<&'static FontVec> {
+    static FONT: OnceLock<Option<FontVec>> = OnceLock::new();
+    FONT.get_or_init(|| {
+        let mut font = FontVec::try_from_vec(std::fs::read(LABEL_FONT).ok()?).ok()?;
+        font.set_variation(b"wght", LABEL_WEIGHT);
+        Some(font)
+    })
+    .as_ref()
+}
+
+/// Whether [`png_with_label`] can draw text on this computer.
+pub fn can_label() -> bool {
+    label_font().is_some()
+}
+
+/// The picture followed by `label` (the memory percent), both in `color`, as one PNG.
+/// Why: one picture keeps the icon and the number the same colour; macOS cannot tint a picture and colour a title alike.
+/// Digits take the widest digit's width so the label does not shift as the number changes.
+pub fn png_with_label(heights: [f32; 3], color: [u8; 3], label: &str) -> Vec<u8> {
+    let Some(font) = label_font() else { return png(heights, color) };
+    let font = font.as_scaled(PxScale::from(LABEL_PX));
+    let digit = ('0'..='9').map(|c| font.h_advance(font.glyph_id(c))).fold(0.0, f32::max);
+    let advance = |c: char| if c.is_ascii_digit() { digit } else { font.h_advance(font.glyph_id(c)) };
+    let start = SIZE as f32 * (FRAME.0 + FRAME.2 + FRAME_STROKE / 2.0) / GRID + LABEL_GAP;
+    let width = (start + label.chars().map(advance).sum::<f32>() + LABEL_TRAIL).ceil() as u32;
+    let Some(mut pixmap) = Pixmap::new(width, SIZE) else { return png(heights, color) };
+    pixmap.draw_pixmap(0, 0, draw(heights, color).as_ref(), &PixmapPaint::default(), Transform::identity(), None);
+
+    // Why: centre the digits' height (not ascent + descent) on the frame, which is how the menu bar's own titles sit.
+    let cap = font.outline_glyph(font.scaled_glyph('0')).map(|g| g.px_bounds().height()).unwrap_or(LABEL_PX * 0.7);
+    let baseline = SIZE as f32 * (FRAME.1 + FRAME.3 / 2.0) / GRID + cap / 2.0;
+    let mut x = start;
+    let data = pixmap.data_mut();
+    for c in label.chars() {
+        let step = advance(c);
+        let mut glyph = font.scaled_glyph(c);
+        // Why: a narrow digit sits in the middle of its widest-digit cell, like tabular figures.
+        let own = font.h_advance(glyph.id);
+        glyph.position = ab_glyph::point(x + (step - own).max(0.0) / 2.0, baseline);
+        if let Some(outline) = font.outline_glyph(glyph) {
+            let bounds = outline.px_bounds();
+            outline.draw(|gx, gy, coverage| {
+                let (px, py) = (bounds.min.x as i32 + gx as i32, bounds.min.y as i32 + gy as i32);
+                if px < 0 || py < 0 || px >= width as i32 || py >= SIZE as i32 {
+                    return;
+                }
+                let i = ((py as u32 * width + px as u32) * 4) as usize;
+                let alpha = (coverage.clamp(0.0, 1.0) * 255.0).round() as u8;
+                // Premultiplied, as tiny-skia stores it; glyphs never overlap the frame, so a plain max is enough.
+                if alpha > data[i + 3] {
+                    for (k, channel) in color.iter().enumerate() {
+                        data[i + k] = ((*channel as u16 * alpha as u16 + 127) / 255) as u8;
+                    }
+                    data[i + 3] = alpha;
+                }
+            });
+        }
+        x += step;
+    }
+    pixmap.encode_png().unwrap_or_default()
 }
 
 fn draw(heights: [f32; 3], color: [u8; 3]) -> Pixmap {
@@ -125,6 +200,23 @@ mod tests {
         assert_eq!(bar_height(2.0), BAR_MAX);
         // The tallest bar ends below the frame's inner edge.
         assert!(BAR_BOTTOM - BAR_MAX > FRAME.1 + FRAME_STROKE / 2.0);
+    }
+
+    #[test]
+    fn label_widens_the_picture_and_keeps_width_across_digits() {
+        if !can_label() {
+            return;
+        }
+        let size = |label: &str| {
+            let png = png_with_label([bar_height(0.5); 3], [200, 35, 30], label);
+            let pixmap = Pixmap::decode_png(&png).expect("png");
+            (pixmap.width(), pixmap.height())
+        };
+        let (w11, h) = size("11%");
+        assert_eq!(h, SIZE);
+        assert!(w11 > SIZE + 20, "label adds width: {w11}");
+        assert_eq!(size("88%").0, w11, "same width whatever the digits");
+        assert!(size("100%").0 > w11);
     }
 
     #[test]

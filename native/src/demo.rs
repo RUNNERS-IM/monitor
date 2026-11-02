@@ -84,6 +84,6 @@ pub fn cleanup(measured_at: u64) -> Cleanup {
         Candidate { path: "~/git/my-app/node_modules".into(), bytes: gb(6.2) },
     ];
     let kind = |kind: &str, size: f64| KindTotal { kind: kind.into(), bytes: gb(size) };
-    let kinds = vec![kind("cache", 22.1), kind("build", 13.2), kind("packages", 6.2)];
-    Cleanup { total: gb(41.5), top, kinds, measured_at }
+    let kinds = vec![kind("cache", 22.1), kind("build", 13.2), kind("docker", 8.4), kind("packages", 6.2)];
+    Cleanup { total: gb(49.9), top, kinds, measured_at }
 }
