@@ -14,9 +14,11 @@ const PROJECT = "MONITOR";
 const STATE_MS = 5 * 1000;
 const RETRY_MIN_MS = 2 * 1000;
 const RETRY_MAX_MS = 60 * 1000;
-/** Close codes from docs/relay.md: the token was refused, or it belongs to another app. */
+/** Close codes from docs/relay.md: the token was refused, it belongs to another app, or a newer connection with
+ * this deviceId took over (reconnecting would make the two knock each other off). */
 const CLOSE_UNAUTHORIZED = 4401;
 const CLOSE_WRONG_APP = 4403;
+const CLOSE_REPLACED = 4409;
 
 export type RelayStatus = "signedOut" | "connecting" | "connected";
 
@@ -135,7 +137,7 @@ export function startRelay(options: Options): void {
         return;
       }
       setStatus("connecting");
-      if (event.code === CLOSE_WRONG_APP) return;
+      if (event.code === CLOSE_WRONG_APP || event.code === CLOSE_REPLACED) return;
       if (event.code === CLOSE_UNAUTHORIZED && !refreshedOnce) {
         refreshedOnce = true;
         void account.refresh().then((next) => (next ? schedule(0) : setStatus("signedOut")));
