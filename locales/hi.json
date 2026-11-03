@@ -144,5 +144,19 @@
   "computers.seen": "{{time}} तक",
   "computers.note": "उसी Tailscale नेटवर्क के वे कंप्यूटर यहाँ दिखते हैं जिन पर Monitor चल रहा है। केवल देखने के लिए।",
   "computers.free": "खाली",
-  "computers.noneRunning": "किसी पर Monitor नहीं चल रहा"
+  "computers.noneRunning": "किसी पर Monitor नहीं चल रहा",
+  "menu.phone": "फ़ोन…",
+  "phone.title": "फ़ोन",
+  "phone.note": "अपने RUNNERS खाते से साइन इन करें, ताकि उसी खाते का Monitor फ़ोन ऐप इस कंप्यूटर को देख सके, इसकी सूचनाएँ पा सके और इसे साफ़ कर सके।",
+  "phone.account": "खाता",
+  "phone.status": "स्थिति",
+  "phone.status.signedOut": "साइन आउट",
+  "phone.status.connecting": "कनेक्ट हो रहा है…",
+  "phone.status.connected": "कनेक्टेड",
+  "phone.email": "ईमेल",
+  "phone.password": "पासवर्ड",
+  "phone.signIn": "साइन इन",
+  "phone.signOut": "साइन आउट करें",
+  "phone.problem.wrong": "ईमेल या पासवर्ड सही नहीं है।",
+  "phone.problem.network": "सर्वर तक नहीं पहुँच सका। थोड़ी देर बाद फिर कोशिश करें।"
 }

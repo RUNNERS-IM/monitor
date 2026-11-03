@@ -144,5 +144,19 @@
   "computers.seen": "Lúc {{time}}",
   "computers.note": "Các máy cùng mạng Tailscale đang chạy Monitor hiện ở đây. Chỉ xem.",
   "computers.free": "trống",
-  "computers.noneRunning": "Không máy nào chạy Monitor"
+  "computers.noneRunning": "Không máy nào chạy Monitor",
+  "menu.phone": "Điện thoại…",
+  "phone.title": "Điện thoại",
+  "phone.note": "Đăng nhập bằng tài khoản RUNNERS để ứng dụng Monitor trên điện thoại cùng tài khoản có thể xem máy tính này, nhận cảnh báo và dọn dẹp nó.",
+  "phone.account": "Tài khoản",
+  "phone.status": "Trạng thái",
+  "phone.status.signedOut": "Chưa đăng nhập",
+  "phone.status.connecting": "Đang kết nối…",
+  "phone.status.connected": "Đã kết nối",
+  "phone.email": "Email",
+  "phone.password": "Mật khẩu",
+  "phone.signIn": "Đăng nhập",
+  "phone.signOut": "Đăng xuất",
+  "phone.problem.wrong": "Email hoặc mật khẩu không đúng.",
+  "phone.problem.network": "Không kết nối được máy chủ. Hãy thử lại sau giây lát."
 }

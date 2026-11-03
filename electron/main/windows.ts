@@ -8,6 +8,8 @@ const ABOUT_WIDTH = 520;
 /** First height only; the page then fits the window to its content. */
 const ABOUT_HEIGHT = 560;
 const UPDATE_WIDTH = 400;
+const ACCOUNT_WIDTH = 360;
+const ACCOUNT_HEIGHT = 300;
 /** Buttons and keys in the update window do nothing this long after it appears. */
 const UPDATE_GUARD_MS = 1000;
 /** Space between the menu bar (or taskbar) and the panel. */
@@ -19,7 +21,7 @@ const SOLID = !app.isPackaged && process.env.MONITOR_SOLID === "1";
 /** Whether the OS blurs what is behind the panel; the page draws a solid background when it does not. */
 export const TRANSLUCENT = !SOLID && (process.platform === "darwin" || process.platform === "win32");
 
-function load(window: BrowserWindow, page: "panel" | "about" | "update" | "computers"): void {
+function load(window: BrowserWindow, page: "panel" | "about" | "update" | "computers" | "account"): void {
   if (process.env.ELECTRON_RENDERER_URL) void window.loadURL(`${process.env.ELECTRON_RENDERER_URL}#${page}`);
   else void window.loadFile(join(__dirname, "../renderer/index.html"), { hash: page });
 }
@@ -196,6 +198,46 @@ export function showAbout(): void {
     about = null;
   });
   load(about, "about");
+}
+
+let accountWindow: BrowserWindow | null = null;
+
+/** Opens the Phone window (sign in to the RUNNERS account so the phone app can reach this computer), or brings it up. */
+export function showAccount(): void {
+  if (accountWindow && !accountWindow.isDestroyed()) {
+    accountWindow.show();
+    accountWindow.focus();
+    return;
+  }
+  accountWindow = new BrowserWindow({
+    width: ACCOUNT_WIDTH,
+    height: ACCOUNT_HEIGHT,
+    useContentSize: true,
+    show: false,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    title: t("phone.title"),
+    ...(process.platform === "darwin"
+      ? { vibrancy: "under-window" as const, visualEffectState: "active" as const, backgroundColor: "#00000000" }
+      : process.platform === "win32"
+        ? { backgroundMaterial: "acrylic" as const, backgroundColor: "#00000000" }
+        : {}),
+    autoHideMenuBar: true,
+    webPreferences: { preload, sandbox: true, contextIsolation: true },
+  });
+  accountWindow.setMenu(null);
+  accountWindow.on("page-title-updated", (event) => event.preventDefault());
+  accountWindow.once("ready-to-show", () => {
+    accountWindow?.center();
+    accountWindow?.show();
+    accountWindow?.focus();
+  });
+  accountWindow.on("closed", () => {
+    accountWindow = null;
+  });
+  load(accountWindow, "account");
 }
 
 /** What the update window shows: the new version (as people see it), its "What's new" lines (null hides the box) and,

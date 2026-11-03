@@ -1,6 +1,9 @@
 // What the preload script gives the page as `window.monitor`.
 
-export type MenuCommand = "usage" | "login" | "autoUpdate" | "about" | "updates" | "help" | "quit";
+export type MenuCommand = "usage" | "phone" | "login" | "autoUpdate" | "about" | "updates" | "help" | "quit";
+
+/** The RUNNERS account this computer is signed in with, and whether it is on the relay for the phone app. */
+export type AccountState = { email: string | null; status: "signedOut" | "connecting" | "connected" };
 
 export type MenuState = { openAtLogin: boolean; autoUpdate: boolean };
 
@@ -60,4 +63,10 @@ export type MonitorApi = {
   onUpdateOffer: (listener: (offer: UpdateOffer) => void) => () => void;
   /** The update window's answer; Later closes the window, Install Now keeps it up until the app quits. */
   answerUpdate: (answer: "install" | "later") => void;
+  account: () => Promise<AccountState>;
+  /** Calls back when the sign-in or the relay connection changes; returns a function that stops it. */
+  onAccount: (listener: (state: AccountState) => void) => () => void;
+  /** Null when signed in; "wrong" for a refused email or password, "network" when the server could not be reached. */
+  signIn: (email: string, password: string) => Promise<"wrong" | "network" | null>;
+  signOut: () => Promise<void>;
 };

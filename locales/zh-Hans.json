@@ -144,5 +144,19 @@
   "computers.seen": "截至 {{time}}",
   "computers.note": "这里显示同一 Tailscale 网络中运行 Monitor 的电脑。仅供查看。",
   "computers.free": "可用",
-  "computers.noneRunning": "都没有运行 Monitor"
+  "computers.noneRunning": "都没有运行 Monitor",
+  "menu.phone": "手机…",
+  "phone.title": "手机",
+  "phone.note": "使用 RUNNERS 账户登录后，同一账户的 Monitor 手机应用即可查看这台电脑、接收提醒并进行清理。",
+  "phone.account": "账户",
+  "phone.status": "状态",
+  "phone.status.signedOut": "未登录",
+  "phone.status.connecting": "正在连接…",
+  "phone.status.connected": "已连接",
+  "phone.email": "电子邮件",
+  "phone.password": "密码",
+  "phone.signIn": "登录",
+  "phone.signOut": "退出登录",
+  "phone.problem.wrong": "电子邮件或密码不正确。",
+  "phone.problem.network": "无法连接服务器，请稍后再试。"
 }

@@ -144,5 +144,19 @@
   "computers.seen": "Stand {{time}}",
   "computers.note": "Hier erscheinen Computer im selben Tailscale-Netz, auf denen Monitor läuft. Nur Ansicht.",
   "computers.free": "frei",
-  "computers.noneRunning": "Nirgends läuft Monitor"
+  "computers.noneRunning": "Nirgends läuft Monitor",
+  "menu.phone": "Telefon…",
+  "phone.title": "Telefon",
+  "phone.note": "Melde dich mit deinem RUNNERS-Konto an, damit die Monitor-App auf dem Telefon mit demselben Konto diesen Computer sehen, seine Hinweise erhalten und ihn aufräumen kann.",
+  "phone.account": "Konto",
+  "phone.status": "Status",
+  "phone.status.signedOut": "Abgemeldet",
+  "phone.status.connecting": "Verbinden…",
+  "phone.status.connected": "Verbunden",
+  "phone.email": "E-Mail",
+  "phone.password": "Passwort",
+  "phone.signIn": "Anmelden",
+  "phone.signOut": "Abmelden",
+  "phone.problem.wrong": "E-Mail oder Passwort stimmt nicht.",
+  "phone.problem.network": "Server nicht erreichbar. Versuche es gleich noch einmal."
 }

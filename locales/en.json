@@ -144,5 +144,19 @@
   "computers.seen": "As of {{time}}",
   "computers.note": "Computers on the same Tailscale network with Monitor running show here. View only.",
   "computers.free": "free",
-  "computers.noneRunning": "None running Monitor"
+  "computers.noneRunning": "None running Monitor",
+  "menu.phone": "Phone…",
+  "phone.title": "Phone",
+  "phone.note": "Sign in with your RUNNERS account so the Monitor phone app on the same account can see this computer, get its alerts and clean it up.",
+  "phone.account": "Account",
+  "phone.status": "Status",
+  "phone.status.signedOut": "Signed out",
+  "phone.status.connecting": "Connecting…",
+  "phone.status.connected": "Connected",
+  "phone.email": "Email",
+  "phone.password": "Password",
+  "phone.signIn": "Sign In",
+  "phone.signOut": "Sign Out",
+  "phone.problem.wrong": "The email or password is not right.",
+  "phone.problem.network": "Can't reach the server. Try again in a moment."
 }

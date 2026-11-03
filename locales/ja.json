@@ -144,5 +144,19 @@
   "computers.seen": "{{time}} 時点",
   "computers.note": "同じ Tailscale ネットワークで Monitor が動いているコンピュータが表示されます。表示のみです。",
   "computers.free": "空き",
-  "computers.noneRunning": "Monitor が動いている機器なし"
+  "computers.noneRunning": "Monitor が動いている機器なし",
+  "menu.phone": "スマートフォン…",
+  "phone.title": "スマートフォン",
+  "phone.note": "RUNNERS アカウントでログインすると、同じアカウントのスマートフォン版 Monitor でこのコンピュータを確認し、通知を受け、整理できます。",
+  "phone.account": "アカウント",
+  "phone.status": "状態",
+  "phone.status.signedOut": "ログアウト中",
+  "phone.status.connecting": "接続中…",
+  "phone.status.connected": "接続済み",
+  "phone.email": "メールアドレス",
+  "phone.password": "パスワード",
+  "phone.signIn": "ログイン",
+  "phone.signOut": "ログアウト",
+  "phone.problem.wrong": "メールアドレスまたはパスワードが正しくありません。",
+  "phone.problem.network": "サーバーに接続できません。しばらくしてからもう一度お試しください。"
 }

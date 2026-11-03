@@ -144,5 +144,19 @@
   "computers.seen": "На {{time}}",
   "computers.note": "Здесь видны компьютеры той же сети Tailscale с запущенным Monitor. Только просмотр.",
   "computers.free": "свободно",
-  "computers.noneRunning": "Monitor нигде не запущен"
+  "computers.noneRunning": "Monitor нигде не запущен",
+  "menu.phone": "Телефон…",
+  "phone.title": "Телефон",
+  "phone.note": "Войдите с учётной записью RUNNERS, чтобы приложение Monitor на телефоне с той же учётной записью видело этот компьютер, получало его уведомления и могло его очистить.",
+  "phone.account": "Учётная запись",
+  "phone.status": "Состояние",
+  "phone.status.signedOut": "Вход не выполнен",
+  "phone.status.connecting": "Подключение…",
+  "phone.status.connected": "Подключено",
+  "phone.email": "Эл. почта",
+  "phone.password": "Пароль",
+  "phone.signIn": "Войти",
+  "phone.signOut": "Выйти",
+  "phone.problem.wrong": "Неверная почта или пароль.",
+  "phone.problem.network": "Не удаётся связаться с сервером. Повторите попытку чуть позже."
 }

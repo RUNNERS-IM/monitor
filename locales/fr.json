@@ -144,5 +144,19 @@
   "computers.seen": "À {{time}}",
   "computers.note": "Les ordinateurs du même réseau Tailscale où Monitor tourne apparaissent ici. Lecture seule.",
   "computers.free": "libre",
-  "computers.noneRunning": "Monitor ne tourne nulle part"
+  "computers.noneRunning": "Monitor ne tourne nulle part",
+  "menu.phone": "Téléphone…",
+  "phone.title": "Téléphone",
+  "phone.note": "Connectez-vous avec votre compte RUNNERS pour que l’app Monitor du téléphone sur le même compte voie cet ordinateur, reçoive ses alertes et le nettoie.",
+  "phone.account": "Compte",
+  "phone.status": "État",
+  "phone.status.signedOut": "Déconnecté",
+  "phone.status.connecting": "Connexion…",
+  "phone.status.connected": "Connecté",
+  "phone.email": "E-mail",
+  "phone.password": "Mot de passe",
+  "phone.signIn": "Se connecter",
+  "phone.signOut": "Se déconnecter",
+  "phone.problem.wrong": "L’e-mail ou le mot de passe est incorrect.",
+  "phone.problem.network": "Impossible de joindre le serveur. Réessayez dans un instant."
 }

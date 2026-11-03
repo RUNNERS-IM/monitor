@@ -14,6 +14,7 @@ import {
   Power,
   Recycle,
   RefreshCw,
+  Smartphone,
   SquareTerminal,
   SquareX,
   Workflow,
@@ -450,6 +451,7 @@ function Commands() {
   );
   return (
     <>
+      {line("phone", Smartphone, t("menu.phone"))}
       {toggle("login", Power, t("menu.openAtLogin"), !!state?.openAtLogin)}
       {toggle("autoUpdate", RefreshCw, t("menu.autoUpdate"), !!state?.autoUpdate)}
       <div className="rm-separator" />

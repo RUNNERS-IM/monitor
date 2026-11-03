@@ -144,5 +144,19 @@
   "computers.seen": "Per {{time}}",
   "computers.note": "Komputer di jaringan Tailscale yang sama yang menjalankan Monitor tampil di sini. Hanya lihat.",
   "computers.free": "kosong",
-  "computers.noneRunning": "Tidak ada yang menjalankan Monitor"
+  "computers.noneRunning": "Tidak ada yang menjalankan Monitor",
+  "menu.phone": "Ponsel…",
+  "phone.title": "Ponsel",
+  "phone.note": "Masuk dengan akun RUNNERS agar aplikasi Monitor di ponsel dengan akun yang sama dapat melihat komputer ini, menerima pemberitahuannya, dan membersihkannya.",
+  "phone.account": "Akun",
+  "phone.status": "Status",
+  "phone.status.signedOut": "Belum masuk",
+  "phone.status.connecting": "Menghubungkan…",
+  "phone.status.connected": "Terhubung",
+  "phone.email": "Email",
+  "phone.password": "Kata sandi",
+  "phone.signIn": "Masuk",
+  "phone.signOut": "Keluar",
+  "phone.problem.wrong": "Email atau kata sandi salah.",
+  "phone.problem.network": "Tidak dapat menjangkau server. Coba lagi sebentar lagi."
 }

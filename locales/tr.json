@@ -144,5 +144,19 @@
   "computers.seen": "{{time}} itibarıyla",
   "computers.note": "Aynı Tailscale ağında Monitor çalışan bilgisayarlar burada görünür. Yalnızca görüntüleme.",
   "computers.free": "boş",
-  "computers.noneRunning": "Hiçbirinde Monitor çalışmıyor"
+  "computers.noneRunning": "Hiçbirinde Monitor çalışmıyor",
+  "menu.phone": "Telefon…",
+  "phone.title": "Telefon",
+  "phone.note": "Aynı hesaptaki Monitor telefon uygulamasının bu bilgisayarı görmesi, uyarılarını alması ve temizlemesi için RUNNERS hesabınızla giriş yapın.",
+  "phone.account": "Hesap",
+  "phone.status": "Durum",
+  "phone.status.signedOut": "Oturum kapalı",
+  "phone.status.connecting": "Bağlanıyor…",
+  "phone.status.connected": "Bağlı",
+  "phone.email": "E-posta",
+  "phone.password": "Parola",
+  "phone.signIn": "Giriş Yap",
+  "phone.signOut": "Çıkış Yap",
+  "phone.problem.wrong": "E-posta veya parola doğru değil.",
+  "phone.problem.network": "Sunucuya ulaşılamıyor. Birazdan yeniden deneyin."
 }

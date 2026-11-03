@@ -144,5 +144,19 @@
   "computers.seen": "Om {{time}}",
   "computers.note": "Computers in hetzelfde Tailscale-netwerk waarop Monitor draait, staan hier. Alleen bekijken.",
   "computers.free": "vrij",
-  "computers.noneRunning": "Nergens draait Monitor"
+  "computers.noneRunning": "Nergens draait Monitor",
+  "menu.phone": "Telefoon…",
+  "phone.title": "Telefoon",
+  "phone.note": "Log in met je RUNNERS-account, zodat de Monitor-app op je telefoon met hetzelfde account deze computer kan zien, meldingen krijgt en kan opruimen.",
+  "phone.account": "Account",
+  "phone.status": "Status",
+  "phone.status.signedOut": "Afgemeld",
+  "phone.status.connecting": "Verbinden…",
+  "phone.status.connected": "Verbonden",
+  "phone.email": "E-mail",
+  "phone.password": "Wachtwoord",
+  "phone.signIn": "Inloggen",
+  "phone.signOut": "Uitloggen",
+  "phone.problem.wrong": "Het e-mailadres of wachtwoord klopt niet.",
+  "phone.problem.network": "Kan de server niet bereiken. Probeer het zo opnieuw."
 }

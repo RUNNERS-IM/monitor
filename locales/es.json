@@ -144,5 +144,19 @@
   "computers.seen": "A las {{time}}",
   "computers.note": "Aquí aparecen los ordenadores de la misma red Tailscale con Monitor abierto. Solo lectura.",
   "computers.free": "libre",
-  "computers.noneRunning": "Ninguno tiene Monitor abierto"
+  "computers.noneRunning": "Ninguno tiene Monitor abierto",
+  "menu.phone": "Teléfono…",
+  "phone.title": "Teléfono",
+  "phone.note": "Inicia sesión con tu cuenta RUNNERS para que la app Monitor del teléfono con la misma cuenta vea este ordenador, reciba sus avisos y lo limpie.",
+  "phone.account": "Cuenta",
+  "phone.status": "Estado",
+  "phone.status.signedOut": "Sesión cerrada",
+  "phone.status.connecting": "Conectando…",
+  "phone.status.connected": "Conectado",
+  "phone.email": "Correo",
+  "phone.password": "Contraseña",
+  "phone.signIn": "Iniciar sesión",
+  "phone.signOut": "Cerrar sesión",
+  "phone.problem.wrong": "El correo o la contraseña no son correctos.",
+  "phone.problem.network": "No se puede conectar con el servidor. Inténtalo de nuevo en un momento."
 }

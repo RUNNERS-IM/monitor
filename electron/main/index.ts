@@ -4,11 +4,13 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme, Notification, shell, systemPreferences, type Tray } from "electron";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import * as account from "./account";
 import { currentLocale, t } from "./i18n";
 import * as login from "./login";
 import { buildMenu, forgetIcons, type Command, type MenuState } from "./menu";
 import { native, type Sampler } from "./native";
 import { askLoop, demoPeers, peerList, setFast, startServing, topApps, type Usage } from "./peers";
+import * as relay from "./relay";
 import { tailnet } from "./tailnet";
 import { releaseNoteLines } from "./releaseNotes";
 import { readSettings, writeSettings } from "./settings";
@@ -16,7 +18,7 @@ import { noteFrontApp, suggestions, type Suggestion } from "./suggest";
 import { createTray, showReading, type Level } from "./tray";
 import type { Snapshot } from "./types";
 import { checkNow, displayVersion, startUpdates } from "./updates";
-import { answerUpdate, askUpdate, createPanel, placeUnderTray, showAbout, showComputers, showComputersHidden, hiddenPage, TRANSLUCENT, updateOffer } from "./windows";
+import { answerUpdate, askUpdate, createPanel, placeUnderTray, showAbout, showAccount, showComputers, showComputersHidden, hiddenPage, TRANSLUCENT, updateOffer } from "./windows";
 
 const ISSUES_URL = "https://github.com/RUNNERS-IM/monitor/issues";
 const REFRESH_MS = 3000;
@@ -40,6 +42,9 @@ const DEV = !app.isPackaged;
 const DEMO = DEV && !!process.env.MONITOR_DEMO;
 const DEMO_OS = "macOS 26.5 Tahoe";
 const DEMO_VERSION = "2.6.1102";
+// Why: a debug run keeps its own data folder, so it runs next to the installed Monitor (which holds the
+// single-instance lock on the shared folder) and never signs it in or out.
+if (DEV) app.setPath("userData", `${app.getPath("userData")}-dev`);
 // Why: the windows read their language from navigator.language, which follows Chromium's --lang switch.
 if (DEV && process.env.MONITOR_LANG) app.commandLine.appendSwitch("lang", process.env.MONITOR_LANG);
 
@@ -131,6 +136,8 @@ function notifyIfSlow(snap: Snapshot, held: Reason[], suggested: Suggestion[]): 
       if (offer) void sampler?.quitApp(offer.name).catch((error) => console.error("quit:", error));
     });
     notice.show();
+    // Why: the phone app gets the same notice, named after this computer, even when nobody is at it.
+    void computerName().then((name) => relay.sendAlert(`${name} · ${t(`notice.${reason}.title`)}`, notice.body));
   }
 }
 
@@ -183,6 +190,10 @@ function run(command: Command): void {
     case "about":
       hidePanel();
       showAbout();
+      break;
+    case "phone":
+      hidePanel();
+      showAccount();
       break;
     case "updates":
       hidePanel();
@@ -305,9 +316,15 @@ async function emptyCleanup(kind: string): Promise<{ freed: number; skipped: num
     cancelId: 1,
   });
   if (response !== 0) return null;
+  return emptyKind(kind);
+}
+
+/** Deletes one kind and takes it off the shown numbers. The phone app comes straight here: it asks on the phone. */
+async function emptyKind(kind: string): Promise<{ freed: number; skipped: number }> {
+  if (!latestCleanup?.kinds?.some((item) => item.kind === kind)) throw new Error("nothing to empty");
   const done = JSON.parse(await native.cleanupEmpty(kind)) as { freed: number; skipped: number };
   // Why: the next measurement takes minutes, so the freed bytes come off the shown numbers right away.
-  latestCleanup = {
+  latestCleanup = latestCleanup && {
     ...latestCleanup,
     total: Math.max(0, latestCleanup.total - done.freed),
     kinds: latestCleanup.kinds?.map((item) => (item.kind === kind ? { ...item, bytes: Math.max(0, item.bytes - done.freed) } : item)),
@@ -346,6 +363,41 @@ function usage(from: Snapshot | null = latest): Usage | null {
     cleanable: latestCleanup?.total ?? null,
   };
 }
+
+/** The name the other computers and the phones show: the Tailscale name (m1-pro-2) when there is one. */
+async function computerName(): Promise<string> {
+  const net = await tailnet().catch(() => null);
+  return net?.self.name ?? latest?.host ?? "";
+}
+
+/** What the phone app shows for this computer: the same numbers as the All Computers window, plus what can be
+ *  emptied by kind and the runners by name, so the phone can offer those commands. */
+function phoneState(): unknown {
+  const mine = usage();
+  if (!mine || !latest) return null;
+  return {
+    ...mine,
+    topCpu: latest.topCpu.slice(0, 5).map((a) => ({ name: a.name, cpuPercent: a.cpuPercent })),
+    cleanupKinds: latestCleanup?.kinds ?? [],
+    runners: latest.runners.map((r) => ({ name: r.name, busy: r.busy, pausedUntil: paused.get(r.name) ?? null })),
+  };
+}
+
+/** The phone app's commands (runners-app-kit docs/relay.md, "앱별 명령"). */
+const phoneCommands: Record<string, relay.Handler> = {
+  "usage.get": async () => phoneState(),
+  "app.quit": async (args) => {
+    await sampler!.quitApp(String(args.name ?? ""));
+    return null;
+  },
+  "cleanup.empty": async (args) => emptyKind(String(args.kind ?? "")),
+  "runner.pause": async (args) => {
+    const name = String(args.name ?? "");
+    const until = Number(await sampler!.pauseRunner(name));
+    paused.set(name, until);
+    return { until };
+  },
+};
 
 function openComputers(): void {
   hidePanel();
@@ -397,6 +449,16 @@ function registerIpc(): void {
   });
   ipcMain.on("monitor:closeWindow", (event) => BrowserWindow.fromWebContents(event.sender)?.close());
   ipcMain.handle("monitor:updateOffer", () => updateOffer());
+  ipcMain.handle("monitor:account", () => ({ email: account.current(), status: relay.currentStatus() }));
+  ipcMain.handle("monitor:signIn", async (_event, email: string, password: string) => {
+    try {
+      await account.signIn(String(email), String(password));
+      return null;
+    } catch (error) {
+      return error instanceof account.ApiError && (error.status === 400 || error.status === 401) ? "wrong" : "network";
+    }
+  });
+  ipcMain.handle("monitor:signOut", () => account.signOut());
   ipcMain.on("monitor:answerUpdate", (_event, answer: unknown) => answerUpdate(answer === "install" ? "install" : "later"));
 }
 
@@ -415,9 +477,17 @@ function debugHooks(): void {
   // never showing a window: popup (panel folded, "Worth doing now" on top), sessions (Jobs open) and computers.
   const shotsTo = process.env.MONITOR_SHOTS;
   if (shotsTo && DEMO) setTimeout(() => void homepageShots(shotsTo), 8000);
+  // `MONITOR_ACCOUNT=<email>:<password>` signs in at launch, so the relay can be tried against relay-dev
+  // (monitor-app/scripts/relay-dev.mjs) without typing into a window.
+  const signInAs = process.env.MONITOR_ACCOUNT;
+  if (signInAs && !account.current()) {
+    const at = signInAs.indexOf(":");
+    void account.signIn(signInAs.slice(0, at), signInAs.slice(at + 1)).catch((error) => console.error("sign in:", error));
+  }
   const which = process.env.MONITOR_OPEN;
   // Why: the tray icon needs a moment before it reports where it sits.
   if (which === "about") setTimeout(showAbout, 1500);
+  if (which === "phone") setTimeout(showAccount, 1500);
   if (which === "panel") setTimeout(showWithoutFocus, 1500);
   if (which === "update" || which === "update-progress") {
     // Why: the window shows the notes the next release will carry, so screenshots match the real thing.
@@ -498,7 +568,12 @@ function start(): void {
   if (!DEMO) {
     startServing(() => usage());
     void askLoop();
+    relay.startRelay({ state: phoneState, name: computerName, commands: phoneCommands });
   }
+  // Why: the account window shows whether this computer is on the relay as it changes.
+  relay.onStatus((status) => {
+    for (const window of BrowserWindow.getAllWindows()) window.webContents.send("monitor:account", { email: account.current(), status });
+  });
   startUpdates();
   if (DEV) debugHooks();
 }

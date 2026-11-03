@@ -144,5 +144,19 @@
   "computers.seen": "Klo {{time}}",
   "computers.note": "Tässä näkyvät saman Tailscale-verkon tietokoneet, joissa Monitor on käynnissä. Vain katselu.",
   "computers.free": "vapaana",
-  "computers.noneRunning": "Monitor ei käynnissä missään"
+  "computers.noneRunning": "Monitor ei käynnissä missään",
+  "menu.phone": "Puhelin…",
+  "phone.title": "Puhelin",
+  "phone.note": "Kirjaudu RUNNERS-tililläsi, niin saman tilin Monitor-puhelinsovellus näkee tämän tietokoneen, saa sen ilmoitukset ja voi siivota sen.",
+  "phone.account": "Tili",
+  "phone.status": "Tila",
+  "phone.status.signedOut": "Kirjautunut ulos",
+  "phone.status.connecting": "Yhdistetään…",
+  "phone.status.connected": "Yhdistetty",
+  "phone.email": "Sähköposti",
+  "phone.password": "Salasana",
+  "phone.signIn": "Kirjaudu",
+  "phone.signOut": "Kirjaudu ulos",
+  "phone.problem.wrong": "Sähköposti tai salasana on väärin.",
+  "phone.problem.network": "Palvelimeen ei saada yhteyttä. Yritä hetken päästä uudelleen."
 }

@@ -1,0 +1,85 @@
+/* Phone window: the shared window values (runners-window.css), a box of fields or account lines, one full-width button. */
+:root[data-window="account"] body {
+  margin: 0;
+  background: var(--rw-window-bg);
+}
+
+:root[data-window="account"][data-translucent="true"] body {
+  background: transparent;
+}
+
+.account {
+  box-sizing: border-box;
+  padding: 20px 24px;
+}
+
+.account-title {
+  margin: 0;
+  font-size: var(--rw-font);
+  font-weight: 600;
+}
+
+.account-note {
+  margin: 4px 0 0;
+  font-size: var(--rw-font-small);
+  line-height: 1.45;
+  color: var(--rw-text-secondary);
+}
+
+.account-box {
+  display: flex;
+  flex-direction: column;
+  margin-top: 14px;
+  border: var(--rw-border) solid var(--rw-separator);
+  border-radius: 10px;
+  background: var(--rw-box-bg);
+  overflow: hidden;
+}
+
+.account-box input {
+  padding: 9px 12px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: var(--rw-font);
+  outline: none;
+}
+
+.account-box > * + * {
+  border-top: var(--rw-border) solid var(--rw-separator);
+}
+
+.account-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  font-size: var(--rw-font);
+}
+
+.account-value {
+  color: var(--rw-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-value.status-connected {
+  color: #34c759;
+}
+
+.account-problem {
+  margin: 8px 0 0;
+  font-size: var(--rw-font-small);
+  color: #ff3b30;
+}
+
+.account-buttons {
+  display: flex;
+  margin-top: 14px;
+}
+
+.account-buttons .rw-button {
+  flex: 1;
+}

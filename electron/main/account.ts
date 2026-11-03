@@ -1,0 +1,113 @@
+// The RUNNERS account this computer is signed in with. Why: the phone app reaches this computer through the system
+// server's relay (shared decision 2026-11-03 "네 앱 컴퓨터판 · 휴대폰판 개발 방식"), and the relay only joins a computer
+// and a phone that sign in with the same account. Same calls as runners-app-kit (src/auth, src/api/request.ts).
+import { app, safeStorage } from "electron";
+import { createHash } from "node:crypto";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+
+/** Debug runs can point at a local test server (`MONITOR_API_URL=http://127.0.0.1:8787`). */
+export const API_URL = (!app.isPackaged && process.env.MONITOR_API_URL) || "https://server.system.runners.im";
+const PROJECT = "MONITOR";
+const FILE = "account.bin";
+
+type Tokens = { accessToken: string; refreshToken: string };
+type Saved = { email: string; tokens: Tokens };
+
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public body: unknown,
+  ) {
+    super(`API ${status}`);
+  }
+}
+
+let saved: Saved | null | undefined;
+const listeners = new Set<() => void>();
+
+function file(): string {
+  return join(app.getPath("userData"), FILE);
+}
+
+/** Why: the tokens sign in as the person, so they are kept encrypted with the OS keychain where there is one. */
+function load(): Saved | null {
+  if (saved !== undefined) return saved;
+  try {
+    const bytes = readFileSync(file());
+    const text = safeStorage.isEncryptionAvailable() ? safeStorage.decryptString(bytes) : bytes.toString("utf8");
+    saved = JSON.parse(text) as Saved;
+  } catch {
+    saved = null;
+  }
+  return saved;
+}
+
+function store(next: Saved | null): void {
+  saved = next;
+  if (next) {
+    const text = JSON.stringify(next);
+    writeFileSync(file(), safeStorage.isEncryptionAvailable() ? safeStorage.encryptString(text) : text, { mode: 0o600 });
+  } else rmSync(file(), { force: true });
+  for (const listener of listeners) listener();
+}
+
+async function post<T>(path: string, body: unknown, token?: string): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: JSON.stringify(body),
+  });
+  const text = await res.text();
+  const parsed = text ? (JSON.parse(text) as unknown) : null;
+  if (!res.ok) throw new ApiError(res.status, parsed);
+  return parsed as T;
+}
+
+/** The signed-in email, or null. */
+export function current(): string | null {
+  return load()?.email ?? null;
+}
+
+export function onChange(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export async function signIn(email: string, password: string): Promise<void> {
+  // Why: the server takes the password as SHA-256 hex (system-server EmailSignRequest), as the phone apps send it.
+  const hashed = createHash("sha256").update(password).digest("hex");
+  const res = await post<{ user: { email: string }; tokens: Tokens }>("/api/mobile/auth/login", { email, password: hashed, projectName: PROJECT });
+  store({ email: res.user?.email ?? email, tokens: res.tokens });
+}
+
+export async function signOut(): Promise<void> {
+  const was = load();
+  store(null);
+  if (was) await post("/api/mobile/auth/logout", { refreshToken: was.tokens.refreshToken }).catch(() => undefined);
+}
+
+export function accessToken(): string | null {
+  return load()?.tokens.accessToken ?? null;
+}
+
+let refreshing: Promise<string | null> | null = null;
+
+/** Gets a new access token after the old one was turned away; signs out when the refresh token is refused too. */
+export function refresh(): Promise<string | null> {
+  refreshing ??= (async () => {
+    const was = load();
+    if (!was) return null;
+    try {
+      const tokens = await post<Tokens>("/api/mobile/auth/refresh", { refreshToken: was.tokens.refreshToken });
+      store({ ...was, tokens });
+      return tokens.accessToken;
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) store(null);
+      return null;
+    }
+  })().finally(() => {
+    refreshing = null;
+  });
+  return refreshing;
+}

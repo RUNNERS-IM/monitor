@@ -144,5 +144,19 @@
   "computers.seen": "ณ {{time}}",
   "computers.note": "คอมพิวเตอร์ในเครือข่าย Tailscale เดียวกันที่เปิด Monitor จะแสดงที่นี่ ดูได้อย่างเดียว",
   "computers.free": "ว่าง",
-  "computers.noneRunning": "ไม่มีเครื่องที่เปิด Monitor"
+  "computers.noneRunning": "ไม่มีเครื่องที่เปิด Monitor",
+  "menu.phone": "โทรศัพท์…",
+  "phone.title": "โทรศัพท์",
+  "phone.note": "ลงชื่อเข้าใช้ด้วยบัญชี RUNNERS เพื่อให้แอป Monitor บนโทรศัพท์ที่ใช้บัญชีเดียวกันเห็นคอมพิวเตอร์เครื่องนี้ รับการแจ้งเตือน และล้างข้อมูลได้",
+  "phone.account": "บัญชี",
+  "phone.status": "สถานะ",
+  "phone.status.signedOut": "ยังไม่ได้ลงชื่อเข้าใช้",
+  "phone.status.connecting": "กำลังเชื่อมต่อ…",
+  "phone.status.connected": "เชื่อมต่อแล้ว",
+  "phone.email": "อีเมล",
+  "phone.password": "รหัสผ่าน",
+  "phone.signIn": "ลงชื่อเข้าใช้",
+  "phone.signOut": "ลงชื่อออก",
+  "phone.problem.wrong": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+  "phone.problem.network": "ติดต่อเซิร์ฟเวอร์ไม่ได้ ลองอีกครั้งในอีกสักครู่"
 }

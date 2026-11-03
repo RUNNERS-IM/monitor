@@ -1,6 +1,6 @@
 // The page's way to the app: a thin wrapper over `window.monitor`, which the preload script provides
 // (electron/preload). Everything the page asks of the main process goes through here.
-import type { CleanupKind, Emptied, MenuCommand, MenuState, MonitorApi, Peer, PeerUsage, UpdateOffer } from "../electron/preload/api";
+import type { AccountState, CleanupKind, Emptied, MenuCommand, MenuState, MonitorApi, Peer, PeerUsage, UpdateOffer } from "../electron/preload/api";
 import type { Cleanup, Snapshot } from "./types";
 
 declare global {
@@ -11,11 +11,19 @@ declare global {
 
 const api = () => window.monitor;
 
-export type { CleanupKind, Emptied, MenuCommand, MenuState, Peer, PeerUsage, UpdateOffer };
+export type { AccountState, CleanupKind, Emptied, MenuCommand, MenuState, Peer, PeerUsage, UpdateOffer };
 
 /** Which window this page is: the tray panel, the About window or the update question. */
-export const page: "panel" | "about" | "update" | "computers" =
-  location.hash === "#about" ? "about" : location.hash === "#update" ? "update" : location.hash === "#computers" ? "computers" : "panel";
+export const page: "panel" | "about" | "update" | "computers" | "account" =
+  location.hash === "#about"
+    ? "about"
+    : location.hash === "#update"
+      ? "update"
+      : location.hash === "#computers"
+        ? "computers"
+        : location.hash === "#account"
+          ? "account"
+          : "panel";
 
 export const snapshot = () => api().snapshot() as Promise<Snapshot | null>;
 export const cleanup = () => api().cleanup() as Promise<Cleanup | null>;
@@ -35,6 +43,10 @@ export const closeWindow = () => api().closeWindow();
 export const updateOffer = () => api().updateOffer();
 export const onUpdateOffer = (listener: (offer: UpdateOffer) => void) => api().onUpdateOffer(listener);
 export const answerUpdate = (answer: "install" | "later") => api().answerUpdate(answer);
+export const account = () => api().account();
+export const onAccount = (listener: (state: AccountState) => void) => api().onAccount(listener);
+export const signIn = (email: string, password: string) => api().signIn(email, password);
+export const signOut = () => api().signOut();
 
 /** Marks the page see-through where the OS blurs behind the window, and takes the system accent colour. */
 export function applyWindowLook(): void {

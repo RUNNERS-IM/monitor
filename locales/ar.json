@@ -144,5 +144,19 @@
   "computers.seen": "حتى {{time}}",
   "computers.note": "تظهر هنا الحواسيب على شبكة Tailscale نفسها التي يعمل عليها Monitor. للعرض فقط.",
   "computers.free": "متاح",
-  "computers.noneRunning": "لا يعمل Monitor على أي منها"
+  "computers.noneRunning": "لا يعمل Monitor على أي منها",
+  "menu.phone": "الهاتف…",
+  "phone.title": "الهاتف",
+  "phone.note": "سجّل الدخول بحساب RUNNERS ليتمكن تطبيق Monitor على الهاتف بالحساب نفسه من رؤية هذا الكمبيوتر وتلقي تنبيهاته وتنظيفه.",
+  "phone.account": "الحساب",
+  "phone.status": "الحالة",
+  "phone.status.signedOut": "غير مسجّل الدخول",
+  "phone.status.connecting": "جارٍ الاتصال…",
+  "phone.status.connected": "متصل",
+  "phone.email": "البريد الإلكتروني",
+  "phone.password": "كلمة المرور",
+  "phone.signIn": "تسجيل الدخول",
+  "phone.signOut": "تسجيل الخروج",
+  "phone.problem.wrong": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+  "phone.problem.network": "تعذّر الوصول إلى الخادم. حاول مرة أخرى بعد قليل."
 }

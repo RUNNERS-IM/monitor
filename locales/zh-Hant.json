@@ -144,5 +144,19 @@
   "computers.seen": "截至 {{time}}",
   "computers.note": "這裡顯示同一 Tailscale 網路中執行 Monitor 的電腦。僅供檢視。",
   "computers.free": "可用",
-  "computers.noneRunning": "都沒有執行 Monitor"
+  "computers.noneRunning": "都沒有執行 Monitor",
+  "menu.phone": "手機…",
+  "phone.title": "手機",
+  "phone.note": "使用 RUNNERS 帳號登入後，同一帳號的 Monitor 手機 App 就能查看這台電腦、接收通知並進行清理。",
+  "phone.account": "帳號",
+  "phone.status": "狀態",
+  "phone.status.signedOut": "未登入",
+  "phone.status.connecting": "正在連線…",
+  "phone.status.connected": "已連線",
+  "phone.email": "電子郵件",
+  "phone.password": "密碼",
+  "phone.signIn": "登入",
+  "phone.signOut": "登出",
+  "phone.problem.wrong": "電子郵件或密碼不正確。",
+  "phone.problem.network": "無法連線到伺服器，請稍後再試。"
 }

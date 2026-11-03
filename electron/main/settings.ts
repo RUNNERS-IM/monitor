@@ -10,6 +10,8 @@ export type Settings = {
   updateLaterOn: string | null;
   /** The day (`Sat Oct 31 2026`) each slow-computer notice was last shown. Why: once a day, even across restarts. */
   noticedOn: Partial<Record<"memory" | "cpu", string>>;
+  /** This computer's id on the relay (electron/main/relay.ts), made once so phones keep seeing the same computer. */
+  deviceId?: string;
 };
 
 const DEFAULTS: Settings = { autoUpdate: true, updateLaterOn: null, noticedOn: {} };
