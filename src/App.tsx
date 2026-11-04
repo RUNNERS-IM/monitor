@@ -516,7 +516,10 @@ function App() {
     );
   }
 
-  const toggle = (section: Section) => setOpen((now) => (now === section ? null : section));
+  const toggle = (section: Section) => {
+    if (section === "cleanup" && open !== "cleanup") void native.cleanupOpened();
+    setOpen((now) => (now === section ? null : section));
+  };
   const slow = snap.slowMemory || snap.slowCpu;
   const memory = percent(snap.memoryUsed, snap.memoryTotal);
   const disk = percent(snap.diskUsed, snap.diskTotal);
