@@ -2,7 +2,6 @@
 // server's relay (shared decision 2026-11-03 "네 앱 컴퓨터판 · 휴대폰판 개발 방식"), and the relay only joins a computer
 // and a phone that sign in with the same account. Same calls as runners-app-kit (src/auth, src/api/request.ts).
 import { app, safeStorage } from "electron";
-import { createHash } from "node:crypto";
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -61,7 +60,9 @@ async function post<T>(path: string, body: unknown, token?: string): Promise<T> 
   const text = await res.text();
   const parsed = text ? (JSON.parse(text) as unknown) : null;
   if (!res.ok) throw new ApiError(res.status, parsed);
-  return parsed as T;
+  // Why: system-server wraps successful answers as {code, data}.
+  const wrapped = parsed as { code?: unknown; data?: unknown } | null;
+  return (wrapped && typeof wrapped === "object" && "code" in wrapped && "data" in wrapped ? wrapped.data : parsed) as T;
 }
 
 /** The signed-in email, or null. */
@@ -75,9 +76,8 @@ export function onChange(listener: () => void): () => void {
 }
 
 export async function signIn(email: string, password: string): Promise<void> {
-  // Why: the server takes the password as SHA-256 hex (system-server EmailSignRequest), as the phone apps send it.
-  const hashed = createHash("sha256").update(password).digest("hex");
-  const res = await post<{ user: { email: string }; tokens: Tokens }>("/api/mobile/auth/login", { email, password: hashed, projectName: PROJECT });
+  // Why: the server checks the password as typed (6 to 20 letters and digits); it does the hashing itself.
+  const res = await post<{ user: { email: string }; tokens: Tokens }>("/api/mobile/auth/login", { email, password, projectName: PROJECT });
   store({ email: res.user?.email ?? email, tokens: res.tokens });
 }
 
