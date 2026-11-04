@@ -26,6 +26,8 @@ export type MonitorApi = {
   snapshot: () => Promise<unknown>;
   /** The last cleanup measurement, or null while the first one runs. */
   cleanup: () => Promise<unknown>;
+  /** The cleanup row was opened: measures again if the numbers are more than half an hour old. */
+  cleanupOpened: () => Promise<void>;
   /** Asks an app from the last reading to quit like ⌘Q; rejects with the reason when it cannot. */
   quitApp: (name: string) => Promise<void>;
   /** Asks first, then deletes the cleanable folders of one kind; null when the person said no. */

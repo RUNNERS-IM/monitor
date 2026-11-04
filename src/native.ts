@@ -19,6 +19,7 @@ export const page: "panel" | "about" | "update" | "computers" =
 
 export const snapshot = () => api().snapshot() as Promise<Snapshot | null>;
 export const cleanup = () => api().cleanup() as Promise<Cleanup | null>;
+export const cleanupOpened = () => api().cleanupOpened();
 export const quitApp = (name: string) => api().quitApp(name);
 export const emptyCleanup = (kind: CleanupKind) => api().emptyCleanup(kind);
 export const pauseRunner = (name: string) => api().pauseRunner(name);

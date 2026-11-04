@@ -5,6 +5,7 @@ import type { MonitorApi, UpdateOffer } from "./api";
 const api: MonitorApi = {
   snapshot: () => ipcRenderer.invoke("monitor:snapshot"),
   cleanup: () => ipcRenderer.invoke("monitor:cleanup"),
+  cleanupOpened: () => ipcRenderer.invoke("monitor:cleanupOpened"),
   quitApp: (name) => ipcRenderer.invoke("monitor:quitApp", name),
   emptyCleanup: (kind) => ipcRenderer.invoke("monitor:emptyCleanup", kind),
   pauseRunner: (name) => ipcRenderer.invoke("monitor:pauseRunner", name),

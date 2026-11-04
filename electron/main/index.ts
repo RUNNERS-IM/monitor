@@ -14,13 +14,23 @@ import { releaseNoteLines } from "./releaseNotes";
 import { readSettings, writeSettings } from "./settings";
 import { noteFrontApp, suggestions, type Suggestion } from "./suggest";
 import { createTray, showReading, type Level } from "./tray";
-import type { Snapshot } from "./types";
+import { diskPercent, type Snapshot } from "./types";
 import { checkNow, displayVersion, startUpdates } from "./updates";
 import { answerUpdate, askUpdate, createPanel, placeUnderTray, showAbout, showComputers, showComputersHidden, hiddenPage, TRANSLUCENT, updateOffer } from "./windows";
 
 const ISSUES_URL = "https://github.com/RUNNERS-IM/monitor/issues";
 const REFRESH_MS = 3000;
-const CLEANUP_EVERY_MS = 30 * 60 * 1000;
+// Why: measuring walks every cache folder on the disk; every 30 min it kept a slow Mac's disk busy almost all the time
+// (2026-11-04, m3-pro-1: the measuring thread in lstat for whole samples). Six hours is enough for numbers that change slowly.
+const CLEANUP_EVERY_MS = 6 * 60 * 60 * 1000;
+/** Why: a nearly full disk is when the numbers matter, so they are kept fresher then. */
+const CLEANUP_FULL_DISK_MS = 30 * 60 * 1000;
+const CLEANUP_FULL_DISK_PERCENT = 85;
+/** Opening the cleanup row measures again when the shown numbers are older than this. */
+const CLEANUP_STALE_SECS = 30 * 60;
+/** Why: on a Mac that is always short of memory, measuring is put off only this long, so the numbers never go missing. */
+const CLEANUP_MAX_PUT_OFF_SECS = 24 * 60 * 60;
+const CLEANUP_RECHECK_MS = 60 * 1000;
 const CLEANUP_FILE = "cleanup.json";
 const CLEANUP_PROGRESS_FILE = "cleanup-progress.json";
 // Why: memory pressure flips to warning and back within seconds on a busy Mac, so a slow reading still counts until
@@ -59,6 +69,8 @@ type CleanupResult = { total: number; kinds?: { kind: string; bytes: number }[];
 let latestCleanup: CleanupResult | null = null;
 /** Ends the cleanup loop's wait early, so a measurement right after emptying shows what is left. */
 let measureNow: (() => void) | null = null;
+/** Set by measureNow: measure at the next chance instead of waiting for the six hours. */
+let measureWanted = false;
 let shownAt = 0;
 let hiddenByBlurAt = 0;
 /** Runners paused from the panel, by name, with the Unix time they come back.
@@ -264,12 +276,10 @@ async function cleanupLoop(): Promise<void> {
   const progress = join(dir, CLEANUP_PROGRESS_FILE);
   // Why: measuring takes minutes, so a restart shows the saved numbers; the Tauri build's file counts too.
   const found = native.cleanupLoad(saved) ?? native.cleanupLoad(join(app.getPath("appData"), "im.runners.monitor", CLEANUP_FILE));
-  if (found) {
-    const parsed = JSON.parse(found) as CleanupResult;
-    latestCleanup = parsed;
-    await waitForMeasure(Math.max(0, CLEANUP_EVERY_MS - (native.nowSecs() - parsed.measuredAt) * 1000));
-  }
+  if (found) latestCleanup = JSON.parse(found) as CleanupResult;
   for (;;) {
+    await waitForMeasure();
+    measureWanted = false;
     try {
       const json = await native.cleanupMeasure(progress);
       native.cleanupSave(saved, json);
@@ -277,18 +287,27 @@ async function cleanupLoop(): Promise<void> {
     } catch (error) {
       console.error("cleanup:", error);
     }
-    await waitForMeasure(CLEANUP_EVERY_MS);
   }
 }
 
-function waitForMeasure(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    const timer = setTimeout(resolve, ms);
-    measureNow = () => {
-      clearTimeout(timer);
-      resolve();
-    };
-  });
+/** Waits until a measurement is due (six hours, half an hour on a nearly full disk, or asked for) and memory is not
+ *  short. Why: measuring reads the whole disk, which a Mac that is already swapping can least afford. */
+async function waitForMeasure(): Promise<void> {
+  for (;;) {
+    const age = latestCleanup ? native.nowSecs() - latestCleanup.measuredAt : Infinity;
+    const every = latest && diskPercent(latest) >= CLEANUP_FULL_DISK_PERCENT ? CLEANUP_FULL_DISK_MS : CLEANUP_EVERY_MS;
+    const due = measureWanted || age * 1000 >= every;
+    const calm = !latest || latest.memoryPressure === "normal";
+    if (due && (calm || age >= CLEANUP_MAX_PUT_OFF_SECS)) return;
+    await new Promise<void>((resolve) => {
+      const timer = setTimeout(resolve, CLEANUP_RECHECK_MS);
+      measureNow = () => {
+        measureWanted = true;
+        clearTimeout(timer);
+        resolve();
+      };
+    });
+  }
 }
 
 /** Asks before deleting, since the folders skip the Trash, then deletes one kind and takes it off the shown numbers. */
@@ -355,6 +374,11 @@ function openComputers(): void {
 function registerIpc(): void {
   ipcMain.handle("monitor:snapshot", () => panelSnapshot());
   ipcMain.handle("monitor:cleanup", () => (DEMO ? JSON.parse(native.demoCleanup() ?? "null") : latestCleanup));
+  // Why: someone opening the cleanup row wants today's numbers, not ones from hours ago.
+  ipcMain.handle("monitor:cleanupOpened", () => {
+    if (DEMO || (latestCleanup && native.nowSecs() - latestCleanup.measuredAt < CLEANUP_STALE_SECS)) return;
+    measureNow?.();
+  });
   ipcMain.handle("monitor:quitApp", async (_event, name: string) => {
     await sampler!.quitApp(String(name));
   });
