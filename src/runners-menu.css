@@ -1,7 +1,8 @@
 /*
  * RUNNERS menu look: the values of the macOS menu-bar menu (NSMenu) that Split shows, measured from Split's menu
  * on macOS 26 (2x screenshot, 2026-10-30), then given more room (rows 24 -> 30, gaps wider) because the
- * user found the measured spacing too tight (2026-10-30). Any RUNNERS window that sits under a menu-bar icon and is drawn in HTML
+ * user found the measured spacing too tight (2026-10-30), then rows 30 -> 32 when the user asked for every app's menu to be
+ * roomier (2026-11-05 "네 앱 메뉴 패널 통일"); text stays 13 like the settings windows, since 14 looked too large. Any RUNNERS window that sits under a menu-bar icon and is drawn in HTML
  * (Monitor's panel, later Remote's) uses this file so it reads as the same menu as Split's.
  * The source copy lives in the monitor repo (src/runners-menu.css); other apps copy it unchanged.
  * The window itself gets the menu material from the OS (Electron `vibrancy: "menu"` on macOS), so the page stays
@@ -10,7 +11,7 @@
 :root {
   --rm-font: 13px;
   --rm-font-small: 11px;
-  --rm-row: 30px;
+  --rm-row: 32px;
   --rm-icon: 16px;
   --rm-icon-gap: 6px;
   /* Window edge to the start of an icon or label. */
