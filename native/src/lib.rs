@@ -8,6 +8,7 @@ mod bars;
 mod cleanup;
 mod demo;
 mod extra;
+mod front;
 mod snapshot;
 
 use std::path::Path;
@@ -81,7 +82,8 @@ impl Sampler {
         to_json(&snap).ok()
     }
 
-    /// Asks the app named `name` in the last reading to quit, the way ⌘Q does. Never force-kills.
+    /// Asks the app named `name` in the last reading to quit, the way ⌘Q does, or ends a dev server; resolves to the
+    /// JSON of `actions::QuitReport` once it has ended or after a few seconds. Never force-kills.
     #[napi(ts_return_type = "Promise<string>")]
     pub fn quit_app(&self, name: String) -> AsyncTask<Work> {
         let last = self.last.clone();
@@ -92,7 +94,7 @@ impl Sampler {
                 .as_ref()
                 .and_then(|snap| snap.top_cpu.iter().chain(&snap.top_memory).find(|a| a.name == name).cloned())
                 .ok_or_else(|| format!("{name} is no longer running"))?;
-            actions::quit_app(&app).map(|()| String::new())
+            to_json(&actions::quit_app(&app)?)
         })
     }
 
@@ -110,6 +112,18 @@ impl Sampler {
             actions::pause_runner(&runner).map(|until| until.to_string())
         })
     }
+
+    /// Starts the paused runner named `name` (its folder under `~/actions-runners`) right away.
+    #[napi(ts_return_type = "Promise<string>")]
+    pub fn resume_runner(&self, name: String) -> AsyncTask<Work> {
+        Work::new(move || actions::resume_runner(&name).map(|()| String::new()))
+    }
+}
+
+/// The bundle id of the app in front (com.apple.Terminal), or null when there is none or this is not a Mac.
+#[napi]
+pub fn front_bundle_id() -> Option<String> {
+    front::front_bundle_id()
 }
 
 /// The last cleanup result saved in `path`, as JSON, or null when there is none.

@@ -1,5 +1,7 @@
 use std::collections::{HashMap, VecDeque};
 use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant};
 
 use serde::Serialize;
 use sysinfo::{Disks, Pid, Process, ProcessRefreshKind, ProcessesToUpdate, RefreshKind, System, UpdateKind};
@@ -36,6 +38,9 @@ pub struct Snapshot {
     pub host: String,
     pub os: String,
     pub cpu_percent: f32,
+    /// The part of `cpu_percent` spent in macOS itself (kernel time: compressing memory, swapping, drivers).
+    /// Why: on a Mac short of memory this is often the biggest share, and no app in the list holds it.
+    pub cpu_system_percent: f32,
     pub memory_used: u64,
     pub memory_total: u64,
     /// Where memory goes besides apps, in bytes, so the panel can split all of it into one bar.
@@ -82,21 +87,37 @@ pub struct AppUse {
     /// Percent of the whole computer, on the same scale as `cpu_percent`.
     pub cpu_percent: f32,
     pub memory: u64,
-    /// Whether the panel offers a Quit button: only for apps people use, never for system processes, Monitor itself,
-    /// claude, other users' processes, build tools or simulators.
-    pub quittable: bool,
+    /// How the panel's Quit button ends this entry, or none when it offers no Quit. Never for system processes,
+    /// Monitor itself, claude, other users' processes, build tools, simulators, terminals or editors.
+    pub quit: Option<QuitKind>,
     pub kind: AppKind,
+    /// The Mac app's bundle id (com.apple.Terminal), for the entries on screen. Why: the front app is noted by it,
+    /// because the name macOS shows is translated ("터미널") while the `.app` folder name is not.
+    pub bundle_id: Option<String>,
     /// For the "claude" entry, how many claude processes it adds up; none for other apps.
     pub sessions: Option<u32>,
     /// For a build tool or dev server, the repository it works in (the folder holding `.git` above its working folder).
     pub folder: Option<String>,
     /// For a dev server, how long it has been running.
     pub running_secs: Option<u64>,
+    /// Whether every process in the entry may be asked to quit; `quit` is decided from it once the entry is on screen.
+    #[serde(skip)]
+    pub quittable: bool,
     #[serde(skip)]
     pub pids: Vec<Pid>,
     /// The `.app` bundle, so a Mac app can be asked to quit like ⌘Q instead of being sent a signal.
     #[serde(skip)]
     pub bundle: Option<PathBuf>,
+}
+
+/// How Quit ends an entry, so the panel can say whether it asks to save first.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum QuitKind {
+    /// Asked to quit the way ⌘Q does (a Mac app) or closed like its window's close box (Windows): it can ask to save.
+    App,
+    /// Sent SIGTERM: it ends at once without asking.
+    Process,
 }
 
 /// What kind of program an entry is, so the panel offers Quit only where it is safe.
@@ -132,6 +153,8 @@ pub struct Runner {
     pub busy: bool,
     /// Unix time when a paused runner starts again; set by the panel's pause button, not by sampling.
     pub paused_until: Option<u64>,
+    /// Installed as a service but turned off in launchd (`launchctl disable`), so it never runs on this Mac.
+    pub off: bool,
     /// The install folder, which holds `.service` naming the launchd job.
     #[serde(skip)]
     pub dir: PathBuf,
@@ -143,6 +166,8 @@ pub struct Sampler {
     cpu_history: VecDeque<f32>,
     memory_history: VecDeque<f32>,
     claude_cpu: HashMap<Pid, VecDeque<f32>>,
+    /// The CPU tick counters (user, system, idle, nice) at the last reading; the share is their difference.
+    cpu_ticks: [u64; 4],
 }
 
 impl Sampler {
@@ -156,6 +181,7 @@ impl Sampler {
             cpu_history: VecDeque::with_capacity(HISTORY_LEN),
             memory_history: VecDeque::with_capacity(HISTORY_LEN),
             claude_cpu: HashMap::new(),
+            cpu_ticks: cpu_ticks(),
         })
     }
 
@@ -208,6 +234,9 @@ impl Sampler {
 
         let runners = runners(processes);
         let cpu_percent = self.system.global_cpu_usage();
+        let ticks = cpu_ticks();
+        let cpu_system_percent = system_share(self.cpu_ticks, ticks).min(cpu_percent);
+        self.cpu_ticks = ticks;
         let memory_used = self.system.used_memory();
         let memory_total = self.system.total_memory();
         let (disk_used, disk_total) = self.system_disk();
@@ -226,6 +255,7 @@ impl Sampler {
             memory_total,
             memory_wired: breakdown.wired,
             memory_compressed: breakdown.compressed,
+            cpu_system_percent,
             memory_cache: breakdown.cache,
             memory_free: breakdown.free,
             memory_pressure,
@@ -355,6 +385,8 @@ struct HeavyFile {
     name: Option<String>,
     command: String,
     started_epoch: u64,
+    /// The heavy-run process holding the turn.
+    pid: Option<u32>,
 }
 
 /// `heavy-run` writes `~/.runners/heavy.json` while it holds the turn and removes it when done.
@@ -363,12 +395,80 @@ fn heavy_job() -> Option<HeavyJob> {
     let home = std::env::var_os(if cfg!(windows) { "USERPROFILE" } else { "HOME" })?;
     let path = PathBuf::from(home).join(".runners").join("heavy.json");
     let file: HeavyFile = serde_json::from_slice(&std::fs::read(path).ok()?).ok()?;
+    // Why: a heavy-run that was killed leaves the file behind, which showed "무거운 작업 1" growing forever.
+    if file.pid.is_some_and(|pid| !alive(pid)) {
+        return None;
+    }
     let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).ok()?.as_secs();
     Some(HeavyJob {
         name: file.name.unwrap_or_default(),
         command: file.command,
         running_secs: now.saturating_sub(file.started_epoch),
     })
+}
+
+/// How Quit may end an entry. Why: on a Mac a program outside any `.app` (node, python) may be a Claude session's tool
+/// server or a runner, so only a confirmed dev server is offered; a terminal or editor would take its sessions with it.
+fn quit_kind(app: &AppUse) -> Option<QuitKind> {
+    if !app.quittable {
+        return None;
+    }
+    match app.kind {
+        AppKind::DevServer => Some(QuitKind::Process),
+        AppKind::App if cfg!(target_os = "macos") => {
+            app.bundle_id.as_deref().filter(|id| !keeps_sessions(id)).map(|_| QuitKind::App)
+        }
+        AppKind::App if cfg!(windows) => Some(QuitKind::App),
+        AppKind::App => Some(QuitKind::Process),
+        AppKind::Build | AppKind::Simulator => None,
+    }
+}
+
+/// Terminals and editors, by bundle id; an entry ending in "." covers every id that starts with it.
+const KEEPS_SESSIONS: &[&str] = &[
+    "com.apple.Terminal", "com.googlecode.iterm2", "dev.warp.Warp-Stable", "com.mitchellh.ghostty", "net.kovidgoyal.kitty",
+    "org.alacritty", "com.github.wez.wezterm", "im.runners.prompt", "com.microsoft.VSCode", "com.microsoft.VSCodeInsiders",
+    "com.todesktop.230313mzl4w4u92", "dev.zed.Zed", "com.exafunction.windsurf", "com.jetbrains.", "com.google.android.studio",
+    "com.apple.dt.Xcode", "com.sublimetext.", "com.panic.Nova",
+];
+
+fn keeps_sessions(id: &str) -> bool {
+    KEEPS_SESSIONS.iter().any(|known| if known.ends_with('.') { id.starts_with(known) } else { id == *known })
+}
+
+/// The bundle id in an `.app`'s Info.plist, remembered per bundle because it never changes while the app runs.
+fn bundle_id(bundle: &Path) -> Option<String> {
+    static IDS: std::sync::OnceLock<std::sync::Mutex<HashMap<PathBuf, Option<String>>>> = std::sync::OnceLock::new();
+    let mut ids = IDS.get_or_init(Default::default).lock().ok()?;
+    ids.entry(bundle.to_path_buf()).or_insert_with(|| read_bundle_id(bundle)).clone()
+}
+
+#[cfg(target_os = "macos")]
+fn read_bundle_id(bundle: &Path) -> Option<String> {
+    // Why: Info.plist is often binary, and plutil reads both forms.
+    let out = std::process::Command::new("plutil")
+        .args(["-extract", "CFBundleIdentifier", "raw", "-o", "-"])
+        .arg(bundle.join("Contents/Info.plist"))
+        .output()
+        .ok()
+        .filter(|out| out.status.success())?;
+    Some(String::from_utf8_lossy(&out.stdout).trim().to_owned()).filter(|id| !id.is_empty())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn read_bundle_id(_bundle: &Path) -> Option<String> {
+    None
+}
+
+/// Whether a process with this id is running. Signal 0 checks without sending anything; EPERM means it runs as someone else.
+#[cfg(unix)]
+fn alive(pid: u32) -> bool {
+    (unsafe { libc::kill(pid as libc::pid_t, 0) == 0 }) || std::io::Error::last_os_error().raw_os_error() == Some(libc::EPERM)
+}
+
+#[cfg(not(unix))]
+fn alive(_pid: u32) -> bool {
+    true
 }
 
 fn quittable(process: &Process) -> bool {
@@ -427,8 +527,10 @@ fn top_apps(processes: &HashMap<Pid, Process>, cores: f32) -> (Vec<AppUse>, Vec<
             name,
             cpu_percent: 0.0,
             memory: 0,
-            quittable: kind == AppKind::App,
+            quit: None,
             kind,
+            bundle_id: None,
+            quittable: matches!(kind, AppKind::App | AppKind::DevServer),
             sessions: None,
             folder: None,
             running_secs: None,
@@ -456,9 +558,13 @@ fn top_apps(processes: &HashMap<Pid, Process>, cores: f32) -> (Vec<AppUse>, Vec<
     let mut by_memory: Vec<AppUse> = apps.into_values().collect();
     by_memory.sort_by_key(|a| std::cmp::Reverse(a.memory));
     by_memory.truncate(TOP_APPS);
-    // Why: only the few entries on screen need their repository looked up, which touches the disk.
-    for app in by_cpu.iter_mut().chain(by_memory.iter_mut()).filter(|a| matches!(a.kind, AppKind::Build | AppKind::DevServer)) {
-        app.folder = app.pids.iter().filter_map(|pid| processes.get(pid)).find_map(repo_name);
+    // Why: only the few entries on screen need their repository or bundle id looked up, which touches the disk.
+    for app in by_cpu.iter_mut().chain(by_memory.iter_mut()) {
+        if matches!(app.kind, AppKind::Build | AppKind::DevServer) {
+            app.folder = app.pids.iter().filter_map(|pid| processes.get(pid)).find_map(repo_name);
+        }
+        app.bundle_id = app.bundle.as_deref().and_then(bundle_id);
+        app.quit = quit_kind(app);
     }
     (by_cpu, by_memory)
 }
@@ -492,11 +598,83 @@ fn runners(processes: &HashMap<Pid, Process>) -> Vec<Runner> {
             name: dir.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "runner".into()),
             busy: busy_listeners.contains(&pid),
             paused_until: None,
+            off: false,
             dir,
         })
         .collect();
+    // Why: a runner turned off in launchd has no process, so without this it would look as if it were never installed.
+    let disabled = disabled_labels();
+    for dir in installed_runners() {
+        let off = service_label(&dir).is_some_and(|label| disabled.contains(&label));
+        if off && !runners.iter().any(|r| r.dir == dir) {
+            let name = dir.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+            runners.push(Runner { name, busy: false, paused_until: None, off: true, dir });
+        }
+    }
     runners.sort_by(|a, b| a.name.cmp(&b.name));
     runners
+}
+
+/// The folder every runner on this computer is installed under (`~/actions-runners/<name>`).
+pub fn runners_home() -> Option<PathBuf> {
+    std::env::var_os("HOME").map(|home| PathBuf::from(home).join("actions-runners"))
+}
+
+/// Runner folders that `svc.sh install` made into a service.
+fn installed_runners() -> Vec<PathBuf> {
+    let Some(Ok(entries)) = runners_home().map(std::fs::read_dir) else { return Vec::new() };
+    entries.flatten().map(|e| e.path()).filter(|dir| dir.join(".service").is_file()).collect()
+}
+
+/// The launchd plist named in the runner folder's `.service`, and its label (the file name without `.plist`).
+pub fn service_plist(dir: &Path) -> Option<(String, String)> {
+    let plist = std::fs::read_to_string(dir.join(".service")).ok()?.trim().to_owned();
+    let label = Path::new(&plist).file_stem()?.to_string_lossy().into_owned();
+    Some((plist, label))
+}
+
+fn service_label(dir: &Path) -> Option<String> {
+    service_plist(dir).map(|(_, label)| label)
+}
+
+/// How long the list of turned-off launchd jobs is reused. Why: asking launchctl every 2 seconds costs a process each time.
+const DISABLED_KEEP: Duration = Duration::from_secs(60);
+
+/// Labels launchd keeps turned off for this user (`launchctl print-disabled gui/<uid>`).
+#[cfg(target_os = "macos")]
+pub fn disabled_labels() -> Vec<String> {
+    static CACHE: OnceLock<Mutex<Option<(Instant, Vec<String>)>>> = OnceLock::new();
+    let cache = CACHE.get_or_init(|| Mutex::new(None));
+    let Ok(mut cached) = cache.lock() else { return Vec::new() };
+    if let Some((at, labels)) = cached.as_ref() {
+        if at.elapsed() < DISABLED_KEEP {
+            return labels.clone();
+        }
+    }
+    let domain = format!("gui/{}", unsafe { libc::getuid() });
+    let labels = std::process::Command::new("launchctl")
+        .arg("print-disabled")
+        .arg(domain)
+        .output()
+        .map(|out| parse_disabled(&String::from_utf8_lossy(&out.stdout)))
+        .unwrap_or_default();
+    *cached = Some((Instant::now(), labels.clone()));
+    labels
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn disabled_labels() -> Vec<String> {
+    Vec::new()
+}
+
+/// Reads lines like `"actions.runner.SENSE-IM.m2-pro-sun-1" => disabled` (older macOS writes `true`).
+fn parse_disabled(text: &str) -> Vec<String> {
+    text.lines()
+        .filter_map(|line| {
+            let (label, state) = line.trim().split_once("=>")?;
+            matches!(state.trim(), "disabled" | "true").then(|| label.trim().trim_matches('"').to_owned())
+        })
+        .collect()
 }
 
 /// The folder above `bin/Runner.Listener`, which is how each runner was installed and named.
@@ -549,6 +727,50 @@ pub struct MemoryBreakdown {
     pub compressed: u64,
     pub cache: u64,
     pub free: u64,
+}
+
+/// Percent of all CPU time between two tick readings that went to the system (kernel).
+fn system_share(before: [u64; 4], after: [u64; 4]) -> f32 {
+    let diff: Vec<u64> = after.iter().zip(before).map(|(a, b)| a.saturating_sub(b)).collect();
+    let all: u64 = diff.iter().sum();
+    if all == 0 { 0.0 } else { diff[1] as f32 * 100.0 / all as f32 }
+}
+
+/// The counters `top` reads for its "sys" figure, summed over every core.
+#[cfg(target_os = "macos")]
+#[allow(deprecated)] // As in memory_breakdown: the mach2 crate would add a dependency for the same call.
+fn cpu_ticks() -> [u64; 4] {
+    let mut info: libc::host_cpu_load_info = unsafe { std::mem::zeroed() };
+    let mut count = libc::HOST_CPU_LOAD_INFO_COUNT;
+    let ok = unsafe {
+        libc::host_statistics(
+            libc::mach_host_self(),
+            libc::HOST_CPU_LOAD_INFO,
+            (&mut info as *mut libc::host_cpu_load_info).cast(),
+            &mut count,
+        )
+    } == libc::KERN_SUCCESS;
+    if !ok {
+        return [0; 4];
+    }
+    let [user, system, idle, nice] = info.cpu_ticks;
+    [user as u64, system as u64, idle as u64, nice as u64]
+}
+
+/// `/proc/stat`'s first line (user, nice, system, idle, ...), reordered like the macOS counters.
+#[cfg(target_os = "linux")]
+fn cpu_ticks() -> [u64; 4] {
+    let text = std::fs::read_to_string("/proc/stat").unwrap_or_default();
+    let fields: Vec<u64> = text.lines().next().unwrap_or("").split_whitespace().skip(1).filter_map(|f| f.parse().ok()).collect();
+    match fields.as_slice() {
+        [user, nice, system, idle, ..] => [*user, *system, *idle, *nice],
+        _ => [0; 4],
+    }
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
+fn cpu_ticks() -> [u64; 4] {
+    [0; 4]
 }
 
 /// The same page counts `vm_stat` prints. Why: sysinfo has no wired, compressed or cache figures.
@@ -606,6 +828,18 @@ fn memory_breakdown(system: &System) -> MemoryBreakdown {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn system_share_is_the_system_part_of_the_difference() {
+        assert_eq!(system_share([10, 20, 70, 0], [40, 60, 100, 0]), 40.0);
+        assert_eq!(system_share([5, 5, 5, 5], [5, 5, 5, 5]), 0.0);
+    }
+
+    #[test]
+    fn reads_turned_off_launchd_jobs() {
+        let text = "disabled services = {\n\t\"actions.runner.SENSE-IM.m2-pro-sun-1\" => disabled\n\t\"com.apple.ftp-proxy\" => enabled\n\t\"old.style\" => true\n}\n";
+        assert_eq!(parse_disabled(text), vec!["actions.runner.SENSE-IM.m2-pro-sun-1", "old.style"]);
+    }
 
     #[test]
     fn meminfo_cache_and_free() {
