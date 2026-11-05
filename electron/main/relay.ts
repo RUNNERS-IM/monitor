@@ -19,6 +19,10 @@ const RETRY_MAX_MS = 60 * 1000;
 const CLOSE_UNAUTHORIZED = 4401;
 const CLOSE_WRONG_APP = 4403;
 const CLOSE_REPLACED = 4409;
+/** Why: the server checks open connections every minute and closes them once the 1-hour token runs out, so a fresh
+ * token is fetched a little before and handed over with `auth` on the same connection. */
+const REFRESH_AHEAD_MS = 5 * 60 * 1000;
+const REFRESH_RETRY_MS = 60 * 1000;
 
 export type RelayStatus = "signedOut" | "connecting" | "connected";
 
@@ -73,6 +77,25 @@ export function startRelay(options: Options): void {
   let retryMs = RETRY_MIN_MS;
   let timer: ReturnType<typeof setTimeout> | null = null;
   let refreshedOnce = false;
+  let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+  /** The account the open connection signed in as, so a refreshed token for it can be handed over in place. */
+  let connectedEmail: string | null = null;
+
+  const scheduleRefresh = (ms?: number) => {
+    if (refreshTimer) clearTimeout(refreshTimer);
+    const expiry = account.accessTokenExpiry();
+    const wait = ms ?? (expiry === null ? null : Math.max(0, expiry - REFRESH_AHEAD_MS - Date.now()));
+    refreshTimer =
+      wait === null
+        ? null
+        : setTimeout(() => {
+            refreshTimer = null;
+            // Success comes back through account.onChange, which sends `auth`; "rejected" signs out there too.
+            void account.refresh().then((result) => {
+              if (!result.ok && result.reason === "network") scheduleRefresh(REFRESH_RETRY_MS);
+            });
+          }, wait);
+  };
 
   const schedule = (ms: number) => {
     if (timer) clearTimeout(timer);
@@ -87,6 +110,7 @@ export function startRelay(options: Options): void {
       return;
     }
     setStatus("connecting");
+    connectedEmail = account.current();
     // Why: Node's WebSocket can carry headers, so the token stays out of the address (and out of server logs).
     const ws = new WebSocket(RELAY_URL, { headers: { Authorization: `Bearer ${token}` } } as unknown as string[]);
     socket = ws;
@@ -104,10 +128,18 @@ export function startRelay(options: Options): void {
         refreshedOnce = false;
         sendState();
         beat = setInterval(sendState, STATE_MS);
+        scheduleRefresh();
       });
     });
     ws.addEventListener("message", (event) => {
-      let message: { type?: string; from?: string; id?: string; name?: string; args?: Record<string, unknown> };
+      let message: {
+        type?: string;
+        from?: string;
+        fromRole?: string;
+        id?: string;
+        name?: string;
+        args?: Record<string, unknown>;
+      };
       try {
         message = JSON.parse(String(event.data));
       } catch {
@@ -115,6 +147,12 @@ export function startRelay(options: Options): void {
       }
       if (message.type !== "command" || !message.id) return;
       const reply = (ok: boolean, data: unknown) => send({ type: "result", to: message.from, id: message.id, ok, data });
+      // Why: the relay fills in fromRole from the sender's hello, so only the account's phones can act on this
+      // computer; another computer on the same account sees it but cannot quit its apps or empty its folders.
+      if (message.fromRole !== "viewer") {
+        reply(false, { error: "not allowed" });
+        return;
+      }
       const handler = message.name ? options.commands[message.name] : undefined;
       if (!handler) {
         reply(false, { error: "unknown command" });
@@ -131,6 +169,8 @@ export function startRelay(options: Options): void {
     ws.addEventListener("close", (event) => {
       if (beat) clearInterval(beat);
       if (socket !== ws) return;
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = null;
       socket = null;
       if (!account.accessToken()) {
         setStatus("signedOut");
@@ -140,7 +180,15 @@ export function startRelay(options: Options): void {
       if (event.code === CLOSE_WRONG_APP || event.code === CLOSE_REPLACED) return;
       if (event.code === CLOSE_UNAUTHORIZED && !refreshedOnce) {
         refreshedOnce = true;
-        void account.refresh().then((next) => (next ? schedule(0) : setStatus("signedOut")));
+        void account.refresh().then((result) => {
+          if (result.ok) schedule(0);
+          else if (result.reason === "network") {
+            // Why: no internet is not a sign-out. Keep the sign-in and try again, refreshing again on the next 4401.
+            refreshedOnce = false;
+            schedule(retryMs);
+            retryMs = Math.min(RETRY_MAX_MS, retryMs * 2);
+          } else setStatus("signedOut");
+        });
         return;
       }
       schedule(retryMs);
@@ -151,6 +199,12 @@ export function startRelay(options: Options): void {
   };
 
   account.onChange(() => {
+    const token = account.accessToken();
+    if (token && socket?.readyState === WebSocket.OPEN && account.current() === connectedEmail) {
+      send({ type: "auth", token });
+      scheduleRefresh();
+      return;
+    }
     const old = socket;
     socket = null;
     old?.close();

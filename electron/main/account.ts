@@ -91,23 +91,41 @@ export function accessToken(): string | null {
   return load()?.tokens.accessToken ?? null;
 }
 
-let refreshing: Promise<string | null> | null = null;
+/** Why: same outcomes as runners-app-kit refreshSession(). Only "rejected" ends the sign-in; "network" means the
+ * server could not be reached or was briefly unwell, so the tokens stay and the caller tries again later. */
+export type RefreshResult = { ok: true; token: string } | { ok: false; reason: "rejected" | "network" | "signedOut" };
 
-/** Gets a new access token after the old one was turned away; signs out when the refresh token is refused too. */
-export function refresh(): Promise<string | null> {
-  refreshing ??= (async () => {
+let refreshing: Promise<RefreshResult> | null = null;
+
+/** Gets a new access token; signs out only when the server refuses the refresh token (401). */
+export function refresh(): Promise<RefreshResult> {
+  refreshing ??= (async (): Promise<RefreshResult> => {
     const was = load();
-    if (!was) return null;
+    if (!was) return { ok: false, reason: "signedOut" };
     try {
       const tokens = await post<Tokens>("/api/mobile/auth/refresh", { refreshToken: was.tokens.refreshToken });
       store({ ...was, tokens });
-      return tokens.accessToken;
+      return { ok: true, token: tokens.accessToken };
     } catch (error) {
-      if (error instanceof ApiError && error.status === 401) store(null);
-      return null;
+      if (error instanceof ApiError && error.status === 401) {
+        store(null);
+        return { ok: false, reason: "rejected" };
+      }
+      return { ok: false, reason: "network" };
     }
   })().finally(() => {
     refreshing = null;
   });
   return refreshing;
+}
+
+/** When the access token runs out, in milliseconds since 1970, or null when it cannot be read. */
+export function accessTokenExpiry(): number | null {
+  const token = accessToken();
+  try {
+    const exp = JSON.parse(Buffer.from(token!.split(".")[1], "base64url").toString("utf8")).exp;
+    return typeof exp === "number" ? exp * 1000 : null;
+  } catch {
+    return null;
+  }
 }
