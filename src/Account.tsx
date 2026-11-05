@@ -3,7 +3,7 @@
 // relay, and Sign Out.
 import { useEffect, useRef, useState } from "react";
 import { t } from "./i18n";
-import { account, fitHeight, onAccount, signIn, signOut, type AccountState } from "./native";
+import { account, fitHeight, onAccount, reconnect, signIn, signOut, type AccountState } from "./native";
 import "./App.css";
 import "./runners-window.css";
 import "./Account.css";
@@ -59,7 +59,13 @@ export default function Account() {
               <span className={`account-value status-${state.status}`}>{t(`phone.status.${state.status}`)}</span>
             </div>
           </div>
+          {state.status === "elsewhere" && <p className="account-problem">{t("phone.elsewhereNote")}</p>}
           <div className="account-buttons">
+            {state.status === "elsewhere" && (
+              <button type="button" className="rw-button default" onClick={() => void reconnect()}>
+                {t("phone.reconnect")}
+              </button>
+            )}
             <button type="button" className="rw-button" onClick={() => void signOut().then(() => account().then(setState))}>
               {t("phone.signOut")}
             </button>

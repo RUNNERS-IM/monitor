@@ -14,6 +14,8 @@ export interface Sampler {
   quitApp(name: string): Promise<string>;
   /** Resolves to the Unix time the runner comes back, as text. */
   pauseRunner(name: string): Promise<string>;
+  /** Starts a paused runner now. */
+  resumeRunner(name: string): Promise<string>;
 }
 
 export interface Native {
@@ -26,6 +28,8 @@ export interface Native {
   /** A made-up cleanup result as JSON (debug runs only, `MONITOR_DEMO=1`). */
   demoCleanup(): string | null;
   nowSecs(): number;
+  /** The bundle id of the app in front (macOS), or null. */
+  frontBundleId(): string | null;
   barsPng(h0: number, h1: number, h2: number, r: number, g: number, b: number): Buffer;
   /** The tray picture with `label` drawn after it in the same colour (macOS: needs the system font, see `canLabel`). */
   barsLabelPng(h0: number, h1: number, h2: number, r: number, g: number, b: number, label: string): Buffer;

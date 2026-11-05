@@ -17,9 +17,12 @@ const pct = (used: number, total: number) => (total > 0 ? Math.round((used * 100
 const gb = (bytes: number) => `${(bytes / GB).toFixed(1)} GB`;
 const clock = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 const slowOf = (u: PeerUsage | null) => !!u && (u.slowMemory || u.slowCpu);
+/** Why: the panel colours memory by macOS's pressure level, and a Mac uses most of its memory on purpose, so this
+ *  window does the same; otherwise one Mac looked fine in the panel and slow here. */
+const memoryTone = (u: PeerUsage) => (u.memoryPressure === "critical" ? "full" : u.memoryPressure === "warn" ? "high" : "ok");
 
-function Bar({ value }: { value: number }) {
-  const tone = value >= 90 ? "full" : value >= 75 ? "high" : "ok";
+function Bar({ value, tone: given }: { value: number; tone?: "ok" | "high" | "full" }) {
+  const tone = given ?? (value >= 90 ? "full" : value >= 75 ? "high" : "ok");
   return (
     <span className="c-bar">
       <i className={tone} style={{ width: `${Math.min(100, value)}%` }} />
@@ -27,11 +30,11 @@ function Bar({ value }: { value: number }) {
   );
 }
 
-function Line({ label, value, bar }: { label: string; value: string; bar?: number }) {
+function Line({ label, value, bar, tone }: { label: string; value: string; bar?: number; tone?: "ok" | "high" | "full" }) {
   return (
     <div className="c-line">
       <span>{label}</span>
-      {bar !== undefined && <Bar value={bar} />}
+      {bar !== undefined && <Bar value={bar} tone={tone} />}
       <b>{value}</b>
     </div>
   );
@@ -49,11 +52,16 @@ function CardView({ card, chosen, onChoose }: { card: Card; chosen: boolean; onC
       {u ? (
         <>
           <Line label={t("panel.cpu")} value={`${Math.round(u.cpuPercent)}%`} bar={u.cpuPercent} />
-          <Line label={t("panel.memory")} value={`${pct(u.memoryUsed, u.memoryTotal)}%`} bar={pct(u.memoryUsed, u.memoryTotal)} />
+          <Line label={t("panel.memory")} value={`${pct(u.memoryUsed, u.memoryTotal)}%`} bar={pct(u.memoryUsed, u.memoryTotal)} tone={memoryTone(u)} />
           <Line label={t("panel.disk")} value={`${pct(u.diskUsed, u.diskTotal)}%`} bar={pct(u.diskUsed, u.diskTotal)} />
+          {card.state === "noAnswer" && (
+            <div className="c-off">{card.at ? t("computers.noAnswerSince", { time: clock(card.at) }) : t("computers.noAnswer")}</div>
+          )}
         </>
       ) : (
-        <div className="c-off">{card.state === "offline" ? t("computers.offline") : t("computers.noMonitor")}</div>
+        <div className="c-off">
+          {card.state === "offline" ? t("computers.offline") : card.state === "noAnswer" ? t("computers.noAnswer") : t("computers.noMonitor")}
+        </div>
       )}
     </button>
   );

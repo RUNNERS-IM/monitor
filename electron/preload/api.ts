@@ -3,11 +3,15 @@
 export type MenuCommand = "usage" | "phone" | "login" | "autoUpdate" | "about" | "updates" | "help" | "quit";
 
 /** The RUNNERS account this computer is signed in with, and whether it is on the relay for the phone app. */
-export type AccountState = { email: string | null; status: "signedOut" | "connecting" | "connected" };
+export type AccountState = { email: string | null; status: "signedOut" | "connecting" | "connected" | "elsewhere" };
 
 export type MenuState = { openAtLogin: boolean; autoUpdate: boolean };
 
 export type CleanupKind = "cache" | "packages" | "build" | "trash" | "docker" | "simulators" | "wallpapers" | "vms" | "models";
+
+/** What Quit did (native/src/actions.rs QuitReport): whether it ended within a few seconds, how many of its
+ *  processes had already ended, and the ones that could not be asked. */
+export type QuitReport = { gone: boolean; alreadyGone: number; failed: string[] };
 
 /** What emptying did: bytes freed and recently used folders it kept. */
 export type Emptied = { freed: number; skipped: number };
@@ -22,7 +26,7 @@ export type PeerUsage = {
   memoryPressure: "normal" | "warn" | "critical"; diskUsed: number; diskTotal: number; slowMemory: boolean; slowCpu: boolean;
   topMemory: { name: string; memory: number }[]; claudeSessions: number; runnersBusy: number; runnersIdle: number; cleanable: number | null;
 };
-export type Peer = { name: string; state: "ok" | "noMonitor" | "offline"; usage: PeerUsage | null; at: number | null };
+export type Peer = { name: string; state: "ok" | "noAnswer" | "noMonitor" | "offline"; usage: PeerUsage | null; at: number | null };
 
 export type MonitorApi = {
   /** The newest reading (JSON shape in src/types.ts), or null before the first one. */
@@ -32,11 +36,13 @@ export type MonitorApi = {
   /** The cleanup row was opened: measures again if the numbers are more than half an hour old. */
   cleanupOpened: () => Promise<void>;
   /** Asks an app from the last reading to quit like ⌘Q; rejects with the reason when it cannot. */
-  quitApp: (name: string) => Promise<void>;
+  quitApp: (name: string) => Promise<QuitReport>;
   /** Asks first, then deletes the cleanable folders of one kind; null when the person said no. */
   emptyCleanup: (kind: CleanupKind) => Promise<Emptied | null>;
   /** Pauses a GitHub runner for an hour (macOS); rejects with the reason when it cannot. */
   pauseRunner: (name: string) => Promise<void>;
+  /** Starts a paused runner now instead of at the end of its hour. */
+  resumeRunner: (name: string) => Promise<void>;
   /** The other computers on the tailnet, slow ones first; empty when Tailscale is off. */
   peers: () => Promise<Peer[]>;
   /** This computer in the same shape, for the first card of the All Computers window. */
@@ -45,6 +51,8 @@ export type MonitorApi = {
   openComputers: () => Promise<void>;
   /** Calls back each time the panel is about to show; returns a function that stops it. */
   onShown: (listener: () => void) => () => void;
+  /** The panel was hidden; it stops asking for readings until it is shown again. */
+  onHidden: (listener: () => void) => () => void;
   /** Whether the OS blurs what is behind the window; the page draws a solid background when it does not. */
   translucent: () => Promise<boolean>;
   /** Sets the window's content height so it fits the page. */
@@ -71,4 +79,6 @@ export type MonitorApi = {
   /** Null when signed in; "wrong" for a refused email or password, "network" when the server could not be reached. */
   signIn: (email: string, password: string) => Promise<"wrong" | "network" | null>;
   signOut: () => Promise<void>;
+  /** Joins the relay again after another connection with this computer's id took its place. */
+  reconnect: () => Promise<void>;
 };

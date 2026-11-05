@@ -14,8 +14,9 @@ import * as relay from "./relay";
 import { tailnet } from "./tailnet";
 import { releaseNoteLines } from "./releaseNotes";
 import { readSettings, writeSettings } from "./settings";
-import { noteFrontApp, suggestions, type Suggestion } from "./suggest";
+import { noteCpu, noteFrontApp, suggestions, type Suggestion } from "./suggest";
 import { createTray, showReading, type Level } from "./tray";
+import type { QuitReport } from "../preload/api";
 import { diskPercent, type Snapshot } from "./types";
 import { checkNow, displayVersion, startUpdates } from "./updates";
 import { answerUpdate, askUpdate, createPanel, placeUnderTray, showAbout, showAccount, showComputers, showComputersHidden, hiddenPage, TRANSLUCENT, updateOffer } from "./windows";
@@ -60,7 +61,7 @@ if (DEV && process.env.MONITOR_LANG) app.commandLine.appendSwitch("lang", proces
 
 type Reason = "memory" | "cpu";
 /** What the panel gets: the reading plus what only the app knows. */
-type PanelSnapshot = Snapshot & { suggestions: Suggestion[] };
+type PanelSnapshot = Snapshot & { suggestions: Suggestion[]; level: Level };
 
 let tray: Tray | null = null;
 let panel: BrowserWindow | null = null;
@@ -68,6 +69,25 @@ let sampler: Sampler | null = null;
 /** The newest reading. Why: one loop samples for both the tray and the panel, so opening the panel does not take
  *  extra readings that would cut CPU averages short and double the history. */
 let latest: Snapshot | null = null;
+/** The slow reasons and icon level as held for a minute (trackSlow). Why: the icon held them while the panel badge,
+ *  the right-click menu and the phone read the moment's value, so the four disagreed on a Mac near the line. */
+let heldNow: { held: Reason[]; level: Level } = { held: [], level: "fine" };
+
+/** This computer's Tailscale name (m2-pro-1), learned in the background; null without Tailscale. */
+let tailnetName: string | null = null;
+
+/** The reading with its slow flags replaced by the held ones, plus the level, for everything that shows them; and the
+ *  Tailscale name as the host, the name the All Computers window and the phones use (the system name otherwise). */
+function held(snap: Snapshot): Snapshot & { level: Level } {
+  if (DEMO) return { ...snap, level: snap.slowMemory || snap.slowCpu ? "warn" : "fine" };
+  return {
+    ...snap,
+    host: tailnetName ?? snap.host,
+    slowMemory: heldNow.held.includes("memory"),
+    slowCpu: heldNow.held.includes("cpu"),
+    level: heldNow.level,
+  };
+}
 /** Debug runs only: the same reading with made-up names, shown in the panel for public screenshots. */
 let latestDemo: Snapshot | null = null;
 type CleanupResult = { total: number; kinds?: { kind: string; bytes: number }[]; measuredAt: number };
@@ -80,7 +100,31 @@ let shownAt = 0;
 let hiddenByBlurAt = 0;
 /** Runners paused from the panel, by name, with the Unix time they come back.
  *  Why: a paused runner has no process, so without this it would simply vanish from the list. */
-const paused = new Map<string, number>();
+const paused = new Map<string, number>(Object.entries(readSettings().pausedRunners ?? {}));
+
+/** Keeps `paused` in settings, dropping pauses whose hour is over. */
+function savePaused(): void {
+  const now = Date.now() / 1000;
+  for (const [name, until] of paused) {
+    if (until <= now) paused.delete(name);
+  }
+  if (JSON.stringify(readSettings().pausedRunners ?? {}) !== JSON.stringify(Object.fromEntries(paused))) {
+    writeSettings({ pausedRunners: Object.fromEntries(paused) });
+  }
+}
+
+async function pauseRunner(name: string): Promise<number> {
+  const until = Number(await sampler!.pauseRunner(name));
+  paused.set(name, until);
+  savePaused();
+  return until;
+}
+
+async function resumeRunner(name: string): Promise<void> {
+  await sampler!.resumeRunner(name);
+  paused.delete(name);
+  savePaused();
+}
 
 /** When each reason was last read as slow, and since when it has stayed slow (allowing the short gaps above). */
 const slow = {
@@ -123,7 +167,10 @@ function trackSlow(snap: Snapshot): { held: Reason[]; level: Level } {
 function notifyIfSlow(snap: Snapshot, held: Reason[], suggested: Suggestion[]): void {
   const now = Date.now();
   for (const reason of held) {
-    if (now - (slow.since.get(reason) ?? now) < SLOW_NOTICE_AFTER_MS) continue;
+    // Why: the native side turns CPU slow only after a full minute at 80%, so waiting another minute made the
+    // "busy for over a minute" notice come after two.
+    const wait = reason === "cpu" ? 0 : SLOW_NOTICE_AFTER_MS;
+    if (now - (slow.since.get(reason) ?? now) < wait) continue;
     const noticedOn = readSettings().noticedOn;
     if (noticedOn[reason] === today()) continue;
     writeSettings({ noticedOn: { ...noticedOn, [reason]: today() } });
@@ -145,7 +192,7 @@ function notifyIfSlow(snap: Snapshot, held: Reason[], suggested: Suggestion[]): 
       if (!panel?.isVisible()) togglePanel();
     });
     notice.on("action", () => {
-      if (offer) void sampler?.quitApp(offer.name).catch((error) => console.error("quit:", error));
+      if (offer) void quitApp(offer.name).catch((error) => console.error("quit:", error));
     });
     notice.show();
     // Why: the phone app gets the same notice, named after this computer, even when nobody is at it.
@@ -226,7 +273,7 @@ function run(command: Command): void {
 let linuxMenuText = "";
 function refreshLinuxMenu(): void {
   if (process.platform !== "linux" || !tray) return;
-  const menu = buildMenu(latest, menuState(), run);
+  const menu = buildMenu(latest && held(latest), menuState(), run);
   const text = menu.items.map((item) => item.label).join("\n") + JSON.stringify(menuState()) + nativeTheme.shouldUseDarkColors;
   if (text === linuxMenuText) return;
   linuxMenuText = text;
@@ -238,18 +285,13 @@ function panelSnapshot(): PanelSnapshot | null {
   const base = DEMO ? latestDemo : latest;
   if (!base) return null;
   const snap: PanelSnapshot = {
-    ...base,
+    ...held(base),
     runners: base.runners.map((r) => ({ ...r })),
     suggestions: suggestions(base, DEMO ? JSON.parse(native.demoCleanup() ?? "null") : latestCleanup, DEMO),
     // Why: an older native module's demo reading keeps the real system name; screenshots show the made-up one.
     ...(DEMO ? { os: DEMO_OS } : {}),
   };
-  const now = Date.now() / 1000;
   for (const [name, until] of paused) {
-    if (until <= now) {
-      paused.delete(name);
-      continue;
-    }
     const runner = snap.runners.find((r) => r.name === name);
     if (runner) runner.pausedUntil = until;
     else snap.runners.push({ name, busy: false, pausedUntil: until });
@@ -263,9 +305,16 @@ async function sampleLoop(): Promise<void> {
     const started = Date.now();
     try {
       const snap = JSON.parse(await sampler!.sample()) as Snapshot;
-      const { held, level } = trackSlow(snap);
+      heldNow = trackSlow(snap);
+      void tailnet()
+        .then((net) => (tailnetName = net?.self.name ?? null))
+        .catch(() => undefined);
+      const { held: slowNow, level } = heldNow;
       noteFrontApp();
-      notifyIfSlow(snap, held, suggestions(snap, latestCleanup));
+      noteCpu(snap);
+      // Why: the phones and the other computers read `paused` too, not only the panel when it opens.
+      if ([...paused.values()].some((until) => until <= Date.now() / 1000)) savePaused();
+      notifyIfSlow(snap, slowNow, suggestions(snap, latestCleanup));
       latest = snap;
       if (DEMO) {
         const demo = sampler!.demoSnapshot(currentLocale() === "ko");
@@ -361,8 +410,8 @@ function accentColor(): string | null {
 /** What this computer tells the other Monitors on the tailnet: names and numbers only. */
 function usage(from: Snapshot | null = latest): Usage | null {
   if (!from) return null;
-  const snap = from as Snapshot & { os?: string; claudeSessions?: unknown[] };
-  const running = snap.runners.filter((r) => !paused.has(r.name));
+  const snap = held(from) as Snapshot & { level: Level; os?: string; claudeSessions?: unknown[] };
+  const running = snap.runners.filter((r) => !paused.has(r.name) && !r.off);
   return {
     host: snap.host,
     os: DEMO ? DEMO_OS : (snap.os ?? ""),
@@ -375,6 +424,7 @@ function usage(from: Snapshot | null = latest): Usage | null {
     diskTotal: snap.diskTotal,
     slowMemory: snap.slowMemory,
     slowCpu: snap.slowCpu,
+    level: snap.level,
     topMemory: topApps(snap.topMemory),
     claudeSessions: snap.claudeSessions?.length ?? 0,
     runnersBusy: running.filter((r) => r.busy).length,
@@ -396,25 +446,36 @@ function phoneState(): unknown {
   if (!mine || !latest) return null;
   return {
     ...mine,
-    topCpu: latest.topCpu.slice(0, 5).map((a) => ({ name: a.name, cpuPercent: a.cpuPercent })),
+    // Why: the phone offers Quit only where this panel does, and says whether the app asks to save first.
+    topMemory: mine.topMemory.map((a, i) => ({ ...a, quit: latest!.topMemory[i]?.quit ?? null })),
+    topCpu: latest.topCpu.slice(0, 5).map((a) => ({ name: a.name, cpuPercent: a.cpuPercent, quit: a.quit })),
     cleanupKinds: latestCleanup?.kinds ?? [],
-    runners: latest.runners.map((r) => ({ name: r.name, busy: r.busy, pausedUntil: paused.get(r.name) ?? null })),
+    runners: latest.runners.map((r) => ({
+      name: r.name,
+      busy: r.busy,
+      off: r.off ?? false,
+      pausedUntil: paused.get(r.name) ?? null,
+    })),
   };
+}
+
+/** Quits the app named `name` in the last reading and says whether it ended within a few seconds. */
+async function quitApp(name: string): Promise<QuitReport> {
+  return JSON.parse(await sampler!.quitApp(name)) as QuitReport;
 }
 
 /** The phone app's commands (runners-app-kit docs/relay.md, "앱별 명령"). */
 const phoneCommands: Record<string, relay.Handler> = {
   "usage.get": async () => phoneState(),
   "app.quit": async (args) => {
-    await sampler!.quitApp(String(args.name ?? ""));
-    return null;
+    const { gone, alreadyGone } = await quitApp(String(args.name ?? ""));
+    return { gone, alreadyGone };
   },
   "cleanup.empty": async (args) => emptyKind(String(args.kind ?? "")),
-  "runner.pause": async (args) => {
-    const name = String(args.name ?? "");
-    const until = Number(await sampler!.pauseRunner(name));
-    paused.set(name, until);
-    return { until };
+  "runner.pause": async (args) => ({ until: await pauseRunner(String(args.name ?? "")) }),
+  "runner.resume": async (args) => {
+    await resumeRunner(String(args.name ?? ""));
+    return {};
   },
 };
 
@@ -431,14 +492,12 @@ function registerIpc(): void {
     if (DEMO || (latestCleanup && native.nowSecs() - latestCleanup.measuredAt < CLEANUP_STALE_SECS)) return;
     measureNow?.();
   });
-  ipcMain.handle("monitor:quitApp", async (_event, name: string) => {
-    await sampler!.quitApp(String(name));
-  });
+  ipcMain.handle("monitor:quitApp", (_event, name: string) => quitApp(String(name)));
   ipcMain.handle("monitor:emptyCleanup", (_event, kind: string) => emptyCleanup(String(kind)));
   ipcMain.handle("monitor:pauseRunner", async (_event, name: string) => {
-    const until = Number(await sampler!.pauseRunner(String(name)));
-    paused.set(String(name), until);
+    await pauseRunner(String(name));
   });
+  ipcMain.handle("monitor:resumeRunner", (_event, name: string) => resumeRunner(String(name)));
   // Why: demo names follow the page's language (`?lang=` in screenshot runs), not the app's.
   ipcMain.handle("monitor:peers", (event) =>
     DEMO ? demoPeers((new URL(event.sender.getURL()).searchParams.get("lang") ?? currentLocale()) === "ko") : peerList(),
@@ -483,6 +542,7 @@ function registerIpc(): void {
     }
   });
   ipcMain.handle("monitor:signOut", () => account.signOut());
+  ipcMain.handle("monitor:reconnect", () => relay.reconnect());
   ipcMain.on("monitor:answerUpdate", (_event, answer: unknown) => answerUpdate(answer === "install" ? "install" : "later"));
 }
 
@@ -559,6 +619,13 @@ async function captureHidden(folder: string): Promise<void> {
   panel?.webContents.send("monitor:shown");
   await sleep(1500);
   await save(panel, "panel");
+  // Why: the Quit buttons sit inside the CPU and memory rows, so those are captured open as well.
+  for (const section of ["cpu", "memory"]) {
+    const page = hiddenPage("panel", `expand=${section}`, 1000);
+    await sleep(2500);
+    await save(page, `panel-${section}`);
+    page.destroy();
+  }
   const open = showComputersHidden();
   await sleep(4000);
   await save(open, "computers");
@@ -572,16 +639,21 @@ function start(): void {
   login.applyDefault();
   sampler = new native.Sampler();
   panel = createPanel();
+  panel.on("hide", () => panel?.webContents.send("monitor:hidden"));
   panel.on("blur", () => {
     if (Date.now() - shownAt < BLUR_GRACE_MS) return;
     hiddenByBlurAt = Date.now();
     hidePanel();
   });
-  tray = createTray();
-  if (process.platform === "linux") refreshLinuxMenu();
-  else {
-    tray.on("click", togglePanel);
-    tray.on("right-click", () => tray?.popUpContextMenu(buildMenu(latest, menuState(), run)));
+  // Why: a capture run lasts about a minute and shows nothing, so a second menu-bar icon next to the installed Monitor only confuses.
+  if (!(DEV && process.env.MONITOR_CAPTURE)) {
+    const icon = createTray();
+    tray = icon;
+    if (process.platform === "linux") refreshLinuxMenu();
+    else {
+      icon.on("click", togglePanel);
+      icon.on("right-click", () => icon.popUpContextMenu(buildMenu(latest && held(latest), menuState(), run)));
+    }
   }
   nativeTheme.on("updated", () => {
     forgetIcons();

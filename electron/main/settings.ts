@@ -10,6 +10,12 @@ export type Settings = {
   updateLaterOn: string | null;
   /** The day (`Sat Oct 31 2026`) each slow-computer notice was last shown. Why: once a day, even across restarts. */
   noticedOn: Partial<Record<"memory" | "cpu", string>>;
+  /** When (Unix ms) the daily update check last reached GitHub. Why: a timer stops while the Mac sleeps, so a laptop kept
+   *  closed went days without a check; this lets launch and wake check when a day has passed. */
+  updateCheckedAt?: number;
+  /** Runners paused from the panel or a phone, by name, with the Unix time (seconds) they come back.
+   *  Why: a restart of Monitor inside the hour would otherwise show the runner as gone instead of paused. */
+  pausedRunners?: Record<string, number>;
   /** This computer's id on the relay (electron/main/relay.ts), made once so phones keep seeing the same computer. */
   deviceId?: string;
 };

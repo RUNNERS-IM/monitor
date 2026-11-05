@@ -30,10 +30,11 @@ function icon(name: string): Electron.NativeImage {
 }
 
 /** How the computer is doing, the same three levels the panel shows. */
-function status(snap: Snapshot): { key: string; dot: string } {
-  // Why: mirrors the panel badge, which is red when memory pressure is critical and orange for any other slowness.
-  if (!(snap.slowMemory || snap.slowCpu)) return { key: "menu.status.fine", dot: "dot-green" };
-  if (snap.memoryPressure === "critical") return { key: "menu.status.bad", dot: "dot-red" };
+function status(snap: Snapshot & { level?: "fine" | "warn" | "bad" }): { key: string; dot: string } {
+  // Why: the same held level as the icon and the panel badge (red when memory pressure is critical, orange otherwise).
+  const level = snap.level ?? (!(snap.slowMemory || snap.slowCpu) ? "fine" : snap.memoryPressure === "critical" ? "bad" : "warn");
+  if (level === "fine") return { key: "menu.status.fine", dot: "dot-green" };
+  if (level === "bad") return { key: "menu.status.bad", dot: "dot-red" };
   return { key: "menu.status.warn", dot: "dot-yellow" };
 }
 

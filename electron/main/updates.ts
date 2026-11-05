@@ -2,7 +2,7 @@
 // first about a minute after launch. A new version is downloaded first and only then does Monitor ask, so "Install Now"
 // restarts at once (the shared rule for all RUNNERS apps). Release builds only: a dev run is not a signed build,
 // so it has nothing to compare with or install.
-import { app, dialog } from "electron";
+import { app, dialog, powerMonitor } from "electron";
 import { autoUpdater, type ProgressInfo } from "electron-updater";
 import { currentLocale, t } from "./i18n";
 import { releaseNoteLines } from "./releaseNotes";
@@ -12,6 +12,8 @@ import { askUpdate, type UpdateAnswer } from "./windows";
 /** Wait after launch so a login start is not slowed down by the check. */
 const FIRST_CHECK_MS = 60_000;
 const CHECK_EVERY_MS = 24 * 60 * 60 * 1000;
+// Why: checking whether a day has passed is cheap, so a short tick catches up soon after a long sleep too.
+const TICK_MS = 60 * 60 * 1000;
 
 let busy = false;
 
@@ -24,9 +26,16 @@ export function startUpdates(): void {
   autoUpdater.autoInstallOnAppQuit = false;
   autoUpdater.on("error", (error) => console.error("update:", error));
   setTimeout(() => {
-    void check(false);
-    setInterval(() => void check(false), CHECK_EVERY_MS);
+    void checkIfDue();
+    setInterval(() => void checkIfDue(), TICK_MS);
   }, FIRST_CHECK_MS);
+  powerMonitor.on("resume", () => setTimeout(() => void checkIfDue(), FIRST_CHECK_MS));
+}
+
+/** The daily check, when the last one that reached GitHub is a day old (or there was none). */
+async function checkIfDue(): Promise<void> {
+  if (Date.now() - (readSettings().updateCheckedAt ?? 0) < CHECK_EVERY_MS) return;
+  await check(false);
 }
 
 /** "Check for Updates…" in the menu: same check, but also says when Monitor is already up to date. */
@@ -40,6 +49,7 @@ async function check(asked: boolean): Promise<void> {
   try {
     if (!app.isPackaged) throw new Error("a development build does not update");
     const result = await autoUpdater.checkForUpdates();
+    writeSettings({ updateCheckedAt: Date.now() });
     if (!result?.isUpdateAvailable) {
       if (asked) await tell(t("update.latest"));
       return;

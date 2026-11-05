@@ -24,7 +24,12 @@ const CLOSE_REPLACED = 4409;
 const REFRESH_AHEAD_MS = 5 * 60 * 1000;
 const REFRESH_RETRY_MS = 60 * 1000;
 
-export type RelayStatus = "signedOut" | "connecting" | "connected";
+/** "elsewhere": another connection with this computer's id took over (4409) or the sign-in belongs to another app (4403);
+ *  Monitor stays off the relay until Reconnect is pressed, since reconnecting by itself would knock the other off. */
+export type RelayStatus = "signedOut" | "connecting" | "connected" | "elsewhere";
+
+// Why: a notice is worth sending late when the connection comes back soon, but not hours later.
+const ALERT_KEEP_MS = 30 * 60 * 1000;
 
 /** A phone's command: what it is called and what came with it. Returns the result's data, or throws with the reason. */
 export type Handler = (args: Record<string, unknown>) => Promise<unknown>;
@@ -39,6 +44,9 @@ type Options = {
 
 let socket: WebSocket | null = null;
 let status: RelayStatus = "signedOut";
+/** Notices made while not connected, sent once the relay answers again. */
+let pendingAlerts: { title: string; body: string; at: number }[] = [];
+let restart: (() => void) | null = null;
 const statusListeners = new Set<(status: RelayStatus) => void>();
 
 function setStatus(next: RelayStatus): void {
@@ -67,9 +75,21 @@ function send(message: unknown): void {
   if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify(message));
 }
 
-/** Pushes a notice to the account's phones. Does nothing while signed out or not connected. */
+/** Pushes a notice to the account's phones; while not connected it waits (up to ALERT_KEEP_MS) for the connection. */
 export function sendAlert(title: string, body: string): void {
-  send({ type: "alert", title, body });
+  if (status === "connected" && socket?.readyState === WebSocket.OPEN) send({ type: "alert", title, body });
+  else pendingAlerts = [...pendingAlerts.filter((a) => a.title !== title), { title, body, at: Date.now() }];
+}
+
+function sendPendingAlerts(): void {
+  const now = Date.now();
+  for (const alert of pendingAlerts) if (now - alert.at < ALERT_KEEP_MS) send({ type: "alert", title: alert.title, body: alert.body });
+  pendingAlerts = [];
+}
+
+/** The Phone window's Reconnect, after another connection took this computer's place. */
+export function reconnect(): void {
+  restart?.();
 }
 
 /** Keeps this computer on the relay while an account is signed in, reconnecting after drops. */
@@ -123,8 +143,6 @@ export function startRelay(options: Options): void {
       void options.name().then((name) => {
         if (socket !== ws) return;
         send({ type: "hello", deviceId: deviceId(), projectName: PROJECT, name, role: "host" });
-        setStatus("connected");
-        retryMs = RETRY_MIN_MS;
         refreshedOnce = false;
         sendState();
         beat = setInterval(sendState, STATE_MS);
@@ -143,6 +161,15 @@ export function startRelay(options: Options): void {
       try {
         message = JSON.parse(String(event.data));
       } catch {
+        return;
+      }
+      // Why: the relay answers hello with the account's other devices only after it checked the token. Counting the
+      // connection as made (and the wait as over) only then keeps a server that accepts and then drops every connection
+      // from being retried without a pause.
+      if (message.type === "peers") {
+        retryMs = RETRY_MIN_MS;
+        setStatus("connected");
+        sendPendingAlerts();
         return;
       }
       if (message.type !== "command" || !message.id) return;
@@ -176,8 +203,11 @@ export function startRelay(options: Options): void {
         setStatus("signedOut");
         return;
       }
+      if (event.code === CLOSE_WRONG_APP || event.code === CLOSE_REPLACED) {
+        setStatus("elsewhere");
+        return;
+      }
       setStatus("connecting");
-      if (event.code === CLOSE_WRONG_APP || event.code === CLOSE_REPLACED) return;
       if (event.code === CLOSE_UNAUTHORIZED && !refreshedOnce) {
         refreshedOnce = true;
         void account.refresh().then((result) => {
@@ -211,5 +241,10 @@ export function startRelay(options: Options): void {
     retryMs = RETRY_MIN_MS;
     schedule(0);
   });
+  restart = () => {
+    if (status !== "elsewhere") return;
+    retryMs = RETRY_MIN_MS;
+    schedule(0);
+  };
   void connect();
 }
