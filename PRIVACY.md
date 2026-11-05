@@ -1,6 +1,6 @@
 # Monitor Privacy Policy
 
-Last updated: November 2, 2026
+Last updated: November 5, 2026
 
 Monitor is a Mac app made by Runners Co., Ltd that shows how busy a computer is. This policy covers every version of Monitor.
 
@@ -10,11 +10,11 @@ Nothing. Monitor has no account, no ads and no analytics, and it does not send a
 
 ## What Monitor reads on your computer
 
-Every few seconds Monitor reads CPU use, memory use and the free space on the system disk. It also reads the names of running processes, only to count `claude` processes and to see whether a GitHub Actions runner is waiting or working. It never reads what is inside a window, a file or a process. This happens only on your computer and is not stored or sent anywhere.
+Every few seconds Monitor reads CPU use, memory use and the free space on the system disk. It also reads the names of running processes, only to count `claude` processes, to see whether a GitHub Actions runner is waiting or working (and, from launchd, whether one is turned off), and to name the apps using the most. It notes which app is in front, only to avoid suggesting you quit an app you are using. It never reads what is inside a window, a file or a process. This happens only on your computer and is not stored or sent anywhere.
 
 ## Network
 
-Monitor connects to the network for two things: updates, and **Other computers on your Tailscale network** below. A minute after it starts and once a day after that, it reads
+Monitor connects to the network for two things: updates, and **Other computers on your Tailscale network** below. A minute after it starts, and once a day after that (checked again when the Mac wakes, so a day spent asleep is not skipped), it reads
 the list of releases and the update file (`latest-mac.yml`) from Monitor's GitHub
 release page to see whether there is a newer version; if there is, it downloads it, then asks you, and only installs it
 when you choose Install Now. Choosing Later means it does not ask again that day. The requests carry nothing about you or your computer; like any download, GitHub sees the
@@ -36,7 +36,7 @@ Questions: open an issue at https://github.com/RUNNERS-IM/monitor/issues.
 
 # Monitor 개인정보 처리방침
 
-최종 수정: 2026년 11월 2일
+최종 수정: 2026년 11월 5일
 
 Monitor는 Runners Co., Ltd가 만드는, 컴퓨터가 얼마나 바쁜지 보여 주는 맥 앱입니다. 이 방침은 모든 Monitor에 적용됩니다.
 
@@ -46,11 +46,11 @@ Monitor는 Runners Co., Ltd가 만드는, 컴퓨터가 얼마나 바쁜지 보�
 
 ## 컴퓨터 안에서 읽는 정보
 
-몇 초마다 CPU 사용률, 메모리 사용량, 시스템 디스크의 남은 공간을 읽습니다. 돌고 있는 프로세스의 이름도 읽는데, `claude` 프로세스 수를 세고 GitHub Actions 러너가 기다리는지 일하는지 보려는 것뿐입니다. 창·파일·프로세스 안의 내용은 읽지 않습니다. 이 일은 컴퓨터 안에서만 일어나고 저장하거나 보내지 않습니다.
+몇 초마다 CPU 사용률, 메모리 사용량, 시스템 디스크의 남은 공간을 읽습니다. 돌고 있는 프로세스의 이름도 읽는데, `claude` 프로세스 수를 세고, GitHub Actions 러너가 기다리는지 일하는지(그리고 launchd 에서 꺼 두었는지) 보고, 많이 쓰는 앱 이름을 보여 주려는 것뿐입니다. 맨 앞에 있는 앱이 무엇인지도 보는데, 지금 쓰는 앱을 끄라고 권하지 않으려는 것뿐입니다. 창·파일·프로세스 안의 내용은 읽지 않습니다. 이 일은 컴퓨터 안에서만 일어나고 저장하거나 보내지 않습니다.
 
 ## 인터넷 연결
 
-Monitor가 인터넷에 접속하는 일은 업데이트, 그리고 아래 **같은 Tailscale 망의 다른 컴퓨터** 두 가지입니다. 켜진 지 1분 뒤와 그 뒤 하루에 한 번 Monitor의 GitHub
+Monitor가 인터넷에 접속하는 일은 업데이트, 그리고 아래 **같은 Tailscale 망의 다른 컴퓨터** 두 가지입니다. 켜진 지 1분 뒤와 그 뒤 하루에 한 번(맥이 잠자기에서 깨어날 때도 다시 따져, 잠든 날을 건너뛰지 않음) Monitor의 GitHub
 릴리스 페이지에서 릴리스 목록과 업데이트 파일(`latest-mac.yml`)을 받아 새 버전이
 있는지 보고, 있으면 먼저 받아 둔 뒤 물어보고 **지금 설치** 를 고를 때만 설치합니다. **나중에** 를 고르면 그날은 다시
 묻지 않습니다. 이 요청에는 사용자나 컴퓨터에 관한 정보가
