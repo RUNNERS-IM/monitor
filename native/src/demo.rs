@@ -3,7 +3,7 @@
 //! running short on memory, CPU 62 %, disk 71 %), so each screenshot shows the same believable picture.
 
 use crate::cleanup::{Candidate, Cleanup, KindTotal};
-use crate::snapshot::{AppKind, AppUse, ClaudeSession, Pressure, Runner, Snapshot};
+use crate::snapshot::{AppKind, AppUse, ClaudeSession, Pressure, QuitKind, Runner, Snapshot};
 
 const GB: u64 = 1024 * 1024 * 1024;
 
@@ -24,6 +24,7 @@ pub fn apply(snap: &mut Snapshot, korean: bool) {
     snap.memory_used = gb(13.8);
     snap.memory_wired = gb(2.1);
     snap.memory_compressed = gb(0.8);
+    snap.cpu_system_percent = 6.0;
     snap.memory_cache = gb(4.0);
     snap.memory_free = gb(0.5);
     snap.swap_used = 6 * GB;
@@ -31,8 +32,10 @@ pub fn apply(snap: &mut Snapshot, korean: bool) {
         name: name.into(),
         cpu_percent: 4.0,
         memory: (gb * GB as f64) as u64,
-        quittable,
+        quit: quittable.then_some(QuitKind::App),
         kind: AppKind::App,
+        bundle_id: None,
+        quittable,
         sessions: None,
         folder: None,
         running_secs: None,
@@ -44,10 +47,11 @@ pub fn apply(snap: &mut Snapshot, korean: bool) {
     // Why: a dev server left running is the first thing the "worth doing now" card suggests, so the demo has one.
     let mut server = app("nuxt dev", 1.6, true);
     server.kind = AppKind::DevServer;
+    server.quit = Some(QuitKind::Process);
     server.folder = Some("my-site".into());
     server.running_secs = Some(18 * 3600);
     snap.top_memory =
-        vec![app("Google Chrome", 3.2, true), claude, server, app("Slack", 1.4, true), app("Prompt", 0.9, true)];
+        vec![app("Google Chrome", 3.2, true), claude, server, app("Slack", 1.4, true), app("Prompt", 0.9, false)];
     snap.top_cpu = snap.top_memory.clone();
     let session = |pid: u32, name: &str, mins: u64, busy: bool| ClaudeSession {
         pid,
@@ -69,7 +73,7 @@ pub fn apply(snap: &mut Snapshot, korean: bool) {
     ];
     snap.runners = [("runner-1", true), ("runner-2", false)]
         .iter()
-        .map(|(name, busy)| Runner { name: (*name).into(), busy: *busy, paused_until: None, dir: Default::default() })
+        .map(|(name, busy)| Runner { name: (*name).into(), busy: *busy, paused_until: None, off: false, dir: Default::default() })
         .collect();
     // Why: the heavy-job row comes from heavy-run, an in-house tool other people do not have.
     snap.heavy_job = None;
