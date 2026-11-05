@@ -92,11 +92,11 @@ const COMPUTERS_HEIGHT = 560;
  *  `onOpen(true)` while it is open, so the other computers are asked more often only then. */
 /** Debug runs only: a page in a window that is never shown, at the panel's width or the All Computers window's size,
  *  in one language (`?lang=`), for the homepage screenshots (MONITOR_SHOTS). */
-export function hiddenPage(page: "panel" | "computers", query: string): BrowserWindow {
+export function hiddenPage(page: "panel" | "computers", query: string, height?: number): BrowserWindow {
   const window = new BrowserWindow({
     width: page === "panel" ? PANEL_WIDTH : COMPUTERS_WIDTH,
     // Why: taller than the real window, so no language's last box is cut; the picture is trimmed afterwards.
-    height: page === "panel" ? 360 : COMPUTERS_HEIGHT + 400,
+    height: height ?? (page === "panel" ? 360 : COMPUTERS_HEIGHT + 400),
     useContentSize: true,
     show: false,
     frame: page !== "panel",

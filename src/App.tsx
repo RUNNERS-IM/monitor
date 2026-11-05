@@ -19,10 +19,10 @@ import {
   Workflow,
   type LucideIcon,
 } from "lucide-react";
-import { t } from "./i18n";
+import { locale, t } from "./i18n";
 import * as native from "./native";
-import type { CleanupKind, MenuCommand, MenuState, Peer } from "./native";
-import type { AppUse, Cleanup, Pressure, Snapshot, Suggestion } from "./types";
+import type { CleanupKind, MenuCommand, MenuState, Peer, QuitReport } from "./native";
+import type { AppUse, Cleanup, Pressure, QuitKind, Snapshot, Suggestion } from "./types";
 import "./runners-menu.css";
 import "./App.css";
 
@@ -96,6 +96,9 @@ function MiniBar({ value, tone }: { value: number; tone: Level }) {
   );
 }
 
+/** How long a button waits for its second press before it goes back to its first label. */
+const CONFIRM_MS = 5000;
+
 /** One line inside an open box: a name, its state, and maybe a button (Quit, Pause). */
 function Row({
   text,
@@ -106,12 +109,24 @@ function Row({
   text: string;
   state: string;
   tone?: "busy" | "quiet";
-  action?: { label: string; run: () => Promise<unknown> };
+  /** `confirm`, when set, is what the button says after a first press; only a second press runs it. */
+  action?: { label: string; confirm?: string; run: () => Promise<unknown> };
 }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [asking, setAsking] = useState(false);
+  useEffect(() => {
+    if (!asking) return;
+    const timer = setTimeout(() => setAsking(false), CONFIRM_MS);
+    return () => clearTimeout(timer);
+  }, [asking]);
   const press = () => {
     if (!action) return;
+    if (action.confirm && !asking) {
+      setAsking(true);
+      return;
+    }
+    setAsking(false);
     setPending(true);
     setError(null);
     action
@@ -127,7 +142,7 @@ function Row({
           <span className={`row-state ${tone ?? ""}`}>{state}</span>
           {action && (
             <button type="button" className="row-button" disabled={pending} onClick={press}>
-              {action.label}
+              {asking && action.confirm ? action.confirm : action.label}
             </button>
           )}
         </span>
@@ -209,6 +224,16 @@ function appState(app: AppUse, amount: string): string {
   return amount;
 }
 
+/** How long ago, in the panel's language ("3시간 전", "3 hours ago"). Why: measuring now runs every six hours or
+ *  less often, and a bare clock time ("22:10") did not say the number was from last night. */
+function formatAgo(unixSecs: number): string {
+  const secs = Math.max(0, Date.now() / 1000 - unixSecs);
+  const words = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  if (secs < 3600) return words.format(-Math.max(1, Math.round(secs / 60)), "minute");
+  if (secs < 86400) return words.format(-Math.round(secs / 3600), "hour");
+  return words.format(-Math.round(secs / 86400), "day");
+}
+
 function formatClock(unixSecs: number): string {
   return new Date(unixSecs * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
@@ -263,9 +288,14 @@ function cpuParts(snap: Snapshot): { parts: Part[]; total: number } {
   const shown = snap.topCpu.filter((app) => app.cpuPercent >= MIN_TOP_CPU);
   const apps = appParts(shown, (app) => app.cpuPercent, (app) => `${Math.round(app.cpuPercent)}%`);
   const used = apps.reduce((sum, part) => sum + part.size, 0);
-  const other = Math.max(0, snap.cpuPercent - used);
+  const rest = Math.max(0, snap.cpuPercent - used);
+  // Why: kernel time (compressing memory, swapping) belongs to no app; mixed into "other apps" it sent people looking
+  // for an app to quit when the real cause was memory. Capped by the rest, since apps' own system calls count as both.
+  const macos = Math.min(rest, snap.cpuSystemPercent ?? 0);
+  const other = rest - macos;
   const parts: Part[] = [
     ...apps,
+    { key: "macos", label: t("slow.macos"), amount: `${Math.round(macos)}%`, size: macos, colour: "#8e8e93" },
     { key: "other", label: t("slow.other"), amount: `${Math.round(other)}%`, size: other, colour: "var(--other-apps)" },
   ];
   return { parts: parts.filter((part) => part.size > 0), total: Math.max(100, used + other) };
@@ -303,6 +333,17 @@ function diskParts(snap: Snapshot, cleanup: Cleanup | null): { parts: Part[]; to
   return { parts: parts.filter((part) => part.size > 0), total: snap.diskTotal };
 }
 
+/** What Quit did, in a few words: ended or still running, plus processes that had ended already or could not be asked. */
+function quitResult(report: QuitReport, kind: QuitKind): string {
+  return [
+    report.gone ? t("quit.gone") : t(kind === "app" ? "quit.stillApp" : "quit.still"),
+    report.alreadyGone > 0 ? t("quit.alreadyGone", { count: report.alreadyGone }) : null,
+    report.failed.length > 0 ? t("quit.failed", { count: report.failed.length }) : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
 const cleanError = (e: unknown) => String(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, "") : e);
 
 /** One line under the bar: colour square, name, amount, and Quit for an app or Empty for a cleanable kind. */
@@ -327,12 +368,15 @@ function Legend({ part }: { part: Part }) {
       .finally(() => setPending(false));
   };
   const quit = () => {
-    if (!app) return;
+    if (!app?.quit) return;
+    const kind = app.quit;
     setPending(true);
     setError(null);
+    setResult(null);
     native
       .quitApp(app.name)
-      .catch((e) => setError(String(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, "") : e)))
+      .then((report) => setResult(quitResult(report, kind)))
+      .catch((e) => setError(cleanError(e)))
       .finally(() => setPending(false));
   };
   const note = app?.sessions != null ? t("slow.claudeNote") : null;
@@ -342,9 +386,9 @@ function Legend({ part }: { part: Part }) {
         <span className="swatch" style={{ background: part.colour }} aria-hidden />
         <span className="legend-label">{part.label}</span>
         <span className="legend-amount">{part.amount}</span>
-        {app?.quittable && (
+        {app?.quit && (
           <button type="button" className="row-button" disabled={pending} onClick={quit}>
-            {t("slow.quit")}
+            {pending ? t("quit.running") : t("slow.quit")}
           </button>
         )}
         {part.empty && (
@@ -370,7 +414,7 @@ function SuggestionLine({ item }: { item: Suggestion }) {
     setError(null);
     const work =
       item.action === "quit"
-        ? native.quitApp(item.name).then(() => t("suggest.quitDone"))
+        ? native.quitApp(item.name).then((report) => quitResult(report, item.quit))
         : native.emptyCleanup(item.kind).then((freed) => (freed ? t("empty.done", { size: formatGb(freed.freed) }) : null));
     work
       .then((text) => text && setDone(text))
@@ -473,9 +517,20 @@ function useFitWindow(ref: React.RefObject<HTMLElement | null>) {
   });
 }
 
-function usePolling<T>(load: () => Promise<T | null>, everyMs: number): T | null {
+/** Whether the panel is on screen. Why: a hidden panel that kept asking every few seconds redrew about 28,800 times a
+ *  day for nobody; it starts as shown so the first load and the hidden capture pages still read. */
+function usePanelShown(): boolean {
+  const [shown, setShown] = useState(true);
+  useEffect(() => native.onShown(() => setShown(true)), []);
+  useEffect(() => native.onHidden(() => setShown(false)), []);
+  return shown;
+}
+
+/** Reads now and then every `everyMs` while `active`; becoming active again reads at once. */
+function usePolling<T>(load: () => Promise<T | null>, everyMs: number, active = true): T | null {
   const [value, setValue] = useState<T | null>(null);
   useEffect(() => {
+    if (!active) return;
     let alive = true;
     const read = () =>
       load().then((next) => {
@@ -487,13 +542,14 @@ function usePolling<T>(load: () => Promise<T | null>, everyMs: number): T | null
       alive = false;
       clearInterval(timer);
     };
-  }, [load, everyMs]);
+  }, [load, everyMs, active]);
   return value;
 }
 
 function App() {
-  const snap = usePolling<Snapshot>(native.snapshot, REFRESH_MS);
-  const cleanup = usePolling<Cleanup>(native.cleanup, CLEANUP_REFRESH_MS);
+  const shown = usePanelShown();
+  const snap = usePolling<Snapshot>(native.snapshot, REFRESH_MS, shown);
+  const cleanup = usePolling<Cleanup>(native.cleanup, CLEANUP_REFRESH_MS, shown);
   // Why: a debug run can start with a row open (`VITE_MONITOR_EXPAND=work`) so it can be captured without clicking.
   const debugOpen = import.meta.env.DEV
     ? ((new URLSearchParams(location.search).get("expand") ?? import.meta.env.VITE_MONITOR_EXPAND) as Section | undefined) ?? null
@@ -504,7 +560,7 @@ function App() {
   // Why: every open starts folded, so the panel stays short (shared decision 2026-11-02 "[MONITOR] 패널 나누기" 1A);
   // the reason a computer is slow shows in the heading badge and "Worth doing now" instead.
   useEffect(() => native.onShown(() => setOpen(debugOpen)), [debugOpen]);
-  const others = usePolling<Peer[]>(native.peers, PEERS_REFRESH_MS);
+  const others = usePolling<Peer[]>(native.peers, PEERS_REFRESH_MS, shown);
 
   if (!snap) {
     return (
@@ -525,15 +581,35 @@ function App() {
   const spotlightBusy = snap.topCpu.some((app) => SPOTLIGHT.test(app.name) && app.cpuPercent >= MIN_TOP_CPU);
   const cpuBreakdown = cpuParts(snap);
   const memoryBreakdown = memoryParts(snap);
-  const quitNote = (parts: Part[]) => parts.some((part) => part.app?.quittable) && <div className="rm-note">{t("slow.quitNote")}</div>;
-  const idleRunners = snap.runners.filter((runner) => !runner.busy && !runner.pausedUntil).length;
-  const busyRunners = snap.runners.filter((runner) => runner.busy && !runner.pausedUntil).length;
+  // Why: a Mac app asks to save first, a dev server ends at once; the note says which the buttons above do.
+  const quitNote = (parts: Part[]) =>
+    (["app", "process"] as const)
+      .filter((kind) => parts.some((part) => part.app?.quit === kind))
+      .map((kind) => (
+        <div key={kind} className="rm-note">
+          {t(kind === "app" ? "slow.quitNote" : "slow.quitNoteProcess")}
+        </div>
+      ));
+  const working = snap.runners.filter((runner) => !runner.pausedUntil && !runner.off);
+  const idleRunners = working.filter((runner) => !runner.busy).length;
+  const busyRunners = working.filter((runner) => runner.busy).length;
+  const offRunners = snap.runners.filter((runner) => runner.off).length;
   const people = snap.claudeSessions.filter((session) => session.human).length;
   const jobs = snap.claudeSessions.length - people;
+  // Why: one way of counting for the summary, the open box and the memory row's "claude 세션 N개"; parts at zero are left
+  // out, so a Mac with no Claude and no runners shows no jobs row at all.
   const workValue = [
     ...(snap.heavyJob ? [t("summary.heavy")] : []),
-    jobs > 0 ? t("summary.claudeWithJobs", { count: people, jobs }) : t("summary.claude", { count: people }),
-    busyRunners > 0 ? t("summary.runnersBusy", { count: busyRunners }) : t("summary.runnersIdle", { count: idleRunners }),
+    ...(people > 0 ? [t("summary.claude", { count: people })] : []),
+    ...(jobs > 0 ? [t("summary.background", { count: jobs })] : []),
+    ...(busyRunners > 0 && idleRunners > 0
+      ? [t("summary.runnersMixed", { count: busyRunners + idleRunners, busy: busyRunners, idle: idleRunners })]
+      : busyRunners > 0
+        ? [t("summary.runnersBusy", { count: busyRunners })]
+        : idleRunners > 0
+          ? [t("summary.runnersIdle", { count: idleRunners })]
+          : []),
+    ...(working.length === 0 && offRunners > 0 ? [t("summary.runnersOff", { count: offRunners })] : []),
   ].join(" · ");
   const status = snap.slowMemory ? "slowMemory" : "slowCpu";
   const cpuTone = level(snap.cpuPercent);
@@ -545,7 +621,7 @@ function App() {
         <span className="host">{snap.host}</span>
         <span className="os">{snap.os}</span>
         {/* Why: a "normal" badge on every open said nothing, so the badge shows only when something is wrong. */}
-        {slow && <span className={`badge ${snap.memoryPressure === "critical" ? "full" : "high"}`}>{t(`status.${status}`)}</span>}
+        {slow && <span className={`badge ${snap.level === "bad" ? "full" : "high"}`}>{t(`status.${status}`)}</span>}
       </header>
       <div className="rm-separator" />
       {snap.suggestions.length > 0 && (
@@ -589,6 +665,8 @@ function App() {
         <Sparkline values={snap.memoryHistory} tone={memoryTone} />
         <div className="rm-note">{`\u2066${formatGb(snap.memoryUsed)} / ${formatGb(snap.memoryTotal)}\u2069`}</div>
         <Breakdown {...memoryBreakdown} label={t("panel.memory")} />
+        {/* Why: how much macOS had to compress is the clearest sign of how short memory is; it sits inside the apps' sizes. */}
+        {snap.memoryCompressed > 0 && <div className="rm-note">{t("slow.compressed", { size: formatGb(snap.memoryCompressed) })}</div>}
         {snap.swapUsed > 0 && <div className="rm-note">{t("slow.swap", { size: formatGb(snap.swapUsed) })}</div>}
         {quitNote(memoryBreakdown.parts)}
       </SummaryRow>
@@ -607,50 +685,65 @@ function App() {
         <Breakdown {...diskParts(snap, cleanup)} label={t("panel.disk")} />
         <div className="rm-note">{cleanup ? t("disk.cleanupNote") : t("panel.cleanupMeasuringNote")}</div>
       </SummaryRow>
-      <SummaryRow icon={SquareTerminal} label={t("panel.work")} value={workValue} open={open === "work"} onToggle={() => toggle("work")}>
-        {snap.heavyJob && (
-          <>
+      {workValue && (
+        <SummaryRow icon={SquareTerminal} label={t("panel.work")} value={workValue} open={open === "work"} onToggle={() => toggle("work")}>
+          {snap.heavyJob && (
+            <>
+              <Row
+                text={t("summary.heavy")}
+                state={formatDuration(snap.heavyJob.runningSecs)}
+                tone="busy"
+              />
+              <div className="rm-note">{t("panel.heavyNote")}</div>
+              <div className="group-gap" />
+            </>
+          )}
+          {snap.claudeSessions.length === 0 && <div className="rm-note">{t("panel.claudeEmpty")}</div>}
+          {snap.claudeSessions.map((session) => (
             <Row
-              text={t("summary.heavy")}
-              state={formatDuration(snap.heavyJob.runningSecs)}
-              tone="busy"
+              key={session.pid}
+              // Why: Monitor shows how much is running, never what a session is called or doing (shared decision 2026-11-02
+              // "[PROGRAM] 앱 연동 걷기" 4A); sessions belong to Prompt.
+              text={t("panel.claudeRow", { name: session.human ? "claude" : t("panel.claudeJob"), time: formatDuration(session.runningSecs) })}
+              state={t(session.busy ? "panel.claudeBusy" : "panel.claudeIdle")}
+              tone={session.busy ? "busy" : "quiet"}
             />
-            <div className="rm-note">{t("panel.heavyNote")}</div>
-            <div className="group-gap" />
-          </>
-        )}
-        {snap.claudeSessions.length === 0 && <div className="rm-note">{t("panel.claudeEmpty")}</div>}
-        {snap.claudeSessions.map((session) => (
-          <Row
-            key={session.pid}
-            // Why: Monitor shows how much is running, never what a session is called or doing (shared decision 2026-11-02
-            // "[PROGRAM] 앱 연동 걷기" 4A); sessions belong to Prompt.
-            text={t("panel.claudeRow", { name: session.human ? "claude" : t("panel.claudeJob"), time: formatDuration(session.runningSecs) })}
-            state={t(session.busy ? "panel.claudeBusy" : "panel.claudeIdle")}
-            tone={session.busy ? "busy" : "quiet"}
-          />
-        ))}
-        <div className="group-gap" />
-        <div className="rm-heading heading-icon">
-          <Workflow size={12} strokeWidth={ICON_STROKE} aria-hidden />
-          {t("panel.runner")}
-        </div>
-        {snap.runners.length === 0 && <div className="rm-note">{t("panel.runnerEmpty")}</div>}
-        {snap.runners.map((runner) =>
-          runner.pausedUntil ? (
-            <Row key={runner.name} text={runner.name} state={t("runner.paused", { time: formatClock(runner.pausedUntil) })} tone="quiet" />
-          ) : (
-            <Row
-              key={runner.name}
-              text={runner.name}
-              state={t(runner.busy ? "runner.busy" : "runner.idle")}
-              tone={runner.busy ? "busy" : "quiet"}
-              action={{ label: t("runner.pause"), run: () => native.pauseRunner(runner.name) }}
-            />
-          ),
-        )}
-        {snap.runners.some((runner) => runner.busy && !runner.pausedUntil) && <div className="rm-note">{t("runner.pauseBusyNote")}</div>}
-      </SummaryRow>
+          ))}
+          <div className="group-gap" />
+          <div className="rm-heading heading-icon">
+            <Workflow size={12} strokeWidth={ICON_STROKE} aria-hidden />
+            {t("panel.runner")}
+          </div>
+          {snap.runners.length === 0 && <div className="rm-note">{t("panel.runnerEmpty")}</div>}
+          {snap.runners.map((runner) =>
+            runner.off ? (
+              <Row key={runner.name} text={runner.name} state={t("runner.off")} tone="quiet" />
+            ) : runner.pausedUntil ? (
+              <Row
+                key={runner.name}
+                text={runner.name}
+                state={t("runner.paused", { time: formatClock(runner.pausedUntil) })}
+                tone="quiet"
+                action={{ label: t("runner.resume"), run: () => native.resumeRunner(runner.name) }}
+              />
+            ) : (
+              <Row
+                key={runner.name}
+                text={runner.name}
+                state={t(runner.busy ? "runner.busy" : "runner.idle")}
+                tone={runner.busy ? "busy" : "quiet"}
+                action={{
+                  label: t("runner.pause"),
+                  // Why: pausing a busy runner cancels its build, so it takes a second press that says so.
+                  confirm: runner.busy ? t("runner.pauseConfirm") : undefined,
+                  run: () => native.pauseRunner(runner.name),
+                }}
+              />
+            ),
+          )}
+          {snap.runners.some((runner) => runner.busy && !runner.pausedUntil) && <div className="rm-note">{t("runner.pauseBusyNote")}</div>}
+        </SummaryRow>
+      )}
       <SummaryRow
         icon={Recycle}
         label={t("panel.cleanup")}
@@ -660,7 +753,7 @@ function App() {
       >
         {cleanup?.top.map((item) => <Row key={item.path} text={item.path} state={formatGb(item.bytes)} tone="quiet" />)}
         <div className="rm-note">
-          {cleanup ? t("panel.cleanupNote", { time: formatClock(cleanup.measuredAt) }) : t("panel.cleanupMeasuringNote")}
+          {cleanup ? t("panel.cleanupNote", { time: formatAgo(cleanup.measuredAt) }) : t("panel.cleanupMeasuringNote")}
         </div>
       </SummaryRow>
       {others && others.length > 0 && <OthersRow peers={others} />}

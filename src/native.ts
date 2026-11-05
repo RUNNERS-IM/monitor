@@ -1,6 +1,6 @@
 // The page's way to the app: a thin wrapper over `window.monitor`, which the preload script provides
 // (electron/preload). Everything the page asks of the main process goes through here.
-import type { CleanupKind, Emptied, MenuCommand, MenuState, MonitorApi, Peer, PeerUsage, UpdateOffer } from "../electron/preload/api";
+import type { CleanupKind, Emptied, MenuCommand, MenuState, MonitorApi, Peer, PeerUsage, QuitReport, UpdateOffer } from "../electron/preload/api";
 import type { Cleanup, Snapshot } from "./types";
 
 declare global {
@@ -11,7 +11,7 @@ declare global {
 
 const api = () => window.monitor;
 
-export type { CleanupKind, Emptied, MenuCommand, MenuState, Peer, PeerUsage, UpdateOffer };
+export type { CleanupKind, Emptied, MenuCommand, MenuState, Peer, PeerUsage, QuitReport, UpdateOffer };
 
 /** Which window this page is: the tray panel, the About window or the update question. */
 export const page: "panel" | "about" | "update" | "computers" =
@@ -23,10 +23,12 @@ export const cleanupOpened = () => api().cleanupOpened();
 export const quitApp = (name: string) => api().quitApp(name);
 export const emptyCleanup = (kind: CleanupKind) => api().emptyCleanup(kind);
 export const pauseRunner = (name: string) => api().pauseRunner(name);
+export const resumeRunner = (name: string) => api().resumeRunner(name);
 export const peers = () => api().peers();
 export const selfUsage = () => api().selfUsage();
 export const openComputers = () => api().openComputers();
 export const onShown = (listener: () => void) => api().onShown(listener);
+export const onHidden = (listener: () => void) => api().onHidden(listener);
 export const fitHeight = (height: number) => api().fitHeight(height);
 export const version = () => api().version();
 export const openExternal = (url: string) => api().openExternal(url);

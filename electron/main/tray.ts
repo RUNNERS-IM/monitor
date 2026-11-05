@@ -72,9 +72,9 @@ export function showReading(tray: Tray, snap: Snapshot, now: Level): void {
   if (timer) clearTimeout(timer);
   const from = shown;
   const largest = Math.max(...from.map((h, i) => Math.abs(h - target[i])));
-  // Why: less than one pixel of change is not worth a moving picture; under a hundredth it is not worth redrawing at all,
-  // unless the number or its colour changed.
-  if (largest < 0.01) {
+  // Why: less than one pixel of change is not worth a moving picture, and under half a pixel the picture would come out
+  // the same, so it is not redrawn at all unless the number or its colour changed.
+  if (largest * PIXELS_PER_UNIT < 0.5) {
     if (changed && labelled && !tray.isDestroyed()) tray.setImage(barsImage(shown));
     return;
   }

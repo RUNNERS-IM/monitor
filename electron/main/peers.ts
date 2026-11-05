@@ -28,6 +28,9 @@ export type Usage = {
   diskTotal: number;
   slowMemory: boolean;
   slowCpu: boolean;
+  /** The icon's level, held for a minute like slowMemory and slowCpu: "fine", "warn" or "bad" (memory critical).
+   *  Optional because older Monitors do not send it. */
+  level?: "fine" | "warn" | "bad";
   topMemory: { name: string; memory: number }[];
   claudeSessions: number;
   runnersBusy: number;
@@ -39,8 +42,10 @@ export type Usage = {
 /** One other computer as the panel and the window show it. */
 export type Peer = {
   name: string;
-  /** `ok` answered; `noMonitor` is online but nothing answers on the port; `offline` per Tailscale. */
-  state: "ok" | "noMonitor" | "offline";
+  /** `ok` answered; `noAnswer` has Monitor but did not answer in time (busy, or asleep a moment); `noMonitor` is online
+   *  but nothing listens on the port; `offline` per Tailscale. */
+  state: "ok" | "noAnswer" | "noMonitor" | "offline";
+  /** For `noAnswer`, the last reading it gave, so a slow computer still shows its numbers. */
   usage: Usage | null;
   /** When the last answer came (ms), so an old reading can be told apart. */
   at: number | null;
@@ -99,8 +104,13 @@ async function ask(device: Device): Promise<Peer> {
     const res = await fetch(`http://${ip}:${PORT}${PATH}`, { signal: AbortSignal.timeout(ASK_TIMEOUT_MS) });
     if (!res.ok) throw new Error(String(res.status));
     return { name: device.name, state: "ok", usage: (await res.json()) as Usage, at: Date.now() };
-  } catch {
-    return { name: device.name, state: "noMonitor", usage: null, at: peers.get(device.name)?.at ?? null };
+  } catch (error) {
+    // Why: a computer short of memory answers late, and calling that "no Monitor" sent people off to reinstall it.
+    // Only a refused connection with no earlier answer means nothing is there.
+    const last = peers.get(device.name);
+    const refused = error instanceof TypeError && (error.cause as { code?: string } | undefined)?.code === "ECONNREFUSED";
+    if (refused && !last?.usage) return { name: device.name, state: "noMonitor", usage: null, at: last?.at ?? null };
+    return { name: device.name, state: "noAnswer", usage: last?.usage ?? null, at: last?.at ?? null };
   }
 }
 
