@@ -1,17 +1,11 @@
 #!/usr/bin/env bash
-# release 빌드 전에 버전을 올린다. Split · Prompt 와 같은 규칙:
-# 출시일(KST) 기준 2.{연도 끝자리}.{MMDD}. 같은 날 이미 낸 버전이 있으면 뒤에 .2, .3 을 붙인다
-# (GitHub 태그는 겹칠 수 없어서).
+# release 빌드 전에 버전을 올린다. 규칙은 아래 "버전 규칙" 칸에 있고 Prompt 와 같다.
 #
-# 앱(package.json, electron-updater) · Cargo 는 버전을 semver 로만 받아서 앱 안에 넣는 버전은 모양을 조금 바꾼다:
-#   - 앞자리 0 은 뺀다 (0105 -> 105). semver 는 0 으로 시작하는 숫자를 받지 않는다.
-#   - 같은 날 두 번째부터는 .2 대신 +2 를 붙인다. semver 는 숫자 세 칸까지만 받는다.
-#     -2 는 쓰지 않는다. Linux rpm 이 버전에 - 를 받지 않아 빌드가 멈추고, semver 가 -2 를 시험판으로 봐서
-#     2.6.1030 보다 낮게 친다. +2 는 semver 가 비교하지 않으므로 같은 날 판끼리는 자동 업데이트가 되지 않고
-#     다음 날 판부터 받는다(태그 v2.6.1030, v2.6.1030.2, v2.6.1030.3 → 앱 2.6.1030, 2.6.1030+2, 2.6.1030+3).
-# 태그 · 파일 이름은 Split 과 같은 모양(v2.6.1030.2)을 쓴다.
+# 예전에는 같은 날 두 번째 판을 2.6.1105.2(앱 안은 2.6.1105+2)로 냈다. semver 는 + 뒤를 비교하지 않아서
+# 같은 날 판끼리 자동 업데이트가 되지 않았다. 이제 셋째 자리 끝에 그날 번호를 붙여(2.6.110502) 같은 날에도 받는다.
+# Windows 파일 버전은 칸마다 65535 까지라 빌드 설정에서 2.6.1105.2 처럼 나눠 적는다(version-parts.cjs).
 #
-# 두 줄을 출력한다: 1) 태그 · 파일 이름용 버전 2) 앱 안에 넣은 버전
+# 두 줄을 출력한다: 1) 태그 · 파일 이름용 버전 2) 앱 안에 넣은 버전(지금은 둘이 같다)
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -37,18 +31,38 @@ if [ -n "$LAST_TAG" ] && git -C "$REPO_ROOT" cat-file -e "$LAST_TAG:RELEASE_NOTE
   fi
 fi
 
+# 버전 규칙(네 앱 같음, 2026-11-05 사용자 «2.6.1105 -> 2.6.110502 -> 2.6.110503»): 2.{연도 끝자리}.{MMDD}{NN}.
+#   날짜는 출시일(KST), NN 은 그날 몇 번째 출시인지를 두 자리로 적은 것(01 부터 99 까지). Prompt 와 같다.
+#   예) 그날 첫 출시 2.6.110501, 두 번째 2.6.110502. 1월 5일은 앞의 0 을 떼고 2.6.10501.
+#   셋째 자리가 날짜 순서대로 커지므로 electron-updater 같은 semver 비교가 그대로 맞는다.
+# 옛 규칙 태그도 그날 번호로 읽는다: v2.6.1105 → 01, v2.6.1105.3 → 03. 그래서 옛 규칙으로 세 번 낸 날의
+#   다음 판은 2.6.110504 이고, 언제나 옛 판보다 크다.
 YEAR=$(TZ=Asia/Seoul date +%Y)
 MMDD=$(TZ=Asia/Seoul date +%m%d)
-BASE="2.$((YEAR % 10)).$MMDD"
-APP_BASE="2.$((YEAR % 10)).$((10#$MMDD))"
-VERSION="$BASE"
-APP_VERSION="$APP_BASE"
-N=2
-while git -C "$REPO_ROOT" rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; do
-  VERSION="$BASE.$N"
-  APP_VERSION="$APP_BASE+$N"
-  N=$((N + 1))
-done
+# 10#: 0 으로 시작하는 0105 같은 값을 8진수로 읽지 않게 한다.
+DAY="2.$((YEAR % 10)).$((10#$MMDD))"
+LAST=0
+while IFS= read -r tag; do
+  suffix="${tag#v$DAY}"
+  if [ -z "$suffix" ]; then
+    nn=1
+  elif [[ "$suffix" =~ ^\.([0-9]+)$ ]]; then
+    nn=$((10#${BASH_REMATCH[1]}))
+  elif [[ "$suffix" =~ ^[0-9]{2}$ ]]; then
+    nn=$((10#$suffix))
+  else
+    continue
+  fi
+  [ "$nn" -gt "$LAST" ] && LAST=$nn
+done < <(git -C "$REPO_ROOT" tag -l "v$DAY" "v$DAY.*" "v$DAY[0-9][0-9]")
+NEXT=$((LAST + 1))
+if [ "$NEXT" -gt 99 ]; then
+  echo "오늘($DAY) 이미 99 번 출시했습니다. 두 자리 번호를 넘으므로 멈춥니다." >&2
+  exit 3
+fi
+VERSION="$DAY$(printf '%02d' "$NEXT")"
+# 앱 안에 넣는 버전도 같은 값이다(예전에는 2.6.1105+3 처럼 + 를 붙였다).
+APP_VERSION="$VERSION"
 
 # 두 파일의 버전이 어긋나면 앱 정보 창과 네이티브 모듈의 버전이 서로 달라지니 같이 고친다
 python3 - "$REPO_ROOT" "$APP_VERSION" <<'PY'
