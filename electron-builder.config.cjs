@@ -2,25 +2,19 @@
 //
 //   pnpm dist                      unsigned build for this computer, into dist.noindex/
 //   MONITOR_RELEASE=1 ...          release build: hardened runtime, Developer ID signing and notarization (CI)
-//   MONITOR_TAG=2.6.1030.2 ...     file names use the release tag instead of the in-app version (CI)
+//   MONITOR_TAG=2.6.110502 ...     file names use the release tag instead of the in-app version (CI)
 //
-// Why the tag in file names: the in-app version of a same-day release is 2.6.1030+2 (semver), and a "+" in a
-// GitHub release file name is not kept as is; the tag 2.6.1030.2 is what people see anyway.
+// Why the tag in file names: releases before 2026-11-05 had an in-app version like 2.6.1030+2, and a "+" in a
+// GitHub release file name is not kept as is. Now the tag and the in-app version are the same (2.6.110502).
 // The native module (native/monitor-native.<os>-<cpu>*.node) must be built for every CPU being packaged first
 // (pnpm native, plus --target x86_64-apple-darwin for Intel Macs).
 const isRelease = process.env.MONITOR_RELEASE === "1";
 const tag = process.env.MONITOR_TAG || "${version}";
 
-// Why: Windows keeps a file version as four numbers of at most 65535 each, so a "+2" cannot go in it. The same-day
-// number becomes the fourth number (2.6.1030+2 -> 2.6.1030.2, 2.6.1030 -> 2.6.1030.0), the same split Prompt uses
-// for its Windows version. The day part 2.6.MDD stays under 65535 (MDD is at most 1231). The semver version that
-// updates compare is not changed.
-const version = require("./package.json").version;
-const [base, sameDay = "0"] = version.split("+");
-const buildVersion = `${base}.${sameDay}`;
-// The version people see in Finder and brew: the release tag (2.6.1030.3, or 2.6.1030 for the first of the day),
-// the same form Split shows. electron-updater compares app.getVersion() (package.json), not this.
-const shownVersion = sameDay === "0" ? base : buildVersion;
+// Why: Windows keeps a file version as four numbers of at most 65535 each, so 2.6.110504 is written as
+// 2.6.1105.4 there (version-parts.cjs). electron-updater compares app.getVersion() (package.json), not this.
+const { versionParts } = require("./version-parts.cjs");
+const { shown: shownVersion, file: buildVersion } = versionParts(require("./package.json").version);
 
 /** @type {import('electron-builder').Configuration} */
 module.exports = {
