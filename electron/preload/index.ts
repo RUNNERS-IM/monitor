@@ -12,7 +12,7 @@ const api: MonitorApi = {
   resumeRunner: (name) => ipcRenderer.invoke("monitor:resumeRunner", name),
   peers: () => ipcRenderer.invoke("monitor:peers"),
   selfUsage: () => ipcRenderer.invoke("monitor:selfUsage"),
-  openComputers: () => ipcRenderer.invoke("monitor:openComputers"),
+  openComputers: (signIn) => ipcRenderer.invoke("monitor:openComputers", signIn === true),
   onShown: (listener) => {
     const relay = () => listener();
     ipcRenderer.on("monitor:shown", relay);
@@ -44,7 +44,13 @@ const api: MonitorApi = {
     ipcRenderer.on("monitor:account", relay);
     return () => ipcRenderer.off("monitor:account", relay);
   },
-  signIn: (email, password) => ipcRenderer.invoke("monitor:signIn", email, password),
+  signIn: (mode, email, password) => ipcRenderer.invoke("monitor:signIn", mode, email, password),
+  takeSignIn: () => ipcRenderer.invoke("monitor:takeSignIn"),
+  onSignIn: (listener) => {
+    const relay = () => listener();
+    ipcRenderer.on("monitor:signIn", relay);
+    return () => ipcRenderer.off("monitor:signIn", relay);
+  },
   signOut: () => ipcRenderer.invoke("monitor:signOut"),
   reconnect: () => ipcRenderer.invoke("monitor:reconnect"),
 };

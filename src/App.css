@@ -1,4 +1,4 @@
-/* Shared by every window. Colours and sizes come from runners-menu.css (panel) and runners-window.css (About, update). */
+/* Shared by every window. Colours and sizes come from runners-account/runners-menu.css (panel, copied from runners-app-kit/desktop) and runners-window.css (About, update). */
 :root {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
   /* Why: Korean otherwise breaks inside a word ("나아집 / 니다"); keep-all breaks at spaces and pretty avoids a lonely last word. */
@@ -361,59 +361,29 @@ body,
   font-size: 11px;
 }
 
-/* On/off switch at the right of a line (shared decision 2026-11-02 "[PROGRAM] 켬 끔 토글" 1B, the same as Remote's):
-   26 x 16 track, 12 px knob, 10 px travel, 0.15 s. On is the system accent colour. */
-:root {
-  --track: rgba(0, 0, 0, 0.08);
+/* Why: the account line has no value to make room for, so its label (an email, or the sign-in line) takes the width. */
+.summary-row.account-row .rm-label {
+  flex: 1 1 auto;
+  max-width: none;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --track: rgba(255, 255, 255, 0.12);
-  }
-}
-.switch {
-  position: relative;
-  cursor: pointer;
-}
-.switch input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-.knob {
-  position: relative;
+.summary-row.account-row .rm-trailing {
   flex: none;
-  width: 26px;
-  height: 16px;
-  border-radius: 8px;
-  background: var(--track);
-  transition: background 0.15s;
 }
-.knob::after {
-  content: "";
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #fff;
-  transition: transform 0.15s;
+/* The account line on top: the badge and the R mark take the icon's place, a little larger so a letter stays legible. */
+.account-row .account-badge {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  font-size: 10px;
+  cursor: inherit;
 }
-.switch input:checked + .knob {
-  background: var(--rm-accent);
-}
-.switch input:checked + .knob::after {
-  transform: translateX(10px);
-}
-[dir="rtl"] .switch input:checked + .knob::after {
-  transform: translateX(-10px);
-}
-[dir="rtl"] .knob::after {
-  left: auto;
-  right: 2px;
-}
-.switch input:focus-visible + .knob {
-  outline: 2px solid var(--rm-accent);
-  outline-offset: 2px;
+.account-row .account-mark {
+  display: inline-grid;
+  flex: none;
+  width: 18px;
+  place-items: center;
 }

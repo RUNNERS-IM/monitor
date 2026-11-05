@@ -1,18 +1,16 @@
-// Monitor talking to Monitor on the other computers of the same Tailscale network, with no server in between
-// (shared decision 2026-11-02: "computers are managed from the program"). Each Monitor answers on its Tailscale
-// address only, with numbers to look at; it takes no commands, so nobody can quit an app or delete files from afar.
-import { createServer, type Server } from "node:http";
-import { computers, allowed, tailnet, type Device } from "./tailnet";
+// The account's other computers: every Monitor signed in to the same RUNNERS account, found and asked through the
+// system server's relay instead of the Tailscale network (shared decision 2026-11-05 "네 앱 계정 · 연결 통일" 1A, which
+// replaced 2026-11-02's Tailscale-only way). Look only: another computer may ask this one for its numbers (`usage.get`)
+// and nothing else, so nobody can quit an app or delete files from afar.
+import * as relay from "./relay";
 
-/** Why: next to Remote's 7787, so the RUNNERS apps' ports sit together and are easy to allow in an ACL. */
-export const PORT = 7788;
-const PATH = "/monitor/v1/usage";
 /** How often the other computers are asked: slowly with nothing open, quickly while the All Computers window shows. */
 const SLOW_MS = 30 * 1000;
 const FAST_MS = 5 * 1000;
-const ASK_TIMEOUT_MS = 3000;
-/** Why: listening on a Tailscale address fails until Tailscale is up, so binding is retried this often. */
-const BIND_RETRY_MS = 60 * 1000;
+const ASK_TIMEOUT_MS = 4000;
+/** Why: a computer that left the relay (shut down, signed out, offline) stays on the list a while as Off, so a Mac
+ *  that went down is noticed instead of quietly disappearing; after a day it is dropped. */
+const KEEP_OFF_MS = 24 * 60 * 60 * 1000;
 const TOP_APPS = 5;
 
 /** What one computer tells the others. Kept small and free of paths: names and numbers only. */
@@ -42,86 +40,47 @@ export type Usage = {
 /** One other computer as the panel and the window show it. */
 export type Peer = {
   name: string;
-  /** `ok` answered; `noAnswer` has Monitor but did not answer in time (busy, or asleep a moment); `noMonitor` is online
-   *  but nothing listens on the port; `offline` per Tailscale. */
-  state: "ok" | "noAnswer" | "noMonitor" | "offline";
+  /** `ok` answered; `noAnswer` is on the relay but did not answer in time (busy, asleep a moment, or an older Monitor
+   *  that only answers phones); `offline` left the relay. */
+  state: "ok" | "noAnswer" | "offline";
   /** For `noAnswer`, the last reading it gave, so a slow computer still shows its numbers. */
   usage: Usage | null;
   /** When the last answer came (ms), so an old reading can be told apart. */
   at: number | null;
 };
 
-let servers: Server[] = [];
-let boundTo = "";
+/** By deviceId, so two Macs with the same name stay two cards. */
 let peers = new Map<string, Peer>();
 let fast = false;
 let wake: (() => void) | null = null;
 
-/** Starts answering on this computer's Tailscale addresses, and keeps the binding right when they change. */
-export function startServing(usage: () => Usage | null): void {
-  const bind = async () => {
-    const net = await tailnet(true);
-    const ips = net?.self.ips.filter((ip) => !ip.includes(":")) ?? [];
-    const key = ips.join(",");
-    if (key !== boundTo) {
-      for (const server of servers) server.close();
-      servers = ips.map((ip) => serve(ip, usage));
-      boundTo = key;
-    }
-  };
-  void bind();
-  setInterval(() => void bind(), BIND_RETRY_MS);
-}
-
-function serve(ip: string, usage: () => Usage | null): Server {
-  const server = createServer((req, res) => {
-    void (async () => {
-      // Why: only GET of the one path; anything else, or a device outside the tailnet, gets nothing to read.
-      if (req.method !== "GET" || req.url !== PATH || !(await allowed(req.socket.remoteAddress ?? ""))) {
-        res.writeHead(404).end();
-        return;
-      }
-      const body = usage();
-      if (!body) {
-        res.writeHead(503).end();
-        return;
-      }
-      res.writeHead(200, { "Content-Type": "application/json", "Cache-Control": "no-store" }).end(JSON.stringify(body));
-    })();
-  });
-  server.on("error", (error) => {
-    console.error(`peers: listen ${ip}:${PORT}:`, error.message);
-    boundTo = "";
-  });
-  server.listen(PORT, ip);
-  return server;
-}
-
-async function ask(device: Device): Promise<Peer> {
-  const ip = device.ips.find((value) => !value.includes(":"));
-  if (!device.online || !ip) return { name: device.name, state: "offline", usage: null, at: peers.get(device.name)?.at ?? null };
+async function askOne(deviceId: string, name: string): Promise<Peer> {
+  const last = peers.get(deviceId);
   try {
-    const res = await fetch(`http://${ip}:${PORT}${PATH}`, { signal: AbortSignal.timeout(ASK_TIMEOUT_MS) });
-    if (!res.ok) throw new Error(String(res.status));
-    return { name: device.name, state: "ok", usage: (await res.json()) as Usage, at: Date.now() };
-  } catch (error) {
-    // Why: a computer short of memory answers late, and calling that "no Monitor" sent people off to reinstall it.
-    // Only a refused connection with no earlier answer means nothing is there.
-    const last = peers.get(device.name);
-    const refused = error instanceof TypeError && (error.cause as { code?: string } | undefined)?.code === "ECONNREFUSED";
-    if (refused && !last?.usage) return { name: device.name, state: "noMonitor", usage: null, at: last?.at ?? null };
-    return { name: device.name, state: "noAnswer", usage: last?.usage ?? null, at: last?.at ?? null };
+    const usage = (await relay.ask(deviceId, "usage.get", {}, ASK_TIMEOUT_MS)) as Usage | null;
+    if (!usage) throw new Error("no reading yet");
+    return { name: usage.host || name, state: "ok", usage, at: Date.now() };
+  } catch {
+    // Why: a computer short of memory answers late; its last numbers stay up with the time they were read.
+    return { name: last?.name ?? name, state: "noAnswer", usage: last?.usage ?? null, at: last?.at ?? null };
   }
 }
 
 /** Asks every other computer in turn, forever: every 30 s, or every 5 s while `setFast(true)`. */
 export async function askLoop(): Promise<void> {
   for (;;) {
-    const net = await tailnet();
-    if (net) {
-      const answers = await Promise.all(computers(net).map(ask));
-      peers = new Map(answers.map((peer) => [peer.name, peer]));
-    } else peers = new Map();
+    const on = relay.currentStatus() === "connected" ? relay.otherHosts() : [];
+    const answers = await Promise.all(on.map(async (host) => [host.deviceId, await askOne(host.deviceId, host.name)] as const));
+    const next = new Map(answers);
+    // Why: while this computer itself is off the relay nothing can be known about the others, so they are not marked Off.
+    if (relay.currentStatus() === "connected") {
+      for (const [id, peer] of peers) {
+        if (next.has(id)) continue;
+        const since = peer.at ?? 0;
+        if (Date.now() - since < KEEP_OFF_MS) next.set(id, { ...peer, state: "offline", usage: null });
+      }
+      peers = next;
+    } else if (relay.currentStatus() === "signedOut") peers = new Map();
     await new Promise<void>((resolve) => {
       const timer = setTimeout(resolve, fast ? FAST_MS : SLOW_MS);
       wake = () => {
@@ -139,9 +98,14 @@ export function setFast(on: boolean): void {
   if (on && !was) wake?.();
 }
 
-/** The other computers, slow ones first, then by name. Empty when Tailscale is off. */
+/** Asks again now, as when this computer just joined the relay. */
+export function askNow(): void {
+  wake?.();
+}
+
+/** The other computers, slow ones first, then by name. Empty when signed out. */
 export function peerList(): Peer[] {
-  const rank = (peer: Peer) => (peer.usage && (peer.usage.slowMemory || peer.usage.slowCpu) ? 0 : peer.state === "ok" ? 1 : 2);
+  const rank = (peer: Peer) => (peer.usage && (peer.usage.slowMemory || peer.usage.slowCpu) && peer.state !== "offline" ? 0 : peer.state === "ok" ? 1 : 2);
   return [...peers.values()].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
 }
 

@@ -1,6 +1,6 @@
-// The RUNNERS account this computer is signed in with. Why: the phone app reaches this computer through the system
-// server's relay (shared decision 2026-11-03 "네 앱 컴퓨터판 · 휴대폰판 개발 방식"), and the relay only joins a computer
-// and a phone that sign in with the same account. Same calls as runners-app-kit (src/auth, src/api/request.ts).
+// The RUNNERS account this computer is signed in with. Why: the account's other computers and the phone app reach this
+// computer through the system server's relay (shared decisions 2026-11-03 "네 앱 컴퓨터판 · 휴대폰판 개발 방식" and
+// 2026-11-05 "네 앱 계정 · 연결 통일"), and the relay only joins devices that sign in with the same account. Same calls as runners-app-kit (src/auth, src/api/request.ts).
 import { app, safeStorage } from "electron";
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -75,10 +75,18 @@ export function onChange(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
-export async function signIn(email: string, password: string): Promise<void> {
-  // Why: the server checks the password as typed (6 to 20 letters and digits); it does the hashing itself.
-  const res = await post<{ user: { email: string }; tokens: Tokens }>("/api/mobile/auth/login", { email, password, projectName: PROJECT });
-  store({ email: res.user?.email ?? email, tokens: res.tokens });
+/** Signs in, or makes the account first. Throws an Error "bad" (wrong email or password), "exists" (the email already
+ *  has an account) or anything else (the server could not be reached), as the shared sign-in sheet expects. */
+export async function signIn(mode: "login" | "signup", email: string, password: string): Promise<void> {
+  try {
+    // Why: the server checks the password as typed (6 to 20 letters and digits); it does the hashing itself.
+    const res = await post<{ user: { email: string }; tokens: Tokens }>(`/api/mobile/auth/${mode}`, { email, password, projectName: PROJECT });
+    store({ email: res.user?.email ?? email, tokens: res.tokens });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 409) throw new Error("exists");
+    if (error instanceof ApiError && [400, 401, 404].includes(error.status)) throw new Error("bad");
+    throw error;
+  }
 }
 
 export async function signOut(): Promise<void> {

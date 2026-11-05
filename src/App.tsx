@@ -1,4 +1,4 @@
-// The tray panel, laid out like Split's macOS menu (src/runners-menu.css): a heading line with the computer's name,
+// The tray panel, laid out like Split's macOS menu (runners-menu.css, copied from runners-app-kit/desktop): a heading line with the computer's name,
 // the five summary rows (each opens its details in a box below it), "why it is slow" on top while the computer is
 // slow, then the menu commands. It is the one menu people use; the right-click native menu holds the same commands.
 import { useEffect, useRef, useState } from "react";
@@ -14,7 +14,6 @@ import {
   Power,
   Recycle,
   RefreshCw,
-  Smartphone,
   SquareTerminal,
   SquareX,
   Workflow,
@@ -22,9 +21,12 @@ import {
 } from "lucide-react";
 import { locale, t } from "./i18n";
 import * as native from "./native";
-import type { CleanupKind, MenuCommand, MenuState, Peer, QuitReport } from "./native";
+import type { AccountState, CleanupKind, MenuCommand, MenuState, Peer, QuitReport } from "./native";
+import { RunnersMark } from "./runners-account/runners-account";
+import { MenuSwitch } from "./runners-account/runners-menu";
+import "./runners-account/runners-account.css";
 import type { AppUse, Cleanup, Pressure, QuitKind, Snapshot, Suggestion } from "./types";
-import "./runners-menu.css";
+import "./runners-account/runners-menu.css";
 import "./App.css";
 
 type Section = "cpu" | "memory" | "disk" | "work" | "cleanup";
@@ -194,7 +196,45 @@ function SummaryRow({
   );
 }
 
-/** One line for the other computers on the tailnet: the slow ones by name, or that all are fine. Opens the window. */
+/** The panel's top line: the RUNNERS account. Signed out, it opens the All Computers window with the sign-in sheet;
+ *  signed in, it shows the email with the badge and how the connection stands, and opens the same window
+ *  (shared decision 2026-11-05 "네 앱 계정 · 연결 통일" 2A: one way in, the same look in the four apps). */
+function AccountRow() {
+  const [state, setState] = useState<AccountState | null>(null);
+  useEffect(() => {
+    void native.account().then(setState);
+    return native.onAccount(setState);
+  }, []);
+  if (!state) return null;
+  if (!state.email) {
+    return (
+      <button type="button" className="rm-item summary-row account-row" onClick={() => void native.openComputers(true)}>
+        <span className="account-mark" aria-hidden>
+          <RunnersMark size={16} />
+        </span>
+        <span className="rm-label">{t("account.signInLine")}</span>
+        <span className="rm-trailing">
+          <ChevronRight size={12} strokeWidth={ICON_STROKE} className="chevron" aria-hidden />
+        </span>
+      </button>
+    );
+  }
+  const status = state.status === "connected" ? null : t(`account.status.${state.status === "elsewhere" ? "elsewhere" : "connecting"}`);
+  return (
+    <button type="button" className="rm-item summary-row account-row" onClick={() => void native.openComputers()}>
+      <span className="ra-badge account-badge" aria-hidden>
+        {(state.email.match(/[\p{L}\p{N}]/u)?.[0] ?? "?").toUpperCase()}
+      </span>
+      <span className="rm-label">{state.email}</span>
+      <span className="rm-trailing">
+        {status && <span className={`value ${state.status === "elsewhere" ? "rm-high" : ""}`}>{status}</span>}
+        <ChevronRight size={12} strokeWidth={ICON_STROKE} className="chevron" aria-hidden />
+      </span>
+    </button>
+  );
+}
+
+/** One line for the account's other computers: the slow ones by name, or that all are fine. Opens the window. */
 function OthersRow({ peers }: { peers: Peer[] }) {
   const slow = peers.filter((p) => p.usage && (p.usage.slowMemory || p.usage.slowCpu)).map((p) => p.name);
   const answering = peers.filter((p) => p.state === "ok").length;
@@ -486,16 +526,11 @@ function Commands() {
   // Why: on/off lines are the icon for what they do and a switch at the right, like System Settings
   // (shared decision 2026-11-02 "[PROGRAM] 켬 끔 토글" 1B; icons from the shared table: power, refresh-cw).
   const toggle = (name: MenuCommand, icon: LucideIcon, label: string, on: boolean) => (
-    <label className="rm-item switch">
-      <Icon icon={icon} />
-      <span className="rm-label">{label}</span>
-      <input type="checkbox" checked={on} onChange={() => run(name)} />
-      <span className="knob" aria-hidden />
-    </label>
+    <MenuSwitch icon={<Icon icon={icon} />} label={label} checked={on} onChange={() => run(name)} />
   );
+
   return (
     <>
-      {line("phone", Smartphone, t("menu.phone"))}
       {toggle("login", Power, t("menu.openAtLogin"), !!state?.openAtLogin)}
       {toggle("autoUpdate", RefreshCw, t("menu.autoUpdate"), !!state?.autoUpdate)}
       <div className="rm-separator" />
@@ -619,6 +654,8 @@ function App() {
 
   return (
     <main ref={panelRef} className="panel">
+      <AccountRow />
+      <div className="rm-separator" />
       <header className="head">
         <span className="host">{snap.host}</span>
         <span className="os">{snap.os}</span>

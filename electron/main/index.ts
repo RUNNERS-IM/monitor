@@ -9,7 +9,7 @@ import { currentLocale, t } from "./i18n";
 import * as login from "./login";
 import { buildMenu, forgetIcons, type Command, type MenuState } from "./menu";
 import { native, type Sampler } from "./native";
-import { askLoop, demoPeers, peerList, setFast, startServing, topApps, type Usage } from "./peers";
+import { askLoop, askNow, demoPeers, peerList, setFast, topApps, type Usage } from "./peers";
 import * as relay from "./relay";
 import { tailnet } from "./tailnet";
 import { releaseNoteLines } from "./releaseNotes";
@@ -19,7 +19,7 @@ import { createTray, showReading, type Level } from "./tray";
 import type { QuitReport } from "../preload/api";
 import { diskPercent, type Snapshot } from "./types";
 import { checkNow, displayVersion, startUpdates } from "./updates";
-import { answerUpdate, askUpdate, createPanel, placeUnderTray, showAbout, showAccount, showComputers, showComputersHidden, hiddenPage, TRANSLUCENT, updateOffer } from "./windows";
+import { answerUpdate, askUpdate, createPanel, placeUnderTray, showAbout, showComputers, showComputersHidden, hiddenPage, TRANSLUCENT, updateOffer } from "./windows";
 
 const ISSUES_URL = "https://github.com/RUNNERS-IM/monitor/issues";
 const REFRESH_MS = 3000;
@@ -250,10 +250,6 @@ function run(command: Command): void {
       hidePanel();
       showAbout();
       break;
-    case "phone":
-      hidePanel();
-      showAccount();
-      break;
     case "updates":
       hidePanel();
       checkNow();
@@ -407,7 +403,7 @@ function accentColor(): string | null {
   return color ? `#${color.slice(0, 6)}` : null;
 }
 
-/** What this computer tells the other Monitors on the tailnet: names and numbers only. */
+/** What this computer tells the account's other Monitors: names and numbers only. */
 function usage(from: Snapshot | null = latest): Usage | null {
   if (!from) return null;
   const snap = held(from) as Snapshot & { level: Level; os?: string; claudeSessions?: unknown[] };
@@ -479,8 +475,16 @@ const phoneCommands: Record<string, relay.Handler> = {
   },
 };
 
-function openComputers(): void {
+/** Set when the All Computers window is opened to sign in, and taken by that window once it has loaded. */
+let signInWanted = false;
+
+function openComputers(signIn = false): void {
   hidePanel();
+  if (signIn) {
+    signInWanted = true;
+    // Why: when the window is already open it has loaded and will not ask again, so it is told directly.
+    for (const window of BrowserWindow.getAllWindows()) window.webContents.send("monitor:signIn");
+  }
   showComputers(setFast);
 }
 
@@ -509,7 +513,7 @@ function registerIpc(): void {
     const net = await tailnet();
     return mine && net ? { ...mine, host: net.self.name } : mine;
   });
-  ipcMain.handle("monitor:openComputers", () => openComputers());
+  ipcMain.handle("monitor:openComputers", (_event, signIn: unknown) => openComputers(signIn === true));
   ipcMain.handle("monitor:translucent", () => TRANSLUCENT);
   ipcMain.handle("monitor:version", () => displayVersion());
   ipcMain.handle("monitor:accentColor", () => accentColor());
@@ -533,13 +537,19 @@ function registerIpc(): void {
   ipcMain.on("monitor:closeWindow", (event) => BrowserWindow.fromWebContents(event.sender)?.close());
   ipcMain.handle("monitor:updateOffer", () => updateOffer());
   ipcMain.handle("monitor:account", () => ({ email: account.current(), status: relay.currentStatus() }));
-  ipcMain.handle("monitor:signIn", async (_event, email: string, password: string) => {
+  ipcMain.handle("monitor:signIn", async (_event, mode: unknown, email: unknown, password: unknown) => {
     try {
-      await account.signIn(String(email), String(password));
+      await account.signIn(mode === "signup" ? "signup" : "login", String(email), String(password));
       return null;
     } catch (error) {
-      return error instanceof account.ApiError && (error.status === 400 || error.status === 401) ? "wrong" : "network";
+      const code = error instanceof Error ? error.message : "";
+      return code === "bad" || code === "exists" ? code : "network";
     }
+  });
+  ipcMain.handle("monitor:takeSignIn", () => {
+    const wanted = signInWanted;
+    signInWanted = false;
+    return wanted;
   });
   ipcMain.handle("monitor:signOut", () => account.signOut());
   ipcMain.handle("monitor:reconnect", () => relay.reconnect());
@@ -566,12 +576,11 @@ function debugHooks(): void {
   const signInAs = process.env.MONITOR_ACCOUNT;
   if (signInAs && !account.current()) {
     const at = signInAs.indexOf(":");
-    void account.signIn(signInAs.slice(0, at), signInAs.slice(at + 1)).catch((error) => console.error("sign in:", error));
+    void account.signIn("login", signInAs.slice(0, at), signInAs.slice(at + 1)).catch((error) => console.error("sign in:", error));
   }
   const which = process.env.MONITOR_OPEN;
   // Why: the tray icon needs a moment before it reports where it sits.
   if (which === "about") setTimeout(showAbout, 1500);
-  if (which === "phone") setTimeout(showAccount, 1500);
   if (which === "panel") setTimeout(showWithoutFocus, 1500);
   if (which === "update" || which === "update-progress") {
     // Why: the window shows the notes the next release will carry, so screenshots match the real thing.
@@ -626,6 +635,8 @@ async function captureHidden(folder: string): Promise<void> {
     await save(page, `panel-${section}`);
     page.destroy();
   }
+  // `MONITOR_CAPTURE_SIGNIN=1` captures the window with the sign-in sheet up, as the panel's account line opens it.
+  if (process.env.MONITOR_CAPTURE_SIGNIN) signInWanted = true;
   const open = showComputersHidden();
   await sleep(4000);
   await save(open, "computers");
@@ -662,13 +673,14 @@ function start(): void {
   void sampleLoop();
   void cleanupLoop();
   if (!DEMO) {
-    startServing(() => usage());
     void askLoop();
     relay.startRelay({ state: phoneState, name: computerName, commands: phoneCommands });
   }
-  // Why: the account window shows whether this computer is on the relay as it changes.
+  // Why: the panel's account line and the All Computers window show whether this computer is on the relay as it
+  // changes, and the other computers are asked as soon as it joins rather than up to 30 seconds later.
   relay.onStatus((status) => {
     for (const window of BrowserWindow.getAllWindows()) window.webContents.send("monitor:account", { email: account.current(), status });
+    if (status === "connected") askNow();
   });
   startUpdates();
   if (DEV) debugHooks();

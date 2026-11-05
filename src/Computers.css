@@ -17,6 +17,30 @@
   font-size: 16px;
   font-weight: 700;
 }
+/* Why: the account badge sits at the window's top right, level with the title (runners-app-kit/desktop). */
+.c-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+/* Signed out: one Sign In button where the cards go, so there are never two ways in. */
+.c-signed-out {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: var(--rw-box-gap);
+  padding: 28px var(--rw-pad);
+  border: var(--rw-border) solid var(--rw-separator);
+  border-radius: var(--rw-radius);
+  background: var(--rw-box-bg);
+  text-align: center;
+}
+.c-signed-out .c-note {
+  max-width: 360px;
+  margin: 0 0 6px;
+}
 .c-note {
   margin: 4px 0 0;
   color: var(--rw-text-secondary);

@@ -14,16 +14,14 @@ const api = () => window.monitor;
 export type { AccountState, CleanupKind, Emptied, MenuCommand, MenuState, Peer, PeerUsage, QuitReport, UpdateOffer };
 
 /** Which window this page is: the tray panel, the About window or the update question. */
-export const page: "panel" | "about" | "update" | "computers" | "account" =
+export const page: "panel" | "about" | "update" | "computers" =
   location.hash === "#about"
     ? "about"
     : location.hash === "#update"
       ? "update"
       : location.hash === "#computers"
         ? "computers"
-        : location.hash === "#account"
-          ? "account"
-          : "panel";
+        : "panel";
 
 export const snapshot = () => api().snapshot() as Promise<Snapshot | null>;
 export const cleanup = () => api().cleanup() as Promise<Cleanup | null>;
@@ -34,7 +32,7 @@ export const pauseRunner = (name: string) => api().pauseRunner(name);
 export const resumeRunner = (name: string) => api().resumeRunner(name);
 export const peers = () => api().peers();
 export const selfUsage = () => api().selfUsage();
-export const openComputers = () => api().openComputers();
+export const openComputers = (signIn?: boolean) => api().openComputers(signIn);
 export const onShown = (listener: () => void) => api().onShown(listener);
 export const onHidden = (listener: () => void) => api().onHidden(listener);
 export const fitHeight = (height: number) => api().fitHeight(height);
@@ -48,7 +46,9 @@ export const onUpdateOffer = (listener: (offer: UpdateOffer) => void) => api().o
 export const answerUpdate = (answer: "install" | "later") => api().answerUpdate(answer);
 export const account = () => api().account();
 export const onAccount = (listener: (state: AccountState) => void) => api().onAccount(listener);
-export const signIn = (email: string, password: string) => api().signIn(email, password);
+export const signIn = (mode: "login" | "signup", email: string, password: string) => api().signIn(mode, email, password);
+export const takeSignIn = () => api().takeSignIn();
+export const onSignIn = (listener: () => void) => api().onSignIn(listener);
 export const signOut = () => api().signOut();
 export const reconnect = () => api().reconnect();
 

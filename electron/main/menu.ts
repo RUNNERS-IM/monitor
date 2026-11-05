@@ -63,7 +63,6 @@ export function buildMenu(snap: Snapshot | null, state: MenuState, run: (command
     { label: t(level.key, { name: snap?.host ?? "" }), icon: icon(level.dot), enabled: false },
     separator(),
     line("usage", "menu.showUsage", "chart-column"),
-    line("phone", "menu.phone", "smartphone"),
     // Why: on/off lines use the system check mark, as every RUNNERS app's native menu does (shared decision 2A);
     // a native check cannot sit next to an icon, so these two have none.
     toggle("login", "menu.openAtLogin", state.openAtLogin),

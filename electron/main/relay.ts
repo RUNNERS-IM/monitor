@@ -1,7 +1,8 @@
-// This computer on the system server's relay, so the Monitor phone app can see it and act on it (shared decisions
-// 2026-11-03 "[MONITOR] 휴대폰판 작업 계획" 1C and "네 앱 컴퓨터판 · 휴대폰판 개발 방식"). The format is
-// runners-app-kit docs/relay.md: hello as a host, the reading as `state` every few seconds, alerts when the computer
-// stays slow, and the phone's commands answered with `result`. The relay only joins devices of the same RUNNERS account.
+// This computer on the system server's relay, so the Monitor phone app can see it and act on it, and the account's
+// other computers can read its numbers (shared decisions 2026-11-03 "[MONITOR] 휴대폰판 작업 계획" 1C, "네 앱 컴퓨터판 ·
+// 휴대폰판 개발 방식" and 2026-11-05 "네 앱 계정 · 연결 통일"). The format is runners-app-kit docs/relay.md: hello as a
+// host, the reading as `state` every few seconds, alerts when the computer stays slow, the phone's commands answered
+// with `result`, and `usage.get` asked of the other hosts. The relay only joins devices of the same RUNNERS account.
 import { app } from "electron";
 import { randomUUID } from "node:crypto";
 import * as account from "./account";
@@ -23,6 +24,9 @@ const CLOSE_REPLACED = 4409;
  * token is fetched a little before and handed over with `auth` on the same connection. */
 const REFRESH_AHEAD_MS = 5 * 60 * 1000;
 const REFRESH_RETRY_MS = 60 * 1000;
+/** The one command another computer of the account may send: reading the numbers. Quitting and emptying stay with
+ *  the phones, which ask the person first. */
+const HOST_COMMANDS = new Set(["usage.get"]);
 
 /** "elsewhere": another connection with this computer's id took over (4409) or the sign-in belongs to another app (4403);
  *  Monitor stays off the relay until Reconnect is pressed, since reconnecting by itself would knock the other off. */
@@ -47,6 +51,10 @@ let status: RelayStatus = "signedOut";
 /** Notices made while not connected, sent once the relay answers again. */
 let pendingAlerts: { title: string; body: string; at: number }[] = [];
 let restart: (() => void) | null = null;
+/** The account's other computers on the relay right now, by deviceId, with the name each gave in its hello. */
+let hosts = new Map<string, string>();
+let asked = 0;
+const waiting = new Map<string, { resolve: (data: unknown) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>();
 const statusListeners = new Set<(status: RelayStatus) => void>();
 
 function setStatus(next: RelayStatus): void {
@@ -62,6 +70,34 @@ export function currentStatus(): RelayStatus {
 export function onStatus(listener: (status: RelayStatus) => void): () => void {
   statusListeners.add(listener);
   return () => statusListeners.delete(listener);
+}
+
+/** The account's other computers on the relay now: deviceId and the name it gave. */
+export function otherHosts(): { deviceId: string; name: string }[] {
+  return [...hosts].map(([deviceId, name]) => ({ deviceId, name }));
+}
+
+/** Sends `name` to another device of the account and waits for its result, up to `timeoutMs`. */
+export function ask(to: string, name: string, args: Record<string, unknown>, timeoutMs: number): Promise<unknown> {
+  if (status !== "connected") return Promise.reject(new Error("offline"));
+  const id = `ask-${++asked}`;
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      waiting.delete(id);
+      reject(new Error("timeout"));
+    }, timeoutMs);
+    waiting.set(id, { resolve, reject, timer });
+    send({ type: "command", to, id, name, args });
+  });
+}
+
+function forgetHosts(): void {
+  hosts = new Map();
+  for (const [id, wait] of waiting) {
+    clearTimeout(wait.timer);
+    wait.reject(new Error("offline"));
+    waiting.delete(id);
+  }
 }
 
 /** Made once and kept, so a phone sees the same computer across restarts. */
@@ -160,6 +196,11 @@ export function startRelay(options: Options): void {
         id?: string;
         name?: string;
         args?: Record<string, unknown>;
+        ok?: boolean;
+        data?: unknown;
+        deviceId?: string;
+        peers?: { deviceId: string; name: string; role: string }[];
+        peer?: { deviceId: string; name: string; role: string };
       };
       try {
         message = JSON.parse(String(event.data));
@@ -170,16 +211,34 @@ export function startRelay(options: Options): void {
       // connection as made (and the wait as over) only then keeps a server that accepts and then drops every connection
       // from being retried without a pause.
       if (message.type === "peers") {
+        hosts = new Map((message.peers ?? []).filter((p) => p.role === "host").map((p) => [p.deviceId, p.name]));
         retryMs = RETRY_MIN_MS;
         setStatus("connected");
         sendPendingAlerts();
         return;
       }
+      if (message.type === "peer-joined" && message.peer?.role === "host") {
+        hosts.set(message.peer.deviceId, message.peer.name);
+        return;
+      }
+      if (message.type === "peer-left" && message.deviceId) {
+        hosts.delete(message.deviceId);
+        return;
+      }
+      if (message.type === "result" && message.id) {
+        const wait = waiting.get(message.id);
+        if (!wait) return;
+        waiting.delete(message.id);
+        clearTimeout(wait.timer);
+        if (message.ok) wait.resolve(message.data);
+        else wait.reject(new Error(String((message.data as { error?: unknown } | undefined)?.error ?? "failed")));
+        return;
+      }
       if (message.type !== "command" || !message.id) return;
       const reply = (ok: boolean, data: unknown) => send({ type: "result", to: message.from, id: message.id, ok, data });
       // Why: the relay fills in fromRole from the sender's hello, so only the account's phones can act on this
-      // computer; another computer on the same account sees it but cannot quit its apps or empty its folders.
-      if (message.fromRole !== "viewer") {
+      // computer; another computer on the same account reads its numbers but cannot quit its apps or empty its folders.
+      if (message.fromRole !== "viewer" && !(message.fromRole === "host" && HOST_COMMANDS.has(message.name ?? ""))) {
         reply(false, { error: "not allowed" });
         return;
       }
@@ -191,14 +250,16 @@ export function startRelay(options: Options): void {
       handler(message.args ?? {})
         .then((data) => {
           reply(true, data ?? null);
-          // Why: what a command changed (an app quit, folders emptied) shows on the phone right away.
-          sendState();
+          // Why: what a command changed (an app quit, folders emptied) shows on the phone right away. A reading
+          // changes nothing, and the other computers ask for one every few seconds.
+          if (message.name !== "usage.get") sendState();
         })
         .catch((error: unknown) => reply(false, { error: error instanceof Error ? error.message : String(error) }));
     });
     ws.addEventListener("close", (event) => {
       if (beat) clearInterval(beat);
       if (socket !== ws) return;
+      forgetHosts();
       if (refreshTimer) clearTimeout(refreshTimer);
       refreshTimer = null;
       socket = null;
