@@ -132,7 +132,10 @@ export function startRelay(options: Options): void {
     setStatus("connecting");
     connectedEmail = account.current();
     // Why: Node's WebSocket can carry headers, so the token stays out of the address (and out of server logs).
-    const ws = new WebSocket(RELAY_URL, { headers: { Authorization: `Bearer ${token}` } } as unknown as string[]);
+    // Why User-Agent: the system server turns away requests without one (403); set it here rather than rely on Node's default.
+    const ws = new WebSocket(RELAY_URL, {
+      headers: { Authorization: `Bearer ${token}`, "User-Agent": `Monitor/${app.getVersion()}` },
+    } as unknown as string[]);
     socket = ws;
     let beat: ReturnType<typeof setInterval> | null = null;
     const sendState = () => {
