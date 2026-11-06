@@ -79,7 +79,8 @@ jobs:
       matrix:
         include:
           - os: macos
-            runner: macos-26
+            # GitHub 호스팅 macos-26 은 Split 출시 때(2026-10-31) 대기열에서 16분 만에 두 번 취소돼서 자리가 많은 macos-15 를 쓴다.
+            runner: macos-15
             builder: --mac
           - os: windows
             runner: windows-latest
@@ -133,6 +134,11 @@ jobs:
             pnpm native
           fi
           ls -la native/*.node
+          # 깨끗한 Windows 에는 Visual C++ 런타임이 없어 이 DLL 을 찾으면 앱이 켜지지 않는다. 그런 모듈은 내지 않는다(.cargo/config.toml).
+          if [ "${{ matrix.os }}" = windows ] && grep -aqiE 'vcruntime[0-9]+[a-z0-9_]*\.dll' native/*.node; then
+            echo "::error::native module still needs the Visual C++ runtime"
+            exit 1
+          fi
 
       - run: pnpm build
 
@@ -180,7 +186,7 @@ jobs:
           if [ "${{ matrix.os }}" = macos ]; then export APPLE_API_KEY="$APPLE_API_KEY_PATH"; fi
           pnpm exec electron-builder --config electron-builder.config.cjs ${{ matrix.builder }} --publish never
 
-      # 앱은 electron-builder 가 공증했지만 DMG 자체도 공증 · 스테이플해야 오프라인에서도 경고 없이 열린다
+      # 앱은 electron-builder 가 공증했지만 DMG 자체도 서명 · 공증 · 스테이플해야 오프라인에서도 경고 없이 열린다
       - name: Notarize the DMGs
         if: matrix.os == 'macos'
         env:
@@ -189,8 +195,17 @@ jobs:
         run: |
           set -euo pipefail
           for DMG in dist.noindex/*.dmg; do
+            # electron-builder 는 안의 앱만 서명하고 DMG 는 서명하지 않는다. Gatekeeper 는 DMG 서명도 본다.
+            codesign --sign "Runners Co., Ltd (RGWVXJ8URP)" --timestamp "$DMG"
             xcrun notarytool submit "$DMG" --key "$APPLE_API_KEY_PATH" --key-id "$ASC_API_KEY_ID" --issuer "$ASC_API_ISSUER_ID" --wait
-            xcrun stapler staple "$DMG"
+            # 애플 티켓 서버가 연결을 끊는 일이 있어 다시 시도한다(Split 2026-11-01).
+            for TRY in 1 2 3; do
+              xcrun stapler staple "$DMG" && break
+              [ "$TRY" = 3 ] && exit 1
+              echo "::warning::stapler failed (try $TRY), trying again in 30 seconds"
+              sleep 30
+            done
+            spctl -a -t open --context context:primary-signature -v "$DMG"
           done
 
       # 이미 설치된 Tauri 판 Monitor 가 받을 묶음(.app.tar.gz, 심볼릭 링크 그대로). 서명은 publish 작업에서 한다.

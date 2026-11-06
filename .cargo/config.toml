@@ -1,0 +1,4 @@
+# Why crt-static: a clean Windows has no Visual C++ runtime, and a module that needs it stops the app from starting.
+# In the repository root because cargo looks for this file from where it runs (`pnpm native` runs here).
+[target.'cfg(all(windows, target_env = "msvc"))']
+rustflags = ["-C", "target-feature=+crt-static"]
