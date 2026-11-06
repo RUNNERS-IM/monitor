@@ -247,6 +247,10 @@ export function startRelay(options: Options): void {
         reply(false, { error: "unknown command" });
         return;
       }
+      // Why: emptying a big folder can run for minutes, so the phone first hears the command was taken and keeps
+      // waiting for the final result with the same id instead of giving up after a minute (Monitor flow check 38A).
+      // Another computer only asks for numbers, which come back at once, and takes the first result as the answer.
+      if (message.fromRole === "viewer") reply(true, { pending: true });
       handler(message.args ?? {})
         .then((data) => {
           reply(true, data ?? null);

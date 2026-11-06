@@ -118,7 +118,7 @@
   "empty.confirm.wallpapers": "¿Eliminar {{size}} de vídeos de fondo de pantalla?",
   "empty.confirm.vms": "¿Eliminar {{size}} de máquinas virtuales sin usar desde hace más de 30 días?",
   "empty.confirm.models": "¿Eliminar {{size}} de modelos de IA sin usar desde hace más de 30 días?",
-  "empty.detail.cache": "Se eliminan al momento, sin pasar por la Papelera. Las apps las vuelven a crear cuando las necesitan, así que el primer uso puede ser algo más lento.",
+  "empty.detail.cache": "Se eliminan al momento, sin pasar por la Papelera. Se mantienen las carpetas usadas en los últimos 7 días. Las apps las vuelven a crear cuando las necesitan, así que el primer uso puede ser algo más lento.",
   "empty.detail.packages": "Se eliminan al momento, sin pasar por la Papelera. Se mantienen los proyectos usados en los últimos 7 días. Un proyecto eliminado necesita pnpm install (o npm install) antes de volver a funcionar.",
   "empty.detail.build": "Se eliminan al momento, sin pasar por la Papelera. Se mantienen las carpetas usadas en los últimos 7 días. La siguiente compilación de un proyecto eliminado empieza de cero y tarda más.",
   "empty.detail.trash": "Los archivos de la Papelera se eliminan para siempre.",

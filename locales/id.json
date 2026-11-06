@@ -118,7 +118,7 @@
   "empty.confirm.wallpapers": "Hapus {{size}} video wallpaper?",
   "empty.confirm.vms": "Hapus {{size}} mesin virtual yang tidak dipakai lebih dari 30 hari?",
   "empty.confirm.models": "Hapus {{size}} model AI yang tidak dipakai lebih dari 30 hari?",
-  "empty.detail.cache": "Langsung dihapus tanpa lewat Tong Sampah. Aplikasi membuatnya lagi saat perlu, jadi pemakaian pertama bisa sedikit lebih lambat.",
+  "empty.detail.cache": "Langsung dihapus tanpa lewat Tong Sampah. Folder yang dipakai dalam 7 hari terakhir dibiarkan. Aplikasi membuatnya lagi saat perlu, jadi pemakaian pertama bisa sedikit lebih lambat.",
   "empty.detail.packages": "Langsung dihapus tanpa lewat Tong Sampah. Proyek yang dipakai dalam 7 hari terakhir dibiarkan. Proyek yang dihapus perlu pnpm install (atau npm install) sebelum bisa jalan lagi.",
   "empty.detail.build": "Langsung dihapus tanpa lewat Tong Sampah. Folder yang dipakai dalam 7 hari terakhir dibiarkan. Build berikutnya untuk proyek yang dihapus mulai dari awal dan lebih lama.",
   "empty.detail.trash": "File di Tong Sampah dihapus permanen.",

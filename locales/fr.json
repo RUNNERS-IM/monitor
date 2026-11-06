@@ -118,7 +118,7 @@
   "empty.confirm.wallpapers": "Supprimer {{size}} de vidéos de fond d’écran ?",
   "empty.confirm.vms": "Supprimer {{size}} de machines virtuelles inutilisées depuis plus de 30 jours ?",
   "empty.confirm.models": "Supprimer {{size}} de modèles d’IA inutilisés depuis plus de 30 jours ?",
-  "empty.detail.cache": "Ils sont supprimés tout de suite, sans passer par la Corbeille. Les apps les recréent au besoin, la première utilisation peut donc être un peu plus lente.",
+  "empty.detail.cache": "Ils sont supprimés tout de suite, sans passer par la Corbeille. Les dossiers utilisés ces 7 derniers jours sont gardés. Les apps les recréent au besoin, la première utilisation peut donc être un peu plus lente.",
   "empty.detail.packages": "Ils sont supprimés tout de suite, sans passer par la Corbeille. Les projets utilisés ces 7 derniers jours sont gardés. Un projet supprimé demande pnpm install (ou npm install) avant de tourner à nouveau.",
   "empty.detail.build": "Ils sont supprimés tout de suite, sans passer par la Corbeille. Les dossiers utilisés ces 7 derniers jours sont gardés. Le prochain build d’un projet supprimé repart de zéro et prend plus de temps.",
   "empty.detail.trash": "Les fichiers de la Corbeille sont supprimés définitivement.",

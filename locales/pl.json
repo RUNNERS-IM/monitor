@@ -118,7 +118,7 @@
   "empty.confirm.wallpapers": "Usunąć {{size}} filmów tapet?",
   "empty.confirm.vms": "Usunąć {{size}} maszyn wirtualnych nieużywanych od ponad 30 dni?",
   "empty.confirm.models": "Usunąć {{size}} modeli AI nieużywanych od ponad 30 dni?",
-  "empty.detail.cache": "Zostaną usunięte od razu, bez Kosza. Aplikacje utworzą je ponownie, gdy będą potrzebne, więc pierwsze użycie może być nieco wolniejsze.",
+  "empty.detail.cache": "Zostaną usunięte od razu, bez Kosza. Foldery używane w ostatnich 7 dniach zostają. Aplikacje utworzą je ponownie, gdy będą potrzebne, więc pierwsze użycie może być nieco wolniejsze.",
   "empty.detail.packages": "Zostaną usunięte od razu, bez Kosza. Projekty używane w ostatnich 7 dniach zostają. Usunięty projekt wymaga pnpm install (lub npm install), zanim znów zadziała.",
   "empty.detail.build": "Zostaną usunięte od razu, bez Kosza. Foldery używane w ostatnich 7 dniach zostają. Następna kompilacja usuniętego projektu zacznie od zera i potrwa dłużej.",
   "empty.detail.trash": "Pliki w Koszu zostaną usunięte na zawsze.",

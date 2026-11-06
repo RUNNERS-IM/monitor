@@ -16,7 +16,7 @@ import { releaseNoteLines } from "./releaseNotes";
 import { readSettings, writeSettings } from "./settings";
 import { noteCpu, noteFrontApp, suggestions, type Suggestion } from "./suggest";
 import { createTray, showReading, type Level } from "./tray";
-import type { QuitReport } from "../preload/api";
+import type { Emptied, QuitReport } from "../preload/api";
 import { diskPercent, type Snapshot } from "./types";
 import { checkNow, displayVersion, startUpdates } from "./updates";
 import { answerUpdate, askUpdate, createPanel, placeUnderTray, showAbout, showComputers, showComputersHidden, hiddenPage, TRANSLUCENT, updateOffer } from "./windows";
@@ -367,7 +367,7 @@ async function waitForMeasure(): Promise<void> {
 }
 
 /** Asks before deleting, since the folders skip the Trash, then deletes one kind and takes it off the shown numbers. */
-async function emptyCleanup(kind: string): Promise<{ freed: number; skipped: number } | null> {
+async function emptyCleanup(kind: string): Promise<Emptied | null> {
   const part = latestCleanup?.kinds?.find((item) => item.kind === kind);
   if (!latestCleanup || !part || DEMO) return null;
   const size = `${(part.bytes / 1024 ** 3).toFixed(1)} GB`;
@@ -384,9 +384,9 @@ async function emptyCleanup(kind: string): Promise<{ freed: number; skipped: num
 }
 
 /** Deletes one kind and takes it off the shown numbers. The phone app comes straight here: it asks on the phone. */
-async function emptyKind(kind: string): Promise<{ freed: number; skipped: number }> {
+async function emptyKind(kind: string): Promise<Emptied> {
   if (!latestCleanup?.kinds?.some((item) => item.kind === kind)) throw new Error("nothing to empty");
-  const done = JSON.parse(await native.cleanupEmpty(kind)) as { freed: number; skipped: number };
+  const done = JSON.parse(await native.cleanupEmpty(kind)) as Emptied;
   // Why: the next measurement takes minutes, so the freed bytes come off the shown numbers right away.
   latestCleanup = latestCleanup && {
     ...latestCleanup,

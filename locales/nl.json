@@ -118,7 +118,7 @@
   "empty.confirm.wallpapers": "{{size}} aan achtergrondvideo’s verwijderen?",
   "empty.confirm.vms": "{{size}} aan virtuele machines verwijderen die al meer dan 30 dagen ongebruikt zijn?",
   "empty.confirm.models": "{{size}} aan AI-modellen verwijderen die al meer dan 30 dagen ongebruikt zijn?",
-  "empty.detail.cache": "Ze worden meteen verwijderd, zonder Prullenmand. Apps maken ze opnieuw aan wanneer nodig, dus het eerste gebruik kan iets trager zijn.",
+  "empty.detail.cache": "Ze worden meteen verwijderd, zonder Prullenmand. Mappen van de afgelopen 7 dagen blijven staan. Apps maken ze opnieuw aan wanneer nodig, dus het eerste gebruik kan iets trager zijn.",
   "empty.detail.packages": "Ze worden meteen verwijderd, zonder Prullenmand. Projecten van de afgelopen 7 dagen blijven staan. Een verwijderd project heeft pnpm install (of npm install) nodig voordat het weer draait.",
   "empty.detail.build": "Ze worden meteen verwijderd, zonder Prullenmand. Mappen van de afgelopen 7 dagen blijven staan. De volgende build van een verwijderd project begint opnieuw en duurt langer.",
   "empty.detail.trash": "De bestanden in de Prullenmand worden definitief verwijderd.",

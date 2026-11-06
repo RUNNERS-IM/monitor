@@ -118,7 +118,7 @@
   "empty.confirm.wallpapers": "{{size}} Hintergrundvideos löschen?",
   "empty.confirm.vms": "{{size}} virtuelle Maschinen löschen, die seit über 30 Tagen ungenutzt sind?",
   "empty.confirm.models": "{{size}} KI-Modelle löschen, die seit über 30 Tagen ungenutzt sind?",
-  "empty.detail.cache": "Sie werden sofort gelöscht, ohne Papierkorb. Apps legen sie bei Bedarf neu an, der erste Start kann etwas langsamer sein.",
+  "empty.detail.cache": "Sie werden sofort gelöscht, ohne Papierkorb. Ordner der letzten 7 Tage bleiben. Apps legen sie bei Bedarf neu an, der erste Start kann etwas langsamer sein.",
   "empty.detail.packages": "Sie werden sofort gelöscht, ohne Papierkorb. Projekte der letzten 7 Tage bleiben. Ein gelöschtes Projekt braucht vor dem nächsten Start pnpm install (oder npm install).",
   "empty.detail.build": "Sie werden sofort gelöscht, ohne Papierkorb. Ordner der letzten 7 Tage bleiben. Der nächste Build eines gelöschten Projekts beginnt von vorn und dauert länger.",
   "empty.detail.trash": "Die Dateien im Papierkorb werden endgültig gelöscht.",

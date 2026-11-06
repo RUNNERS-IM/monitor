@@ -118,7 +118,7 @@
   "empty.confirm.wallpapers": "Apagar {{size}} de vídeos de papel de parede?",
   "empty.confirm.vms": "Apagar {{size}} de máquinas virtuais sem uso há mais de 30 dias?",
   "empty.confirm.models": "Apagar {{size}} de modelos de IA sem uso há mais de 30 dias?",
-  "empty.detail.cache": "São apagadas de imediato, sem passar pelo Lixo. As apps voltam a criá-las quando precisam, por isso a primeira utilização pode ser um pouco mais lenta.",
+  "empty.detail.cache": "São apagadas de imediato, sem passar pelo Lixo. As pastas usadas nos últimos 7 dias ficam. As apps voltam a criá-las quando precisam, por isso a primeira utilização pode ser um pouco mais lenta.",
   "empty.detail.packages": "São apagadas de imediato, sem passar pelo Lixo. Os projetos usados nos últimos 7 dias ficam. Um projeto apagado precisa de pnpm install (ou npm install) antes de voltar a correr.",
   "empty.detail.build": "São apagadas de imediato, sem passar pelo Lixo. As pastas usadas nos últimos 7 dias ficam. O próximo build de um projeto apagado começa do zero e demora mais.",
   "empty.detail.trash": "Os arquivos do Lixo são apagados para sempre.",

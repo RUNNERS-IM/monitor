@@ -387,3 +387,7 @@ body,
   width: 18px;
   place-items: center;
 }
+/* Why: the kit's mark carries the space it needs above the sign-in sheet's title, which pushed it up in this row. */
+.account-row .account-mark .ra-mark {
+  margin-bottom: 0;
+}
