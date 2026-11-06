@@ -1,11 +1,15 @@
-// The All Computers window: this computer and every other computer on the same Tailscale network, as cards. A card
-// shows what the panel's summary rows show; choosing one shows its biggest apps below. Look only: nothing here quits
-// an app or empties a folder on another computer (shared decision 2026-11-02 "[MONITOR] 패널 나누기" 1A).
-import { useEffect, useState } from "react";
-import { t } from "./i18n";
+// The All Computers window: this computer and every other computer signed in to the same RUNNERS account, as cards.
+// A card shows what the panel's summary rows show; choosing one shows its biggest apps below. Look only: nothing here
+// quits an app or empties a folder on another computer (shared decision 2026-11-02 "[MONITOR] 패널 나누기" 1A).
+// Signed out, the window holds one Sign In button and the shared sign-in sheet; signed in, the account badge sits at
+// the top right (shared decision 2026-11-05 "네 앱 계정 · 연결 통일" 2A, parts copied from runners-app-kit/desktop).
+import { useCallback, useEffect, useState } from "react";
+import { locale, t } from "./i18n";
 import * as native from "./native";
-import type { Peer, PeerUsage } from "./native";
+import type { AccountState, Peer, PeerUsage } from "./native";
+import { AccountButton, RunnersMark, SignInSheet, type SignMode } from "./runners-account/runners-account";
 import "./runners-window.css";
+import "./runners-account/runners-account.css";
 import "./Computers.css";
 
 const REFRESH_MS = 2000;
@@ -60,7 +64,7 @@ function CardView({ card, chosen, onChoose }: { card: Card; chosen: boolean; onC
         </>
       ) : (
         <div className="c-off">
-          {card.state === "offline" ? t("computers.offline") : card.state === "noAnswer" ? t("computers.noAnswer") : t("computers.noMonitor")}
+          {card.state === "offline" ? t("computers.offline") : t("computers.noAnswer")}
         </div>
       )}
     </button>
@@ -102,9 +106,31 @@ function Detail({ card }: { card: Card }) {
   );
 }
 
+/** The account badge's second line: how many of the account's computers are on, or how the connection stands. */
+function AccountLine({ state, others }: { state: AccountState; others: Card[] }) {
+  if (state.status !== "connected") return <>{t(`account.status.${state.status === "elsewhere" ? "elsewhere" : "connecting"}`)}</>;
+  return <>{t("account.online", { count: 1 + others.filter((c) => c.state !== "offline").length })}</>;
+}
+
 export default function Computers() {
   const [cards, setCards] = useState<Card[]>([]);
   const [chosen, setChosen] = useState<string | null>(null);
+  const [state, setState] = useState<AccountState | null>(null);
+  const [signingIn, setSigningIn] = useState(false);
+  useEffect(() => {
+    void native.account().then(setState);
+    const stop = native.onAccount(setState);
+    // Why: the panel's account line opens this window to sign in, so the sheet comes up at once.
+    void native.takeSignIn().then((wanted) => wanted && setSigningIn(true));
+    const stopSignIn = native.onSignIn(() => {
+      void native.takeSignIn();
+      setSigningIn(true);
+    });
+    return () => {
+      stop();
+      stopSignIn();
+    };
+  }, []);
   useEffect(() => {
     let alive = true;
     const read = async () => {
@@ -121,23 +147,60 @@ export default function Computers() {
     };
   }, []);
   useEffect(() => {
-    const close = (event: KeyboardEvent) => event.key === "Escape" && native.closeWindow();
+    // Why: Escape closes the sign-in sheet first (the sheet listens itself), and the window only when no sheet is up.
+    const close = (event: KeyboardEvent) => event.key === "Escape" && !signingIn && native.closeWindow();
     window.addEventListener("keydown", close);
     return () => window.removeEventListener("keydown", close);
+  }, [signingIn]);
+  const signIn = useCallback(async (mode: SignMode, email: string, password: string) => {
+    const problem = await native.signIn(mode, email, password);
+    if (problem) throw new Error(problem);
+    setState(await native.account());
   }, []);
+  const closeSignIn = useCallback(() => setSigningIn(false), []);
   // Why: with nothing chosen yet, the first slow computer (or this one) is shown, so the window opens on something useful.
   const current = cards.find((c) => c.name === chosen) ?? cards.find((c) => slowOf(c.usage)) ?? cards[0];
+  const signedOut = state !== null && !state.email;
   return (
     <main className="computers">
-      <h1>{t("computers.title")}</h1>
-      <p className="c-note">{t("computers.note")}</p>
-      {cards.length <= 1 && <p className="c-note">{t("computers.empty")}</p>}
+      <header className="c-head-row">
+        <div>
+          <h1>{t("computers.title")}</h1>
+          <p className="c-note">{t("computers.note")}</p>
+        </div>
+        {state?.email && (
+          <AccountButton
+            lang={locale}
+            account={state.email}
+            line={<AccountLine state={state} others={cards.filter((c) => !c.self)} />}
+            items={
+              state.status === "elsewhere"
+                ? [{ label: t("account.reconnect"), onSelect: () => void native.reconnect() }]
+                : []
+            }
+            onSignOut={() => void native.signOut().then(() => native.account().then(setState))}
+          />
+        )}
+      </header>
+      {signedOut && (
+        <section className="c-signed-out">
+          <RunnersMark size={28} />
+          <b>{t("computers.signedOutTitle")}</b>
+          <p className="c-note">{t("computers.signedOutNote")}</p>
+          <button type="button" className="rw-button default" onClick={() => setSigningIn(true)}>
+            {t("account.signIn")}
+          </button>
+        </section>
+      )}
+      {state?.status === "elsewhere" && <p className="c-note">{t("account.elsewhereNote")}</p>}
+      {state?.email && cards.length <= 1 && <p className="c-note">{t("computers.empty")}</p>}
       <div className="c-grid">
-        {cards.map((card) => (
-          <CardView key={card.name} card={card} chosen={card === current} onChoose={() => setChosen(card.name)} />
+        {cards.map((card, i) => (
+          <CardView key={`${card.name}-${i}`} card={card} chosen={card === current} onChoose={() => setChosen(card.name)} />
         ))}
       </div>
       {current && <Detail card={current} />}
+      {signingIn && <SignInSheet lang={locale} signIn={signIn} onClose={closeSignIn} />}
     </main>
   );
 }

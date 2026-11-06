@@ -9,10 +9,11 @@
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
-    "build": "pnpm typecheck && electron-vite build",
+    "build": "pnpm typecheck && pnpm check:account && electron-vite build",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "native": "napi build --manifest-path native/Cargo.toml --package-json-path native/package.json --platform --release --target-dir native/target.noindex --output-dir native --no-js",
     "check:locales": "node scripts/check-locales.mjs",
+    "check:account": "node src/runners-account/check.mjs",
     "notices": "node scripts/third-party-notices.mjs",
     "dist": "pnpm build && electron-builder --config electron-builder.config.cjs"
   },

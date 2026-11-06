@@ -16,6 +16,8 @@ export type Settings = {
   /** Runners paused from the panel or a phone, by name, with the Unix time (seconds) they come back.
    *  Why: a restart of Monitor inside the hour would otherwise show the runner as gone instead of paused. */
   pausedRunners?: Record<string, number>;
+  /** This computer's id on the relay (electron/main/relay.ts), made once so phones keep seeing the same computer. */
+  deviceId?: string;
 };
 
 const DEFAULTS: Settings = { autoUpdate: true, updateLaterOn: null, noticedOn: {} };

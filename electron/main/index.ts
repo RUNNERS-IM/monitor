@@ -4,11 +4,13 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme, Notification, shell, systemPreferences, type Tray } from "electron";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import * as account from "./account";
 import { currentLocale, t } from "./i18n";
 import * as login from "./login";
 import { buildMenu, forgetIcons, type Command, type MenuState } from "./menu";
 import { native, type Sampler } from "./native";
-import { askLoop, demoPeers, peerList, setFast, startServing, topApps, type Usage } from "./peers";
+import { askLoop, askNow, demoPeers, peerList, setFast, topApps, type Usage } from "./peers";
+import * as relay from "./relay";
 import { tailnet } from "./tailnet";
 import { releaseNoteLines } from "./releaseNotes";
 import { readSettings, writeSettings } from "./settings";
@@ -51,6 +53,9 @@ const DEV = !app.isPackaged;
 const DEMO = DEV && !!process.env.MONITOR_DEMO;
 const DEMO_OS = "macOS 26.5 Tahoe";
 const DEMO_VERSION = "2.6.1102";
+// Why: a debug run keeps its own data folder, so it runs next to the installed Monitor (which holds the
+// single-instance lock on the shared folder) and never signs it in or out.
+if (DEV) app.setPath("userData", `${app.getPath("userData")}-dev`);
 // Why: the windows read their language from navigator.language, which follows Chromium's --lang switch.
 if (DEV && process.env.MONITOR_LANG) app.commandLine.appendSwitch("lang", process.env.MONITOR_LANG);
 
@@ -190,6 +195,8 @@ function notifyIfSlow(snap: Snapshot, held: Reason[], suggested: Suggestion[]): 
       if (offer) void quitApp(offer.name).catch((error) => console.error("quit:", error));
     });
     notice.show();
+    // Why: the phone app gets the same notice, named after this computer, even when nobody is at it.
+    void computerName().then((name) => relay.sendAlert(`${name} · ${t(`notice.${reason}.title`)}`, notice.body));
   }
 }
 
@@ -373,9 +380,15 @@ async function emptyCleanup(kind: string): Promise<{ freed: number; skipped: num
     cancelId: 1,
   });
   if (response !== 0) return null;
+  return emptyKind(kind);
+}
+
+/** Deletes one kind and takes it off the shown numbers. The phone app comes straight here: it asks on the phone. */
+async function emptyKind(kind: string): Promise<{ freed: number; skipped: number }> {
+  if (!latestCleanup?.kinds?.some((item) => item.kind === kind)) throw new Error("nothing to empty");
   const done = JSON.parse(await native.cleanupEmpty(kind)) as { freed: number; skipped: number };
   // Why: the next measurement takes minutes, so the freed bytes come off the shown numbers right away.
-  latestCleanup = {
+  latestCleanup = latestCleanup && {
     ...latestCleanup,
     total: Math.max(0, latestCleanup.total - done.freed),
     kinds: latestCleanup.kinds?.map((item) => (item.kind === kind ? { ...item, bytes: Math.max(0, item.bytes - done.freed) } : item)),
@@ -390,7 +403,7 @@ function accentColor(): string | null {
   return color ? `#${color.slice(0, 6)}` : null;
 }
 
-/** What this computer tells the other Monitors on the tailnet: names and numbers only. */
+/** What this computer tells the account's other Monitors: names and numbers only. */
 function usage(from: Snapshot | null = latest): Usage | null {
   if (!from) return null;
   const snap = held(from) as Snapshot & { level: Level; os?: string; claudeSessions?: unknown[] };
@@ -416,13 +429,62 @@ function usage(from: Snapshot | null = latest): Usage | null {
   };
 }
 
+/** The name the other computers and the phones show: the Tailscale name (m1-pro-2) when there is one. */
+async function computerName(): Promise<string> {
+  const net = await tailnet().catch(() => null);
+  return net?.self.name ?? latest?.host ?? "";
+}
+
+/** What the phone app shows for this computer: the same numbers as the All Computers window, plus what can be
+ *  emptied by kind and the runners by name, so the phone can offer those commands. */
+function phoneState(): unknown {
+  const mine = usage();
+  if (!mine || !latest) return null;
+  return {
+    ...mine,
+    // Why: the phone offers Quit only where this panel does, and says whether the app asks to save first.
+    topMemory: mine.topMemory.map((a, i) => ({ ...a, quit: latest!.topMemory[i]?.quit ?? null })),
+    topCpu: latest.topCpu.slice(0, 5).map((a) => ({ name: a.name, cpuPercent: a.cpuPercent, quit: a.quit })),
+    cleanupKinds: latestCleanup?.kinds ?? [],
+    runners: latest.runners.map((r) => ({
+      name: r.name,
+      busy: r.busy,
+      off: r.off ?? false,
+      pausedUntil: paused.get(r.name) ?? null,
+    })),
+  };
+}
+
 /** Quits the app named `name` in the last reading and says whether it ended within a few seconds. */
 async function quitApp(name: string): Promise<QuitReport> {
   return JSON.parse(await sampler!.quitApp(name)) as QuitReport;
 }
 
-function openComputers(): void {
+/** The phone app's commands (runners-app-kit docs/relay.md, "앱별 명령"). */
+const phoneCommands: Record<string, relay.Handler> = {
+  "usage.get": async () => phoneState(),
+  "app.quit": async (args) => {
+    const { gone, alreadyGone } = await quitApp(String(args.name ?? ""));
+    return { gone, alreadyGone };
+  },
+  "cleanup.empty": async (args) => emptyKind(String(args.kind ?? "")),
+  "runner.pause": async (args) => ({ until: await pauseRunner(String(args.name ?? "")) }),
+  "runner.resume": async (args) => {
+    await resumeRunner(String(args.name ?? ""));
+    return {};
+  },
+};
+
+/** Set when the All Computers window is opened to sign in, and taken by that window once it has loaded. */
+let signInWanted = false;
+
+function openComputers(signIn = false): void {
   hidePanel();
+  if (signIn) {
+    signInWanted = true;
+    // Why: when the window is already open it has loaded and will not ask again, so it is told directly.
+    for (const window of BrowserWindow.getAllWindows()) window.webContents.send("monitor:signIn");
+  }
   showComputers(setFast);
 }
 
@@ -451,7 +513,7 @@ function registerIpc(): void {
     const net = await tailnet();
     return mine && net ? { ...mine, host: net.self.name } : mine;
   });
-  ipcMain.handle("monitor:openComputers", () => openComputers());
+  ipcMain.handle("monitor:openComputers", (_event, signIn: unknown) => openComputers(signIn === true));
   ipcMain.handle("monitor:translucent", () => TRANSLUCENT);
   ipcMain.handle("monitor:version", () => displayVersion());
   ipcMain.handle("monitor:accentColor", () => accentColor());
@@ -474,6 +536,23 @@ function registerIpc(): void {
   });
   ipcMain.on("monitor:closeWindow", (event) => BrowserWindow.fromWebContents(event.sender)?.close());
   ipcMain.handle("monitor:updateOffer", () => updateOffer());
+  ipcMain.handle("monitor:account", () => ({ email: account.current(), status: relay.currentStatus() }));
+  ipcMain.handle("monitor:signIn", async (_event, mode: unknown, email: unknown, password: unknown) => {
+    try {
+      await account.signIn(mode === "signup" ? "signup" : "login", String(email), String(password));
+      return null;
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "";
+      return code === "bad" || code === "exists" ? code : "network";
+    }
+  });
+  ipcMain.handle("monitor:takeSignIn", () => {
+    const wanted = signInWanted;
+    signInWanted = false;
+    return wanted;
+  });
+  ipcMain.handle("monitor:signOut", () => account.signOut());
+  ipcMain.handle("monitor:reconnect", () => relay.reconnect());
   ipcMain.on("monitor:answerUpdate", (_event, answer: unknown) => answerUpdate(answer === "install" ? "install" : "later"));
 }
 
@@ -492,6 +571,13 @@ function debugHooks(): void {
   // never showing a window: popup (panel folded, "Worth doing now" on top), sessions (Jobs open) and computers.
   const shotsTo = process.env.MONITOR_SHOTS;
   if (shotsTo && DEMO) setTimeout(() => void homepageShots(shotsTo), 8000);
+  // `MONITOR_ACCOUNT=<email>:<password>` signs in at launch, so the relay can be tried against relay-dev
+  // (monitor-app/scripts/relay-dev.mjs) without typing into a window.
+  const signInAs = process.env.MONITOR_ACCOUNT;
+  if (signInAs && !account.current()) {
+    const at = signInAs.indexOf(":");
+    void account.signIn("login", signInAs.slice(0, at), signInAs.slice(at + 1)).catch((error) => console.error("sign in:", error));
+  }
   const which = process.env.MONITOR_OPEN;
   // Why: the tray icon needs a moment before it reports where it sits.
   if (which === "about") setTimeout(showAbout, 1500);
@@ -549,6 +635,8 @@ async function captureHidden(folder: string): Promise<void> {
     await save(page, `panel-${section}`);
     page.destroy();
   }
+  // `MONITOR_CAPTURE_SIGNIN=1` captures the window with the sign-in sheet up, as the panel's account line opens it.
+  if (process.env.MONITOR_CAPTURE_SIGNIN) signInWanted = true;
   const open = showComputersHidden();
   await sleep(4000);
   await save(open, "computers");
@@ -585,9 +673,15 @@ function start(): void {
   void sampleLoop();
   void cleanupLoop();
   if (!DEMO) {
-    startServing(() => usage());
     void askLoop();
+    relay.startRelay({ state: phoneState, name: computerName, commands: phoneCommands });
   }
+  // Why: the panel's account line and the All Computers window show whether this computer is on the relay as it
+  // changes, and the other computers are asked as soon as it joins rather than up to 30 seconds later.
+  relay.onStatus((status) => {
+    for (const window of BrowserWindow.getAllWindows()) window.webContents.send("monitor:account", { email: account.current(), status });
+    if (status === "connected") askNow();
+  });
   startUpdates();
   if (DEV) debugHooks();
 }

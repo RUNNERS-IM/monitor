@@ -2,6 +2,10 @@
 
 export type MenuCommand = "usage" | "login" | "autoUpdate" | "about" | "updates" | "help" | "quit";
 
+/** The RUNNERS account this computer is signed in with, and whether it is on the relay (for the account's other
+ *  computers and the phone app). */
+export type AccountState = { email: string | null; status: "signedOut" | "connecting" | "connected" | "elsewhere" };
+
 export type MenuState = { openAtLogin: boolean; autoUpdate: boolean };
 
 export type CleanupKind = "cache" | "packages" | "build" | "trash" | "docker" | "simulators" | "wallpapers" | "vms" | "models";
@@ -23,7 +27,7 @@ export type PeerUsage = {
   memoryPressure: "normal" | "warn" | "critical"; diskUsed: number; diskTotal: number; slowMemory: boolean; slowCpu: boolean;
   topMemory: { name: string; memory: number }[]; claudeSessions: number; runnersBusy: number; runnersIdle: number; cleanable: number | null;
 };
-export type Peer = { name: string; state: "ok" | "noAnswer" | "noMonitor" | "offline"; usage: PeerUsage | null; at: number | null };
+export type Peer = { name: string; state: "ok" | "noAnswer" | "offline"; usage: PeerUsage | null; at: number | null };
 
 export type MonitorApi = {
   /** The newest reading (JSON shape in src/types.ts), or null before the first one. */
@@ -45,7 +49,8 @@ export type MonitorApi = {
   /** This computer in the same shape, for the first card of the All Computers window. */
   selfUsage: () => Promise<PeerUsage | null>;
   /** Opens the All Computers window (and closes the panel). */
-  openComputers: () => Promise<void>;
+  /** Opens the All Computers window; `signIn` opens it with the sign-in sheet up. */
+  openComputers: (signIn?: boolean) => Promise<void>;
   /** Calls back each time the panel is about to show; returns a function that stops it. */
   onShown: (listener: () => void) => () => void;
   /** The panel was hidden; it stops asking for readings until it is shown again. */
@@ -70,4 +75,17 @@ export type MonitorApi = {
   onUpdateOffer: (listener: (offer: UpdateOffer) => void) => () => void;
   /** The update window's answer; Later closes the window, Install Now keeps it up until the app quits. */
   answerUpdate: (answer: "install" | "later") => void;
+  account: () => Promise<AccountState>;
+  /** Calls back when the sign-in or the relay connection changes; returns a function that stops it. */
+  onAccount: (listener: (state: AccountState) => void) => () => void;
+  /** Signs in or makes the account. Null when signed in; "bad" for a refused email or password, "exists" when the
+   *  email already has an account, "network" when the server could not be reached. */
+  signIn: (mode: "login" | "signup", email: string, password: string) => Promise<"bad" | "exists" | "network" | null>;
+  /** True once when the All Computers window was opened to sign in (the panel's account line while signed out). */
+  takeSignIn: () => Promise<boolean>;
+  /** Calls back when the open All Computers window is asked to show the sign-in sheet. */
+  onSignIn: (listener: () => void) => () => void;
+  signOut: () => Promise<void>;
+  /** Joins the relay again after another connection with this computer's id took its place. */
+  reconnect: () => Promise<void>;
 };
