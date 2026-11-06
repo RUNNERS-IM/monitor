@@ -48,7 +48,7 @@ fn kind_of(path: &str) -> &'static str {
         kind
     } else if path.ends_with("/node_modules") {
         "packages"
-    } else if path.ends_with("/DerivedData") || BUILD_FOLDERS.iter().any(|name| path.ends_with(&format!("/{name}"))) {
+    } else if path.ends_with("/DerivedData") || path.contains("/DerivedData/") || BUILD_FOLDERS.iter().any(|name| path.ends_with(&format!("/{name}"))) {
         "build"
     } else {
         "cache"
@@ -74,7 +74,8 @@ fn kind_totals(candidates: &[Candidate]) -> Vec<KindTotal> {
 /// a quit, a log-out) used to throw the work away, so `cleanup.json` was never written.
 pub fn measure(progress: Option<&Path>) -> Cleanup {
     let Some(home) = home_dir() else {
-        return Cleanup { total: 0, top: Vec::new(), kinds: Vec::new(), measured_at: now() };
+        // Why measured_at 0: a run that cannot see the home folder measured nothing, so it must not be loaded as a result.
+        return Cleanup { total: 0, top: Vec::new(), kinds: Vec::new(), measured_at: 0 };
     };
     let found = cleanable_folders(&home);
 
@@ -114,11 +115,12 @@ pub fn measure(progress: Option<&Path>) -> Cleanup {
     Cleanup { total, top: candidates, kinds, measured_at: now() }
 }
 
+const DERIVED_DATA: &str = "Library/Developer/Xcode/DerivedData";
+
 /// Every folder Monitor counts as cleanable: the fixed caches, then build and package folders under ~/git.
 /// The kinds in `extra` are measured by their own rules after these.
 fn cleanable_folders(home: &Path) -> Vec<PathBuf> {
     let mut found: Vec<PathBuf> = [
-        "Library/Developer/Xcode/DerivedData",
         "Library/Caches",
         "Library/pnpm/store",
         ".npm",
@@ -128,26 +130,49 @@ fn cleanable_folders(home: &Path) -> Vec<PathBuf> {
     .map(|p| home.join(p))
     .filter(|p| p.is_dir())
     .collect();
+    // Why one entry per project: a project built yesterday used to keep the whole folder, so the panel offered 30 GB
+    // and emptying freed nothing. Each project folder is now kept or deleted on its own.
+    if let Ok(entries) = fs::read_dir(home.join(DERIVED_DATA)) {
+        found.extend(entries.flatten().map(|entry| entry.path()).filter(|path| path.is_dir()));
+    }
     find_build_folders(&home.join("git"), 0, &mut found);
     found
 }
 
-/// What emptying one kind did: bytes freed and folders left alone because they were used recently.
-#[derive(Clone, Debug, Serialize)]
+/// What emptying one kind did: bytes freed, and the parts left alone with their size and why.
+#[derive(Clone, Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Emptied {
     pub freed: u64,
+    /// How many parts were left.
     pub skipped: u32,
+    /// Bytes the left parts take.
+    pub kept: u64,
+    /// `recent` (used within `KEEP_RECENT_DAYS`) or `inUse` (running or on screen); none when nothing was left.
+    pub kept_reason: Option<&'static str>,
 }
+
+impl Emptied {
+    pub(crate) fn keep(&mut self, bytes: u64, reason: &'static str) {
+        self.skipped += 1;
+        self.kept += bytes;
+        self.kept_reason = Some(reason);
+    }
+}
+
+/// Inside these cache folders each version is its own entry (`chromium-1228`, `chromium-1248`), so the browsers a
+/// test run still uses stay and older versions go.
+const TEST_BROWSERS: &[&str] = &["ms-playwright", "puppeteer"];
 
 /// Build and package folders touched within this many days are kept, so a project someone works on keeps building.
 pub const KEEP_RECENT_DAYS: u64 = 7;
 
 /// Deletes the folders of one kind, without the Trash, since only deleting frees the space.
-/// Caches keep their folder and lose what is inside (apps fill it again on use); build and package folders
-/// go whole, except those used within `KEEP_RECENT_DAYS`, which a running build or an open project still needs.
+/// Caches keep their folder and lose what is inside; build and package folders go whole. In both, what was used within
+/// `KEEP_RECENT_DAYS` stays: a running build or an open project still needs it, and a cache in use (the pnpm store,
+/// a test browser, uv) would only be downloaded again by the next install or test run.
 pub fn empty(kind: &str) -> Emptied {
-    let mut done = Emptied { freed: 0, skipped: 0 };
+    let mut done = Emptied::default();
     let Some(home) = home_dir() else { return done };
     if extra::KINDS.contains(&kind) {
         return extra::empty(kind, &home);
@@ -158,17 +183,45 @@ pub fn empty(kind: &str) -> Emptied {
             continue;
         }
         if kind == "cache" {
-            let Ok(entries) = fs::read_dir(&folder) else { continue };
-            for entry in entries.flatten() {
-                done.freed += remove(&entry.path());
+            for entry in cache_entries(&folder) {
+                if last_used(&entry) > keep_after {
+                    done.keep(size_of(&entry), "recent");
+                } else {
+                    done.freed += remove(&entry);
+                }
             }
         } else if last_used(&folder) > keep_after {
-            done.skipped += 1;
+            done.keep(folder_size(&folder), "recent");
         } else {
             done.freed += remove(&folder);
         }
     }
     done
+}
+
+/// What a cache folder is emptied by: the things right inside it, except that a test-browser folder is opened one
+/// level further so each browser version is judged on its own.
+fn cache_entries(folder: &Path) -> Vec<PathBuf> {
+    let mut entries = Vec::new();
+    let Ok(inside) = fs::read_dir(folder) else { return entries };
+    for entry in inside.flatten() {
+        let path = entry.path();
+        let name = entry.file_name();
+        if TEST_BROWSERS.contains(&name.to_string_lossy().as_ref()) && path.is_dir() {
+            entries.extend(fs::read_dir(&path).into_iter().flatten().flatten().map(|inner| inner.path()));
+        } else {
+            entries.push(path);
+        }
+    }
+    entries
+}
+
+fn size_of(path: &Path) -> u64 {
+    match path.symlink_metadata() {
+        Ok(meta) if meta.is_dir() => folder_size(path),
+        Ok(meta) => disk_bytes(&meta),
+        Err(_) => 0,
+    }
 }
 
 /// Removes a file or folder and returns the space it took. Errors (a file the system protects) leave that part in place.
@@ -199,12 +252,12 @@ fn last_used(folder: &Path) -> u64 {
 }
 
 /// The last result saved in `file`. Why: measuring takes minutes, so a restart shows the saved numbers instead of "measuring".
-/// A saved measurement, or none when the file is missing or found nothing at all.
-/// Why: a run that could not see the home folder saved `{"total":0,"top":[]}`, and the panel then showed "0.0 GB"
-/// instead of "measuring" until the next real measurement.
+/// An empty result counts too: a clean computer used to throw it away and walk the whole disk again on every start.
+/// Only a result without a time is refused (an older version saved `{"total":0,"top":[]}` when it could not see the
+/// home folder).
 pub fn load(file: &Path) -> Option<Cleanup> {
     let saved: Cleanup = serde_json::from_slice(&fs::read(file).ok()?).ok()?;
-    (saved.measured_at > 0 && !saved.top.is_empty()).then_some(saved)
+    (saved.measured_at > 0).then_some(saved)
 }
 
 pub fn save(file: &Path, cleanup: &Cleanup) {
@@ -315,6 +368,7 @@ mod tests {
         assert_eq!(kind_of("~/git/acme/app/target"), "build");
         assert_eq!(kind_of("~/git/acme/app/dist.noindex"), "build");
         assert_eq!(kind_of("~/Library/Developer/Xcode/DerivedData"), "build");
+        assert_eq!(kind_of("~/Library/Developer/Xcode/DerivedData/Monitor-abcdef"), "build");
         assert_eq!(kind_of("~/Library/Caches"), "cache");
         assert_eq!(kind_of("~/Library/pnpm/store"), "cache");
     }
@@ -328,6 +382,29 @@ mod tests {
         assert!(size >= 64 * 1024);
         assert_eq!(remove(&dir), size);
         assert!(!dir.exists());
+    }
+
+    #[test]
+    fn test_browser_versions_are_judged_one_by_one() {
+        let dir = std::env::temp_dir().join(format!("monitor-caches-{}", std::process::id()));
+        fs::create_dir_all(dir.join("ms-playwright/chromium-1228")).unwrap();
+        fs::create_dir_all(dir.join("ms-playwright/chromium-1248")).unwrap();
+        fs::create_dir_all(dir.join("com.example.app")).unwrap();
+        let mut entries: Vec<String> =
+            cache_entries(&dir).iter().map(|p| p.strip_prefix(&dir).unwrap().display().to_string()).collect();
+        entries.sort();
+        assert_eq!(entries, ["com.example.app", "ms-playwright/chromium-1228", "ms-playwright/chromium-1248"]);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn an_empty_measurement_is_loaded_again() {
+        let file = std::env::temp_dir().join(format!("monitor-empty-{}.json", std::process::id()));
+        save(&file, &Cleanup { total: 0, top: Vec::new(), kinds: Vec::new(), measured_at: 1 });
+        assert!(load(&file).is_some());
+        save(&file, &Cleanup { total: 0, top: Vec::new(), kinds: Vec::new(), measured_at: 0 });
+        assert!(load(&file).is_none());
+        let _ = fs::remove_file(&file);
     }
 
     #[test]

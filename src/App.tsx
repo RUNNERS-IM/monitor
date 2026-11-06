@@ -304,6 +304,12 @@ function diskParts(snap: Snapshot, cleanup: Cleanup | null): { parts: Part[]; to
   return { parts: parts.filter((part) => part.size > 0), total: snap.diskTotal };
 }
 
+/** The same parts with no Empty button, for the disk row. */
+const withoutEmpty = ({ parts, total }: { parts: Part[]; total: number }) => ({
+  parts: parts.map((part) => ({ ...part, empty: undefined })),
+  total,
+});
+
 const cleanError = (e: unknown) => String(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, "") : e);
 
 /** One line under the bar: colour square, name, amount, and Quit for an app or Empty for a cleanable kind. */
@@ -606,7 +612,8 @@ function App() {
         <div className="rm-note">
           {`\u2066${formatGb(snap.diskUsed)} / ${formatGb(snap.diskTotal)}\u2069 · ${t("panel.diskFree", { free: formatGb(snap.diskTotal - snap.diskUsed) })}`}
         </div>
-        <Breakdown {...diskParts(snap, cleanup)} label={t("panel.disk")} />
+        {/* Why no Empty here: the buttons sit on the cleanup row, where people look for what to delete. */}
+        <Breakdown {...withoutEmpty(diskParts(snap, cleanup))} label={t("panel.disk")} />
         <div className="rm-note">{cleanup ? t("disk.cleanupNote") : t("panel.cleanupMeasuringNote")}</div>
       </SummaryRow>
       <SummaryRow icon={SquareTerminal} label={t("panel.work")} value={workValue} open={open === "work"} onToggle={() => toggle("work")}>
@@ -660,6 +667,14 @@ function App() {
         open={open === "cleanup"}
         onToggle={() => toggle("cleanup")}
       >
+        {/* Why the kinds come first with their Empty buttons: opening this row used to show only paths, and emptying
+            had to be found under the disk row (Monitor flow check 36A). */}
+        {diskParts(snap, cleanup)
+          .parts.filter((part) => part.empty)
+          .map((part) => (
+            <Legend key={part.key} part={part} />
+          ))}
+        {cleanup && cleanup.top.length > 0 && <div className="group-gap" />}
         {cleanup?.top.map((item) => <Row key={item.path} text={item.path} state={formatGb(item.bytes)} tone="quiet" />)}
         <div className="rm-note">
           {cleanup ? t("panel.cleanupNote", { time: formatClock(cleanup.measuredAt) }) : t("panel.cleanupMeasuringNote")}

@@ -9,8 +9,8 @@ export type MenuState = { openAtLogin: boolean; autoUpdate: boolean };
 
 export type CleanupKind = "cache" | "packages" | "build" | "trash" | "docker" | "simulators" | "wallpapers" | "vms" | "models";
 
-/** What emptying did: bytes freed and recently used folders it kept. */
-export type Emptied = { freed: number; skipped: number };
+/** What emptying did: bytes freed, and the parts it kept (how many, their size, and why). */
+export type Emptied = { freed: number; skipped: number; kept: number; keptReason: "recent" | "inUse" | null };
 
 /** The update window's content: new version as people see it, the "What's new" lines (null hides the box) and the
  *  download's progress (0–100) while it runs. */
