@@ -353,8 +353,6 @@ const KIND_COLOURS = {
   vms: "#ff375f",
   models: "#5e5ce6",
 } as const;
-/** Kinds that keep recently used folders; the others keep only what is in use. */
-const KEEPS_RECENT: CleanupKind[] = ["packages", "build"];
 
 /** The parts of the disk: what could be cleaned, by kind, then the rest of the used space (the free part left empty). */
 function diskParts(snap: Snapshot, cleanup: Cleanup | null): { parts: Part[]; total: number } {
@@ -385,6 +383,12 @@ function quitResult(report: QuitReport, kind: QuitKind): string {
     .join(" · ");
 }
 
+/** The same parts with no Empty button, for the disk row. */
+const withoutEmpty = ({ parts, total }: { parts: Part[]; total: number }) => ({
+  parts: parts.map((part) => ({ ...part, empty: undefined })),
+  total,
+});
+
 const cleanError = (e: unknown) => String(e instanceof Error ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, "") : e);
 
 /** One line under the bar: colour square, name, amount, and Quit for an app or Empty for a cleanable kind. */
@@ -402,7 +406,7 @@ function Legend({ part }: { part: Part }) {
       .then((done) => {
         if (!done) return;
         const freed = t("empty.done", { size: formatGb(done.freed) });
-        const kept = part.empty && KEEPS_RECENT.includes(part.empty) ? "empty.skipped" : "empty.skippedInUse";
+        const kept = done.keptReason === "recent" ? "empty.skipped" : "empty.skippedInUse";
         setResult(done.skipped > 0 ? `${freed} ${t(kept, { count: done.skipped })}` : freed);
       })
       .catch((e) => setError(cleanError(e)))
@@ -721,7 +725,8 @@ function App() {
         <div className="rm-note">
           {`\u2066${formatGb(snap.diskUsed)} / ${formatGb(snap.diskTotal)}\u2069 · ${t("panel.diskFree", { free: formatGb(snap.diskTotal - snap.diskUsed) })}`}
         </div>
-        <Breakdown {...diskParts(snap, cleanup)} label={t("panel.disk")} />
+        {/* Why no Empty here: the buttons sit on the cleanup row, where people look for what to delete. */}
+        <Breakdown {...withoutEmpty(diskParts(snap, cleanup))} label={t("panel.disk")} />
         <div className="rm-note">{cleanup ? t("disk.cleanupNote") : t("panel.cleanupMeasuringNote")}</div>
       </SummaryRow>
       {workValue && (
@@ -790,6 +795,14 @@ function App() {
         open={open === "cleanup"}
         onToggle={() => toggle("cleanup")}
       >
+        {/* Why the kinds come first with their Empty buttons: opening this row used to show only paths, and emptying
+            had to be found under the disk row (Monitor flow check 36A). */}
+        {diskParts(snap, cleanup)
+          .parts.filter((part) => part.empty)
+          .map((part) => (
+            <Legend key={part.key} part={part} />
+          ))}
+        {cleanup && cleanup.top.length > 0 && <div className="group-gap" />}
         {cleanup?.top.map((item) => <Row key={item.path} text={item.path} state={formatGb(item.bytes)} tone="quiet" />)}
         <div className="rm-note">
           {cleanup ? t("panel.cleanupNote", { time: formatAgo(cleanup.measuredAt) }) : t("panel.cleanupMeasuringNote")}

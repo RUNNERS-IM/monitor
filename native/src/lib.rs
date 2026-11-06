@@ -148,7 +148,7 @@ pub fn cleanup_measure(progress_path: Option<String>) -> AsyncTask<Work> {
 }
 
 /// Deletes one cleanable kind (`cache`, `packages`, `build`, or a kind in `extra::KINDS`) on a low-priority thread;
-/// resolves to `{"freed":bytes,"skipped":parts left}`.
+/// resolves to `{"freed":bytes,"skipped":parts left,"kept":bytes left,"keptReason":"recent"|"inUse"|null}`.
 #[napi(ts_return_type = "Promise<string>")]
 pub fn cleanup_empty(kind: String) -> AsyncTask<Work> {
     Work::new(move || {

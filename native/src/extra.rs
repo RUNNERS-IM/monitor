@@ -51,9 +51,9 @@ pub fn measure(kind: &str, home: &Path) -> u64 {
     }
 }
 
-/// Deletes what `kind` may lose now; `skipped` counts the parts left because they were in use.
+/// Deletes what `kind` may lose now; the parts left because they were in use are kept with reason `inUse`.
 pub fn empty(kind: &str, home: &Path) -> Emptied {
-    let mut done = Emptied { freed: 0, skipped: 0 };
+    let mut done = Emptied::default();
     match kind {
         "trash" if cfg!(target_os = "macos") => done.freed = remove_inside(&home.join(".Trash")),
         "docker" => {
@@ -68,7 +68,7 @@ pub fn empty(kind: &str, home: &Path) -> Emptied {
         "simulators" => {
             for device in simulators(home) {
                 if device.booted {
-                    done.skipped += 1;
+                    done.keep(folder_size(&device.data), "inUse");
                     continue;
                 }
                 let before = folder_size(&device.data);
@@ -80,7 +80,7 @@ pub fn empty(kind: &str, home: &Path) -> Emptied {
         "wallpapers" => {
             for video in wallpaper_videos(home) {
                 if video.keep {
-                    done.skipped += 1;
+                    done.keep(video.bytes, "inUse");
                 } else {
                     done.freed += remove(&video.path);
                 }
@@ -89,7 +89,7 @@ pub fn empty(kind: &str, home: &Path) -> Emptied {
         "vms" => {
             for machine in lima_machines(home) {
                 if machine.running {
-                    done.skipped += 1;
+                    done.keep(folder_size(&machine.folder), "inUse");
                 } else if machine.unused {
                     done.freed += remove(&machine.folder);
                 }
@@ -97,7 +97,7 @@ pub fn empty(kind: &str, home: &Path) -> Emptied {
         }
         "models" => {
             if ollama_running() {
-                done.skipped += 1;
+                done.keep(folder_size(&home.join(".ollama/models")), "inUse");
             } else if ollama_unused(home) {
                 done.freed = remove_inside(&home.join(".ollama/models"));
             }
@@ -393,6 +393,8 @@ mod tests {
         fs::write(home.join(WALLPAPERS).join("Store/Index.plist"), format!("bplist00 assetID {}", set.to_lowercase())).unwrap();
         let done = empty("wallpapers", &home);
         assert_eq!(done.skipped, 1);
+        assert_eq!(done.kept_reason, Some("inUse"));
+        assert!(done.kept >= 4096);
         assert!(done.freed >= 4096);
         assert!(home.join(format!("{videos}/{set}.mov")).exists());
         let _ = fs::remove_dir_all(&home);

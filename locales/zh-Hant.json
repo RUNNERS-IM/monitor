@@ -118,7 +118,7 @@
   "empty.confirm.wallpapers": "刪除 {{size}} 桌面背景影片?",
   "empty.confirm.vms": "刪除 {{size}} 超過 30 天未使用的虛擬機器?",
   "empty.confirm.models": "刪除 {{size}} 超過 30 天未使用的 AI 模型?",
-  "empty.detail.cache": "會直接刪除,不經過垃圾桶。App 需要時會重新產生,所以第一次使用可能稍慢。",
+  "empty.detail.cache": "會直接刪除,不經過垃圾桶。最近 7 天用過的資料夾會保留。App 需要時會重新產生,所以第一次使用可能稍慢。",
   "empty.detail.packages": "會直接刪除,不經過垃圾桶。最近 7 天用過的專案會保留。被刪除的專案需要先執行 pnpm install(或 npm install)才能再次執行。",
   "empty.detail.build": "會直接刪除,不經過垃圾桶。最近 7 天用過的資料夾會保留。被刪除專案的下一次建置會從頭開始,耗時更長。",
   "empty.detail.trash": "垃圾桶中的檔案會被永久刪除。",

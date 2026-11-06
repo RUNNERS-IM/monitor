@@ -118,7 +118,7 @@
   "empty.confirm.wallpapers": "Poistetaanko {{size}} taustakuvavideoita?",
   "empty.confirm.vms": "Poistetaanko {{size}} yli 30 päivää käyttämättä olleita virtuaalikoneita?",
   "empty.confirm.models": "Poistetaanko {{size}} yli 30 päivää käyttämättä olleita tekoälymalleja?",
-  "empty.detail.cache": "Ne poistetaan heti, ei roskakorin kautta. Apit luovat ne uudelleen tarvittaessa, joten ensimmäinen käyttö voi olla hieman hitaampi.",
+  "empty.detail.cache": "Ne poistetaan heti, ei roskakorin kautta. Viimeisen 7 päivän aikana käytetyt kansiot jäävät. Apit luovat ne uudelleen tarvittaessa, joten ensimmäinen käyttö voi olla hieman hitaampi.",
   "empty.detail.packages": "Ne poistetaan heti, ei roskakorin kautta. Viimeisen 7 päivän aikana käytetyt projektit jäävät. Poistettu projekti tarvitsee pnpm install (tai npm install) ennen kuin se toimii taas.",
   "empty.detail.build": "Ne poistetaan heti, ei roskakorin kautta. Viimeisen 7 päivän aikana käytetyt kansiot jäävät. Poistetun projektin seuraava käännös alkaa alusta ja kestää kauemmin.",
   "empty.detail.trash": "Roskakorin tiedostot poistetaan pysyvästi.",

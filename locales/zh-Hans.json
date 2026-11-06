@@ -118,7 +118,7 @@
   "empty.confirm.wallpapers": "删除 {{size}} 墙纸视频?",
   "empty.confirm.vms": "删除 {{size}} 超过 30 天未使用的虚拟机?",
   "empty.confirm.models": "删除 {{size}} 超过 30 天未使用的 AI 模型?",
-  "empty.detail.cache": "会直接删除,不经过废纸篓。应用需要时会重新生成,所以第一次使用可能稍慢。",
+  "empty.detail.cache": "会直接删除,不经过废纸篓。最近 7 天用过的文件夹会保留。应用需要时会重新生成,所以第一次使用可能稍慢。",
   "empty.detail.packages": "会直接删除,不经过废纸篓。最近 7 天用过的项目会保留。被删除的项目需要先运行 pnpm install(或 npm install)才能再次运行。",
   "empty.detail.build": "会直接删除,不经过废纸篓。最近 7 天用过的文件夹会保留。被删除项目的下一次构建会从头开始,耗时更长。",
   "empty.detail.trash": "废纸篓中的文件会被永久删除。",

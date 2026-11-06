@@ -1,13 +1,15 @@
 ## 한국어
 
-- 패널 맨 위 줄에서 RUNNERS 계정으로 로그인하거나 계정을 만들 수 있습니다. Remote · Prompt · Split 와 같은 로그인 창과 같은 계정을 씁니다.
-- 「모든 컴퓨터」 창은 Tailscale 대신 같은 RUNNERS 계정으로 로그인한 컴퓨터를 보여 줍니다. 같은 망에 있지 않아도 보이고, 다른 컴퓨터는 숫자를 읽기만 할 수 있습니다.
-- 로그아웃 상태의 「모든 컴퓨터」 창에서 바로 로그인할 수 있습니다.
-- 패널의 켜기 · 끄기 스위치가 다른 RUNNERS 앱과 같은 모양이 되었습니다.
+- 「정리할 거리」를 펼치면 비우기 단추가 바로 보입니다. 전에는 디스크 줄 아래에서 찾아야 했습니다.
+- 캐시를 비울 때도 최근 7일 안에 쓴 것은 남깁니다. 테스트 브라우저는 판마다 따로 봐서, 지금 쓰는 판은 남기고 옛 판만 지웁니다.
+- Xcode 빌드 폴더(DerivedData)를 프로젝트마다 따로 봅니다. 어제 빌드한 프로젝트 하나 때문에 전부 남던 일이 없어집니다.
+- 정리할 것이 하나도 없는 컴퓨터는 켤 때마다 디스크를 처음부터 다시 재지 않습니다.
+- 패널 맨 위 RUNNERS 마크가 글자와 같은 높이에 놓입니다.
 
 ## English
 
-- Sign in to, or make, a RUNNERS account from the first line of the panel. It is the same sign-in sheet and account as Remote, Prompt and Split.
-- The All Computers window now shows the computers signed in with the same RUNNERS account instead of the Tailscale network, wherever they are, and they can only read each other's numbers.
-- When signed out, the All Computers window offers to sign in right there.
-- The panel's switches now look the same as in the other RUNNERS apps.
+- Opening Cleanable now shows the Empty buttons right away; they used to sit under the disk row.
+- Emptying caches now keeps what was used in the last 7 days. Test browsers are judged version by version, so the one in use stays and older ones go.
+- Xcode's DerivedData is judged project by project, so one project built yesterday no longer keeps all of it.
+- A computer with nothing to clean no longer measures the whole disk again at every start.
+- The RUNNERS mark on the panel's first line now lines up with the text.

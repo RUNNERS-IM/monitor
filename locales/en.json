@@ -118,7 +118,7 @@
   "empty.confirm.wallpapers": "Delete {{size}} of wallpaper videos?",
   "empty.confirm.vms": "Delete {{size}} of virtual machines unused for over 30 days?",
   "empty.confirm.models": "Delete {{size}} of AI models unused for over 30 days?",
-  "empty.detail.cache": "They are deleted right away, without the Trash. Apps make them again when needed, so the first use may be a little slower.",
+  "empty.detail.cache": "They are deleted right away, without the Trash. Folders used in the last 7 days are kept. Apps make them again when needed, so the first use may be a little slower.",
   "empty.detail.packages": "They are deleted right away, without the Trash. Projects used in the last 7 days are kept. A deleted project needs pnpm install (or npm install) before it runs again.",
   "empty.detail.build": "They are deleted right away, without the Trash. Folders used in the last 7 days are kept. A deleted project's next build starts from scratch and takes longer.",
   "empty.detail.trash": "The files in the Trash are deleted for good.",
