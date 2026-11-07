@@ -8,6 +8,14 @@ import { createAccount, type Account } from './runners/account'
 const API_URL =
   (!app.isPackaged && process.env.MONITOR_API_URL) || 'https://server.system.runners.im'
 
+// Why: 서명 없는 개발 실행이 키체인을 쓰면 「Electron이(가) '… Safe Storage'를 사용하려고 합니다」 창이 뜬다.
+// 개발 실행은 userData 폴더가 따로라 출시판 토큰과 섞이지 않으므로 암호화하지 않는다(Remote · Draw 와 같음).
+const plainStorage = {
+  isEncryptionAvailable: () => false,
+  encryptString: (text: string) => Buffer.from(text),
+  decryptString: (bytes: Buffer) => bytes.toString('utf8')
+}
+
 let made: Account | null = null
 
 // Why: 개발 실행은 index.ts 가 userData 를 바꾸는데, 그 줄은 이 파일을 불러온 다음에 돈다.
@@ -16,7 +24,7 @@ function account(): Account {
     project: 'MONITOR',
     filePath: join(app.getPath('userData'), 'account.bin'),
     apiUrl: API_URL,
-    safeStorage
+    safeStorage: app.isPackaged ? safeStorage : plainStorage
   })
   return made
 }
