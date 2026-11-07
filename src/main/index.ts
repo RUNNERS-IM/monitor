@@ -559,6 +559,12 @@ function phoneState(): unknown {
     topCpu: latest.topCpu
       .slice(0, 5)
       .map((a) => ({ name: a.name, cpuPercent: a.cpuPercent, quit: a.quit })),
+    // Why: the All Computers window of another computer offers commands only to a Monitor that takes them (4A).
+    hostCommands: true,
+    // Why: another computer shows what this panel would suggest; the folder is left out, since no path leaves the computer.
+    suggestions: suggestions(latest, latestCleanup).map((s) =>
+      s.action === 'quit' ? { ...s, folder: undefined } : s
+    ),
     cleanupKinds: latestCleanup?.kinds ?? [],
     runners: latest.runners.map((r) => ({
       name: r.name,
@@ -574,13 +580,10 @@ async function quitApp(name: string): Promise<QuitReport> {
   return JSON.parse(await sampler!.quitApp(name)) as QuitReport
 }
 
-/** The phone app's commands (runners-app-kit docs/relay.md, "앱별 명령"). */
+/** The commands of the phone app and of the account's other computers (runners-app-kit docs/relay.md, "앱별 명령"). */
 const phoneCommands: Record<string, relay.Handler> = {
   'usage.get': async () => phoneState(),
-  'app.quit': async (args) => {
-    const { gone, alreadyGone } = await quitApp(String(args.name ?? ''))
-    return { gone, alreadyGone }
-  },
+  'app.quit': async (args) => quitApp(String(args.name ?? '')),
   'cleanup.empty': async (args) => emptyKind(String(args.kind ?? '')),
   'runner.pause': async (args) => ({ until: await pauseRunner(String(args.name ?? '')) }),
   'runner.resume': async (args) => {
@@ -588,6 +591,10 @@ const phoneCommands: Record<string, relay.Handler> = {
     return {}
   }
 }
+
+const COMPUTER_COMMANDS = new Set(['app.quit', 'cleanup.empty', 'runner.pause', 'runner.resume'])
+/** How long the other computer has to say it took a command; the kit then waits on for the result. */
+const COMMAND_ANSWER_MS = 20 * 1000
 
 /** Set when the All Computers window is opened to sign in, and taken by that window once it has loaded. */
 let signInWanted = false
@@ -633,12 +640,33 @@ function registerIpc(): void {
         )
       : peerList()
   )
+  // Why: the window's buttons send what a phone sends: to the computer chosen, or to this one's own commands (null).
+  ipcMain.handle(
+    'monitor:computerCommand',
+    async (_event, deviceId: unknown, name: unknown, args: unknown) => {
+      const command = String(name)
+      if (!COMPUTER_COMMANDS.has(command)) {
+        throw new Error('unknown command')
+      }
+      // Safety: screenshot runs act only on test computers (`fake-…`), never on this one or a real one.
+      if (process.env.MONITOR_CAPTURE && !String(deviceId).startsWith('fake-')) {
+        throw new Error('capture runs act only on test computers')
+      }
+      const given = (args ?? {}) as Record<string, unknown>
+      const result =
+        deviceId === null
+          ? await phoneCommands[command](given)
+          : await relay.ask(String(deviceId), command, given, COMMAND_ANSWER_MS)
+      askNow()
+      return result
+    }
+  )
   // Why: the cards are named as Tailscale names the computers (m1-pro-2), not by the system host name.
   ipcMain.handle('monitor:selfUsage', async () => {
     if (DEMO) {
       return usage(latestDemo)
     }
-    const mine = usage()
+    const mine = phoneState() as Usage | null
     const net = await tailnet()
     return mine && net ? { ...mine, host: net.self.name } : mine
   })
@@ -810,6 +838,51 @@ async function homepageShots(folder: string): Promise<void> {
   app.quit()
 }
 
+type CaptureStep =
+  | { card: string }
+  | { act: string }
+  | { go: true }
+  | { cancel: true }
+  | { wait: number }
+  | { shot: string }
+
+/** Presses buttons in a hidden All Computers window, one step at a time (see MONITOR_CAPTURE_STEPS). */
+async function captureSteps(
+  steps: CaptureStep[],
+  save: (window: BrowserWindow, name: string) => Promise<void>
+): Promise<void> {
+  setFast(true)
+  await sleep(6000)
+  const page = hiddenPage('computers', '', 900)
+  await sleep(3500)
+  const run = (code: string) => page.webContents.executeJavaScript(code) as Promise<unknown>
+  for (const step of steps) {
+    if ('card' in step) {
+      await run(
+        `[...document.querySelectorAll('.c-card')].find(c=>c.querySelector('.c-name').textContent.startsWith(${JSON.stringify(step.card)}))?.click()`
+      )
+    } else if ('act' in step) {
+      console.log(
+        'press',
+        step.act,
+        await run(
+          `(()=>{const b=document.querySelector(${JSON.stringify(`.c-detail [data-act="${step.act}"]`)});b?.click();return !!b})()`
+        )
+      )
+    } else if ('go' in step) {
+      await run(`document.querySelector('.c-confirm-go')?.click()`)
+    } else if ('cancel' in step) {
+      await run(`document.querySelector('.c-confirm-cancel')?.click()`)
+    } else if ('wait' in step) {
+      await sleep(step.wait)
+    } else {
+      await save(page, step.shot)
+    }
+    await sleep(400)
+  }
+  page.destroy()
+}
+
 async function captureHidden(folder: string): Promise<void> {
   const save = async (window: BrowserWindow | null, name: string) => {
     if (!window) {
@@ -831,6 +904,13 @@ async function captureHidden(folder: string): Promise<void> {
   // `MONITOR_CAPTURE_SIGNIN=1` captures the window with the sign-in sheet up, as the panel's account line opens it.
   if (process.env.MONITOR_CAPTURE_SIGNIN) {
     signInWanted = true
+  }
+  // `MONITOR_CAPTURE_STEPS=<json>` presses the All Computers window's buttons on a test computer and captures each step.
+  const stepsFile = process.env.MONITOR_CAPTURE_STEPS
+  if (stepsFile) {
+    await captureSteps(JSON.parse(readFileSync(stepsFile, 'utf8')) as CaptureStep[], save)
+    app.quit()
+    return
   }
   const open = showComputersHidden()
   await sleep(4000)

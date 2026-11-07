@@ -82,15 +82,31 @@ test('휴대폰 명령은 받음을 먼저 보내고 같은 id 로 결과를 보
   expect(results.map((message) => message.data)).toEqual([{ pending: true }, { ended: true }])
 })
 
-test('다른 컴퓨터는 숫자 읽기만 되고, 첫 답이 곧 결과다', async () => {
-  const quit = vi.fn(async () => null)
+test('다른 컴퓨터의 숫자 읽기는 첫 답이 곧 결과이고, 끄기는 받음 뒤 결과가 간다', async () => {
+  const quit = vi.fn(async () => ({ gone: true }))
   const { socket } = await connected({ 'usage.get': async () => ({ cpu: 9 }), 'app.quit': quit })
   socket.hear({ type: 'command', from: 'b', fromRole: 'host', id: 'read', name: 'usage.get' })
   socket.hear({ type: 'command', from: 'b', fromRole: 'host', id: 'quit', name: 'app.quit' })
   await flush()
-  const results = socket.sent.filter((message) => message.type === 'result')
-  expect(results.find((message) => message.id === 'read')?.data).toEqual({ cpu: 9 })
-  expect(results.find((message) => message.id === 'quit')?.ok).toBe(false)
+  const results = (id: string) =>
+    socket.sent.filter((message) => message.type === 'result' && message.id === id)
+  expect(results('read').map((message) => message.data)).toEqual([{ cpu: 9 }])
+  expect(results('quit').map((message) => message.data)).toEqual([
+    { pending: true },
+    { gone: true }
+  ])
+  expect(quit).toHaveBeenCalledOnce()
+})
+
+test('계정의 기기가 아닌 쪽이 보낸 명령은 받지 않는다', async () => {
+  const quit = vi.fn(async () => null)
+  const { socket } = await connected({ 'app.quit': quit })
+  socket.hear({ type: 'command', from: 'x', fromRole: 'unknown', id: 'quit', name: 'app.quit' })
+  socket.hear({ type: 'command', from: 'b', fromRole: 'host', id: 'other', name: 'shell.run' })
+  await flush()
+  expect(
+    socket.sent.filter((message) => message.type === 'result').every((message) => !message.ok)
+  ).toBe(true)
   expect(quit).not.toHaveBeenCalled()
 })
 

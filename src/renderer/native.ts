@@ -8,6 +8,7 @@ import type {
   MenuState,
   MonitorApi,
   Peer,
+  PeerSuggestion,
   PeerUsage,
   QuitReport,
   UpdateOffer
@@ -30,6 +31,7 @@ export type {
   MenuCommand,
   MenuState,
   Peer,
+  PeerSuggestion,
   PeerUsage,
   QuitReport,
   UpdateOffer
@@ -54,6 +56,11 @@ export const pauseRunner = (name: string) => api().pauseRunner(name)
 export const resumeRunner = (name: string) => api().resumeRunner(name)
 export const peers = () => api().peers()
 export const selfUsage = () => api().selfUsage()
+export const computerCommand = (
+  deviceId: string | null,
+  name: string,
+  args: Record<string, unknown>
+) => api().computerCommand(deviceId, name, args)
 export const openComputers = (signIn?: boolean) => api().openComputers(signIn)
 export const onShown = (listener: () => void) => api().onShown(listener)
 export const onHidden = (listener: () => void) => api().onHidden(listener)

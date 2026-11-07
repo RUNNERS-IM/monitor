@@ -56,13 +56,33 @@ export type PeerUsage = {
   diskTotal: number
   slowMemory: boolean
   slowCpu: boolean
-  topMemory: { name: string; memory: number }[]
+  topMemory: { name: string; memory: number; quit?: 'app' | 'process' | null }[]
   claudeSessions: number
   runnersBusy: number
   runnersIdle: number
   cleanable: number | null
+  /** Set by a Monitor that takes commands from other computers; an older one only answers the numbers. */
+  hostCommands?: boolean
+  cleanupKinds?: { kind: CleanupKind; bytes: number }[]
+  runners?: { name: string; busy: boolean; off: boolean; pausedUntil: number | null }[]
+  suggestions?: PeerSuggestion[]
 }
+/** What a computer's own panel suggests, as it tells the others (no folder paths). */
+export type PeerSuggestion =
+  | {
+      action: 'quit'
+      reason: 'memory' | 'cpu'
+      name: string
+      quit: 'app' | 'process'
+      devServer: boolean
+      runningSecs: number | null
+      bytes: number
+      cpuPercent: number
+    }
+  | { action: 'empty'; reason: 'disk'; kind: CleanupKind; bytes: number }
 export type Peer = {
+  /** Where commands for this computer go. */
+  deviceId: string
   name: string
   state: 'ok' | 'noAnswer' | 'offline'
   usage: PeerUsage | null
@@ -88,6 +108,12 @@ export type MonitorApi = {
   peers: () => Promise<Peer[]>
   /** This computer in the same shape, for the first card of the All Computers window. */
   selfUsage: () => Promise<PeerUsage | null>
+  /** Sends a command to another computer (`deviceId`) or to this one (null) and resolves to its answer. */
+  computerCommand: (
+    deviceId: string | null,
+    name: string,
+    args: Record<string, unknown>
+  ) => Promise<unknown>
   /** Opens the All Computers window (and closes the panel). */
   /** Opens the All Computers window; `signIn` opens it with the sign-in sheet up. */
   openComputers: (signIn?: boolean) => Promise<void>

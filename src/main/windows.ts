@@ -99,7 +99,7 @@ export function placeUnderTray(panel: BrowserWindow, tray: Tray | null): void {
 let about: BrowserWindow | null = null
 let computers: BrowserWindow | null = null
 const COMPUTERS_WIDTH = 760
-const COMPUTERS_HEIGHT = 560
+const COMPUTERS_HEIGHT = 720
 
 /** Opens the All Computers window (an ordinary window people can leave open), or brings the open one forward.
  *  `onOpen(true)` while it is open, so the other computers are asked more often only then. */

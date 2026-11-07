@@ -19,6 +19,7 @@ import {
   Workflow,
   type LucideIcon
 } from 'lucide-react'
+import { cleanError, formatDuration, formatGb } from './format'
 import { locale, t } from './i18n'
 import * as native from './native'
 import type { AccountState, CleanupKind, MenuCommand, MenuState, Peer, QuitReport } from './native'
@@ -46,26 +47,8 @@ const MIN_TOP_CPU = 1
 // Why: Spotlight indexing shows up as these processes and is a common cause of a slow Mac with big source folders.
 const SPOTLIGHT = /^(mds|mds_stores|mdworker|mdworker_shared)$/i
 
-function formatGb(bytes: number): string {
-  // Why: in Arabic the page reads right to left and "3.2 GB" came out as "GB 3.2"; the isolate marks keep it in order.
-  return `\u2066${(bytes / 1024 ** 3).toFixed(1)} GB\u2069`
-}
-
 function percent(used: number, total: number): number {
   return total === 0 ? 0 : (used * 100) / total
-}
-
-function formatDuration(secs: number): string {
-  const m = Math.floor(secs / 60) % 60
-  const h = Math.floor(secs / 3600) % 24
-  const d = Math.floor(secs / 86400)
-  if (d > 0) {
-    return t('time.days', { d, h })
-  }
-  if (h > 0) {
-    return t('time.hours', { h, m })
-  }
-  return t('time.minutes', { m })
 }
 
 // Why: the same thresholds colour every bar so a full disk and a busy CPU read the same way.
@@ -510,13 +493,6 @@ const withoutEmpty = ({ parts, total }: { parts: Part[]; total: number }) => ({
   parts: parts.map((part) => ({ ...part, empty: undefined })),
   total
 })
-
-const cleanError = (e: unknown) =>
-  String(
-    e instanceof Error
-      ? e.message.replace(/^Error invoking remote method '[^']+': (Error: )?/, '')
-      : e
-  )
 
 /** One line under the bar: colour square, name, amount, and Quit for an app or Empty for a cleanable kind. */
 function Legend({ part }: { part: Part }) {

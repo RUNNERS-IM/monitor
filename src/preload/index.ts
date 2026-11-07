@@ -12,6 +12,8 @@ const api: MonitorApi = {
   resumeRunner: (name) => ipcRenderer.invoke('monitor:resumeRunner', name),
   peers: () => ipcRenderer.invoke('monitor:peers'),
   selfUsage: () => ipcRenderer.invoke('monitor:selfUsage'),
+  computerCommand: (deviceId, name, args) =>
+    ipcRenderer.invoke('monitor:computerCommand', deviceId, name, args),
   openComputers: (signIn) => ipcRenderer.invoke('monitor:openComputers', signIn === true),
   onShown: (listener) => {
     const relay = () => listener()

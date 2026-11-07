@@ -169,3 +169,71 @@
   font-size: var(--rw-font-small);
   font-weight: 600;
 }
+
+.c-sec-gap {
+  margin-top: 12px;
+}
+/* The panel's small filled button (.row-button in App.css, which this window does not load). */
+.c-act {
+  flex: none;
+  padding: 1px 8px;
+  border: none;
+  border-radius: 5px;
+  background: var(--rw-accent);
+  color: #fff;
+  font: inherit;
+  font-size: var(--rw-font-small);
+  font-weight: 600;
+}
+.c-act:disabled {
+  opacity: 0.5;
+}
+/* The kinds of cleanable folders sit under the cleanup total, a step in. */
+.c-sub > span:first-child {
+  padding-inline-start: 12px;
+}
+.c-suggest {
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border-radius: var(--rw-small-radius);
+  background: var(--rw-control-bg);
+}
+.c-suggest .c-line {
+  padding: 3px 0;
+}
+.c-suggest em {
+  color: var(--rw-text);
+  font-style: normal;
+  font-weight: 600;
+}
+.c-why {
+  margin-top: 4px;
+  color: var(--rw-text-secondary);
+  font-size: var(--rw-font-small);
+}
+.c-old,
+.c-outcome {
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  border-radius: var(--rw-small-radius);
+  background: var(--rw-control-bg);
+  font-size: var(--rw-font-small);
+}
+.c-outcome.failed {
+  color: #ff3b30;
+}
+.c-confirm-on {
+  align-self: flex-start;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--rw-accent);
+  color: #fff;
+  font-size: var(--rw-font-small);
+  font-weight: 600;
+}
+.c-confirm-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
