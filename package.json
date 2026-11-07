@@ -1,27 +1,31 @@
 {
   "name": "monitor",
-  "productName": "Monitor",
-  "private": true,
   "version": "2.6.1105",
+  "private": true,
   "description": "Watch CPU, memory, disk, claude sessions and runners from the menu bar",
-  "author": "RUNNERS",
   "homepage": "https://github.com/RUNNERS-IM/monitor",
+  "license": "UNLICENSED",
+  "author": "RUNNERS",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "pnpm typecheck && pnpm check:account && electron-vite build",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "lint": "oxlint -c .oxlintrc.monitor.json",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "native": "napi build --manifest-path native/Cargo.toml --package-json-path native/package.json --platform --release --target-dir native/target.noindex --output-dir native --no-js",
     "check:locales": "node scripts/check-locales.mjs",
-    "check:account": "node src/runners-account/check.mjs",
-    "notices": "node scripts/third-party-notices.mjs",
+    "check:account": "node src/runners-account/check.mjs --kit 0.1.7 && node electron/main/runners/check.mjs --kit 0.1.7 && node scripts/check.mjs --kit 0.1.7",
+    "notices": "node scripts/third-party-notices.mjs Monitor",
     "dist": "pnpm build && electron-builder --config electron-builder.config.cjs"
   },
   "dependencies": {
     "electron-updater": "^6.8.10",
     "lucide-react": "^1.63.0",
-    "react": "~19.2.8",
-    "react-dom": "~19.2.8"
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@napi-rs/cli": "^3.10.9",
@@ -32,8 +36,16 @@
     "electron": "43.8.1",
     "electron-builder": "26.15.3",
     "electron-vite": "^6.0.0",
-    "typescript": "^7.0.2",
-    "vite": "^8.3.5"
+    "oxfmt": "^0.74.0",
+    "oxlint": "^1.89.0",
+    "typescript": "7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "5.0.5",
+    "ws": "^8.22.1"
   },
-  "license": "UNLICENSED"
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "packageManager": "pnpm@12.14.0",
+  "productName": "Monitor"
 }

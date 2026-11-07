@@ -1,10 +1,10 @@
 /* All Computers window: the shared window values (runners-window.css, design standard A). Cards are the standard
    boxes; the chosen one gets the accent ring. See-through over the macOS blur, solid where the OS has none (Linux). */
-:root[data-window="computers"] body {
+:root[data-window='computers'] body {
   margin: 0;
   background: var(--rw-window-bg);
 }
-:root[data-window="computers"][data-translucent="true"] body {
+:root[data-window='computers'][data-translucent='true'] body {
   background: transparent;
 }
 .computers {

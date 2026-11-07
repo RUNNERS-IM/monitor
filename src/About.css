@@ -2,21 +2,21 @@
    header. The window is see-through over the macOS blur, and draws the solid window colour where the OS has no blur
    (Linux). */
 /* Why: Vite puts every stylesheet into one file for both windows, so these rules name the About window. */
-:root[data-window="about"] body {
+:root[data-window='about'] body {
   background: var(--rw-window-bg);
 }
 
-:root[data-window="about"][data-translucent="true"] body {
+:root[data-window='about'][data-translucent='true'] body {
   background: transparent;
 }
 
 /* Why: grey text all but vanished over the blurred desktop, so secondary text is a little stronger over the blur. */
-:root[data-window="about"][data-translucent="true"] {
+:root[data-window='about'][data-translucent='true'] {
   --rw-text-secondary: rgba(0, 0, 0, 0.62);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root[data-window="about"][data-translucent="true"] {
+  :root[data-window='about'][data-translucent='true'] {
     --rw-text-secondary: rgba(255, 255, 255, 0.7);
   }
 }

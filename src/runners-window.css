@@ -39,7 +39,7 @@
   --rw-window-bg: #ececec;
   --rw-accent: #007aff;
 
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   font-size: var(--rw-font);
   color: var(--rw-text);
   -webkit-font-smoothing: antialiased;

@@ -1,6 +1,8 @@
 /* Shared by every window. Colours and sizes come from runners-account/runners-menu.css (panel, copied from runners-app-kit/desktop) and runners-window.css (About, update). */
 :root {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui,
+    sans-serif;
   /* Why: Korean otherwise breaks inside a word ("나아집 / 니다"); keep-all breaks at spaces and pretty avoids a lonely last word. */
   word-break: keep-all;
   overflow-wrap: anywhere;
@@ -17,7 +19,7 @@ body,
 }
 
 /* The tray panel: Split's menu values from runners-menu.css (--rm-*). The OS draws the menu material behind it. */
-:root[data-window="panel"] {
+:root[data-window='panel'] {
   color: var(--rm-text);
   font-size: var(--rm-font);
 }

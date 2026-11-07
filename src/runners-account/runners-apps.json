@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "id": "apps",
+      "title": {
+        "ko": "RUNNERS의 다른 앱",
+        "en": "More apps from RUNNERS"
+      },
+      "items": [
+        {
+          "id": "split",
+          "name": "Split",
+          "icon": "split.png",
+          "desc": {
+            "ko": "단축키 한 번으로 창을 반반·3분할·모서리로 정리",
+            "en": "Snap windows to halves, thirds and corners with one shortcut"
+          },
+          "url": "https://runners.im/split"
+        },
+        {
+          "id": "prompt",
+          "name": "Prompt",
+          "icon": "prompt.png",
+          "desc": {
+            "ko": "여러 Claude 세션을 프로젝트별로 묶어 한 창에서 돌리는 터미널",
+            "en": "Run many Claude sessions in one window, grouped by project"
+          },
+          "url": "https://github.com/RUNNERS-IM/prompt/releases/latest"
+        },
+        {
+          "id": "monitor",
+          "name": "Monitor",
+          "icon": "monitor.png",
+          "desc": {
+            "ko": "메뉴 막대에서 CPU · 메모리 · 디스크와 느려진 이유를 봅니다",
+            "en": "See CPU, memory, disk and why your Mac is slow from the menu bar"
+          },
+          "url": "https://github.com/RUNNERS-IM/monitor/releases/latest"
+        }
+      ]
+    },
+    {
+      "id": "services",
+      "title": {
+        "ko": "RUNNERS의 서비스",
+        "en": "Services from RUNNERS"
+      },
+      "items": [
+        {
+          "id": "sense",
+          "name": "센스",
+          "icon": "sense.png",
+          "desc": {
+            "ko": "선물·맛집·데이트 코스를 AI가 추천하는 기념일 플래너",
+            "en": "AI planner for gifts, restaurants and date ideas"
+          },
+          "url": "https://sense.im"
+        },
+        {
+          "id": "pudding",
+          "name": "푸딩",
+          "icon": "pudding.png",
+          "desc": {
+            "ko": "체크리스트·예산·청첩장·하객을 한곳에서, AI 결혼 플래너",
+            "en": "All-in-one AI wedding planner: checklist, budget, invitations, guests"
+          },
+          "url": "https://pudding.im"
+        }
+      ]
+    }
+  ]
+}

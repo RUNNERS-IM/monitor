@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: "버전을 올리고 배포하기 (끄면 시험 실행)"
+        description: '버전을 올리고 배포하기 (끄면 시험 실행)'
         type: boolean
         default: false
 
@@ -45,7 +45,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.PUBLISH == 'true' && 'release' || github.ref }}
-          fetch-depth: 0  # 태그로 같은 날 낸 버전이 있는지 본다
+          fetch-depth: 0 # 태그로 같은 날 낸 버전이 있는지 본다
 
       - name: Bump the version and push
         id: bump
@@ -86,7 +86,7 @@ jobs:
             runner: windows-latest
             builder: --win
           - os: linux
-            runner: ubuntu-22.04  # 오래된 glibc 로 빌드해야 더 많은 배포판에서 켜진다
+            runner: ubuntu-22.04 # 오래된 glibc 로 빌드해야 더 많은 배포판에서 켜진다
             builder: --linux
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
@@ -280,7 +280,7 @@ jobs:
       - name: Sign the bridge files for installed Tauri copies
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
         run: |
           set -euo pipefail
           for f in "files/Monitor-$VERSION-aarch64.app.tar.gz" "files/Monitor-$VERSION-x86_64.app.tar.gz" \

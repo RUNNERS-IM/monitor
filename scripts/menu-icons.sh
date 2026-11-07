@@ -1,17 +1,22 @@
 #!/bin/bash
-# Makes the tray menu icons in resources/menu/ from the official Lucide SVGs.
-# Each icon comes in black (light menus) and white (dark menus) at 36 px, which is 2x of the 18 pt slot the native menu draws icons in.
-# The status dots are filled circles in the system green, yellow and red.
-# Needs macOS 14 or later (AppKit reads SVG) and network access to unpkg.com.
+# 트레이 메뉴 아이콘(resources/menu/)을 공식 Lucide SVG 로 만든다. 저장소 뿌리에서 실행한다.
+# 아이콘마다 검정(밝은 메뉴) · 흰색(어두운 메뉴) 36 px 이고, 네이티브 메뉴가 그리는 18 pt 칸의 2배다. 상태 점은 색을 채운 원이다.
+# 사용법: scripts/menu-icons.sh "<아이콘 이름들>" "<점 이름:색들>"
+#   예: scripts/menu-icons.sh "info refresh-cw" "green:#34c759 yellow:#ffcc00 red:#ff3b30"
+# macOS 14 이상(AppKit 이 SVG 를 읽음)과 unpkg.com 접속이 있어야 한다.
 set -euo pipefail
 
 LUCIDE_VERSION=1.63.0
 PIXELS=36
-ICONS=(chart-column smartphone info refresh-cw settings circle-help square-x square-check square)
+if [ $# -ne 2 ]; then
+  echo 'usage: scripts/menu-icons.sh "<icons>" "<dots>"' >&2
+  exit 2
+fi
+read -r -a ICONS <<< "$1"
+read -r -a DOTS <<< "$2"
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT="$ROOT/resources/menu"
-DRAW="$ROOT/scripts/menu-icons.swift"
+OUT="$PWD/resources/menu"
+DRAW="$(cd "$(dirname "$0")" && pwd)/menu-icons.swift"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 mkdir -p "$OUT"
@@ -21,14 +26,14 @@ for name in "${ICONS[@]}"; do
   for tone in black:#000000 white:#ffffff; do
     label="${tone%%:*}"
     color="${tone#*:}"
-    # Why: the shared spec uses stroke width 1.5 instead of Lucide's default 2.
+    # 공통 규격은 Lucide 기본 2 대신 선 굵기 1.5 를 쓴다.
     sed -e "s/currentColor/$color/g" -e 's/stroke-width="2"/stroke-width="1.5"/' "$WORK/$name.svg" > "$WORK/$name-$label.svg"
     swift "$DRAW" "$WORK/$name-$label.svg" "$OUT/$name-$label.png" "$PIXELS"
   done
 done
 
-# Why: a 9 pt dot centred in the 18 pt slot lines up with the icons below it.
-for dot in green:#34c759 yellow:#ffcc00 red:#ff3b30; do
+# 18 pt 칸 가운데 9 pt 점이라 아래 아이콘들과 줄이 맞는다.
+for dot in "${DOTS[@]}"; do
   label="${dot%%:*}"
   color="${dot#*:}"
   printf '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="%s"/></svg>' "$color" > "$WORK/dot-$label.svg"

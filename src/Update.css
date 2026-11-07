@@ -1,11 +1,11 @@
 /* Update window: Split's layout (icon on top, centred text, "What's new" box, full-width buttons) with the shared
    window values from runners-window.css (user decision `[RUNNERS] 네 앱 화면 값 통일` 2B). The OS draws its material
    behind the window on macOS and Windows; Linux gets the solid window colour. */
-:root[data-window="update"] body {
+:root[data-window='update'] body {
   background: var(--rw-window-bg);
 }
 
-:root[data-window="update"][data-translucent="true"] body {
+:root[data-window='update'][data-translucent='true'] body {
   background: transparent;
 }
 

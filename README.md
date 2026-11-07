@@ -10,13 +10,13 @@ Monitor is made by RUNNERS-IM for the computers in our office. It is built with 
 
 Click the number in the menu bar (macOS) or the tray icon (Windows, Linux) to open the panel.
 
-| Item | What it means |
-|:---|:---|
-| CPU | Average use of all cores |
-| Memory | Memory in use and the total. The menu bar number is this value |
-| Disk | Space used on the disk the system starts from (`/` on macOS and Linux, the system drive on Windows) |
-| claude sessions | Number of running `claude` processes |
-| GitHub runner | **Building** when a job is running, **Idle** when a runner is waiting, **None** when no runner is installed |
+| Item            | What it means                                                                                               |
+| :-------------- | :---------------------------------------------------------------------------------------------------------- |
+| CPU             | Average use of all cores                                                                                    |
+| Memory          | Memory in use and the total. The menu bar number is this value                                              |
+| Disk            | Space used on the disk the system starts from (`/` on macOS and Linux, the system drive on Windows)         |
+| claude sessions | Number of running `claude` processes                                                                        |
+| GitHub runner   | **Building** when a job is running, **Idle** when a runner is waiting, **None** when no runner is installed |
 
 The panel is also Monitor's menu: under the readings are Open at login, Check for Updates Automatically, About Monitor, Check for Updates, Help & Feedback and Quit Monitor. Right-clicking the icon opens the same commands as a native menu, with a status line on top.
 

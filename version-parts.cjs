@@ -6,16 +6,16 @@
 // 옛 규칙 버전(2.6.1105, 2.6.1105+3)도 읽는다: 2.6.1105 → 2.6.1105.0, 2.6.1105+3 → 2.6.1105.3.
 //   그래서 네 칸 값도 옛 판 → 새 판 순서대로 커진다 (2.6.1105.3 < 2.6.1105.4).
 function versionParts(version) {
-  const [core, sameDay] = String(version).split("+");
-  const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(core);
-  if (!match) throw new Error(`버전 모양이 맞지 않습니다: ${version}`);
-  const [major, minor, patch] = match.slice(1).map(Number);
-  if (sameDay) return { shown: `${core}.${sameDay}`, file: `${core}.${sameDay}` };
+  const [core, sameDay] = String(version).split('+')
+  const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(core)
+  if (!match) throw new Error(`버전 모양이 맞지 않습니다: ${version}`)
+  const [major, minor, patch] = match.slice(1).map(Number)
+  if (sameDay) return { shown: `${core}.${sameDay}`, file: `${core}.${sameDay}` }
   // 날짜 + 그날 번호(MMDDNN, 1월 1일 첫 판이 10101)면 나눈다. 옛 규칙 MMDD(1231 까지)는 그대로 두고 .0 을 붙인다.
   if (patch >= 10101) {
-    return { shown: core, file: `${major}.${minor}.${Math.floor(patch / 100)}.${patch % 100}` };
+    return { shown: core, file: `${major}.${minor}.${Math.floor(patch / 100)}.${patch % 100}` }
   }
-  return { shown: core, file: `${core}.0` };
+  return { shown: core, file: `${core}.0` }
 }
 
-module.exports = { versionParts };
+module.exports = { versionParts }

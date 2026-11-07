@@ -1,17 +1,7 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2023",
-    "lib": ["ES2023"],
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "types": ["node"],
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "types": ["node"]
   },
-  "include": ["electron", "electron.vite.config.ts"]
+  "include": ["electron", "tests", "electron.vite.config.ts", "vitest.config.ts"]
 }

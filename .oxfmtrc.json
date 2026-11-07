@@ -1,0 +1,12 @@
+{
+  "singleQuote": true,
+  "semi": false,
+  "printWidth": 100,
+  "trailingComma": "none",
+  "ignorePatterns": [
+    "THIRD_PARTY_NOTICES.md",
+    "**/*.generated.*",
+    "native/index.d.ts",
+    "native/index.js"
+  ]
+}

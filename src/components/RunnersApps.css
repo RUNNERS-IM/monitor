@@ -43,7 +43,7 @@
 
 /* Inset separator between rows, starting after the icon like macOS lists. */
 .runners-apps-row + .runners-apps-row::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   inset-inline: 60px 0;

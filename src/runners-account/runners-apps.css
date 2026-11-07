@@ -1,0 +1,112 @@
+/* RUNNERS app cards. Every size and colour comes from runners-window.css (design standard A), so the cards match
+   the boxes of the other windows and follow dark and light mode and the OS accent colour. */
+.runners-apps {
+  --runners-apps-accent: var(--rw-accent);
+  display: flex;
+  flex-direction: column;
+  gap: var(--rw-box-gap);
+  text-align: start;
+}
+
+.runners-apps-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rw-section-gap);
+}
+
+.runners-apps-title {
+  margin: 0;
+  padding: 0 2px;
+  font-size: var(--rw-font-small);
+  font-weight: 600;
+  line-height: 14px;
+  color: var(--rw-text-secondary);
+}
+
+.runners-apps-card {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: var(--rw-radius);
+  border: var(--rw-border) solid var(--rw-separator);
+  background: var(--rw-box-bg);
+  overflow: hidden;
+}
+
+.runners-apps-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--rw-row-gap);
+  padding: var(--rw-row-pad-y) var(--rw-row-pad-x);
+}
+
+/* Inset separator between rows, starting after the icon like macOS lists. */
+.runners-apps-row + .runners-apps-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  inset-inline: 60px 0;
+  height: 0.5px;
+  background: var(--rw-separator);
+}
+
+.runners-apps-icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  object-fit: contain;
+}
+
+.runners-apps-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--rw-control-bg);
+  color: var(--rw-text-secondary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.runners-apps-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.runners-apps-name {
+  font-size: var(--rw-font);
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.runners-apps-desc {
+  margin-top: var(--rw-title-gap);
+  font-size: var(--rw-font-small);
+  line-height: 14px;
+  color: var(--rw-text-secondary);
+}
+
+.runners-apps-get {
+  flex: none;
+  min-width: 52px;
+  height: 22px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 11px;
+  background: var(--rw-control-bg);
+  color: var(--runners-apps-accent);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: default;
+}
+
+.runners-apps-get:hover {
+  background: var(--rw-control-hover);
+}
+
+.runners-apps-get:focus-visible {
+  outline: 2px solid var(--runners-apps-accent);
+  outline-offset: 1px;
+}
