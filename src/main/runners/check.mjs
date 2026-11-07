@@ -1,5 +1,5 @@
 // 복사한 파일이 runners-app-kit 에서 복사해 온 그대로인지 본다. 앱끼리 어긋나지 않게 하려는 것이다.
-// 같은 폴더의 *.sum 을 모두 읽는다. 사용법: node <복사한 폴더>/check.mjs [--kit 0.1.7]
+// 같은 폴더의 *.sum 을 모두 읽는다. 사용법: node <복사한 폴더>/check.mjs [--kit 0.1.8]
 // --kit 을 주면 복사해 온 kit 판이 그 판인지도 본다.
 import { createHash } from 'node:crypto'
 import { readdirSync, readFileSync } from 'node:fs'
