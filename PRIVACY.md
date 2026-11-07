@@ -26,7 +26,7 @@ opens the issue page below in your web browser.
 
 You sign in from the first line of Monitor's panel or from the All Computers window. Signed out, Monitor does none of what follows under **Your other computers** and **Phone app**.
 
-Signing in, or making an account there, sends your email and your password, as typed, over an encrypted (HTTPS) connection to the RUNNERS system server (`server.system.runners.im`); the tokens it returns are kept on the computer, encrypted with the system keychain. The same account works in Remote, Prompt and Split. Choosing **Sign Out** from the account badge stops all of it.
+Signing in, or making an account there, sends your email and your password, as typed, over an encrypted (HTTPS) connection to the RUNNERS system server (`server.system.runners.im`); To make an account, or to choose a new password after forgetting it, Monitor first sends your email and the window's language to the same server, which mails a six-digit code to that email; the code you type is then sent along with your email and password. The tokens it returns are kept on the computer, encrypted with the system keychain. The same account works in Remote, Prompt and Split. Choosing **Sign Out** from the account badge stops all of it.
 
 ### Your other computers
 
@@ -73,7 +73,7 @@ Monitor가 인터넷에 접속하는 일은 업데이트, 그리고 로그인했
 
 로그인은 Monitor 패널 맨 위 줄이나 모든 컴퓨터 창에서 합니다. 로그아웃 상태에서는 아래 **내 다른 컴퓨터** 와 **휴대폰 앱** 의 일을 전혀 하지 않습니다.
 
-로그인하거나 그 자리에서 계정을 만들 때 이메일과 입력한 비밀번호를 암호화된 연결(HTTPS)로 RUNNERS 시스템 서버(`server.system.runners.im`)에 보냅니다. 서버가 돌려준 토큰은 시스템 키체인으로 암호화해 컴퓨터에 둡니다. 같은 계정을 Remote · Prompt · Split 에서도 씁니다. 계정 동그라미에서 **로그아웃** 을 고르면 아래 일이 모두 멈춥니다.
+로그인하거나 그 자리에서 계정을 만들 때 이메일과 입력한 비밀번호를 암호화된 연결(HTTPS)로 RUNNERS 시스템 서버(`server.system.runners.im`)에 보냅니다. 계정을 만들거나 잊은 비밀번호를 새로 정할 때는 먼저 이메일과 창의 언어를 같은 서버에 보내고, 서버가 그 이메일로 6자리 숫자를 보냅니다. 받은 숫자는 이메일 · 비밀번호와 함께 보냅니다. 서버가 돌려준 토큰은 시스템 키체인으로 암호화해 컴퓨터에 둡니다. 같은 계정을 Remote · Prompt · Split 에서도 씁니다. 계정 동그라미에서 **로그아웃** 을 고르면 아래 일이 모두 멈춥니다.
 
 ### 내 다른 컴퓨터
 
