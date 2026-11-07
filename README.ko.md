@@ -10,12 +10,12 @@ Monitor는 RUNNERS-IM이 사무실 컴퓨터를 보려고 만드는 앱입니다
 
 메뉴 막대의 숫자(macOS)나 트레이 아이콘(윈도우·리눅스)을 누르면 패널이 열립니다.
 
-| 항목 | 뜻 |
-|:---|:---|
-| CPU | 모든 코어의 평균 사용률 |
-| 메모리 | 쓰고 있는 메모리와 전체 메모리. 메뉴 막대 숫자가 이 값입니다 |
-| 디스크 | 시스템이 켜지는 디스크의 사용량(macOS·리눅스는 `/`, 윈도우는 시스템 드라이브) |
-| claude 세션 | 돌고 있는 `claude` 프로세스 수 |
+| 항목        | 뜻                                                                                      |
+| :---------- | :-------------------------------------------------------------------------------------- |
+| CPU         | 모든 코어의 평균 사용률                                                                 |
+| 메모리      | 쓰고 있는 메모리와 전체 메모리. 메뉴 막대 숫자가 이 값입니다                            |
+| 디스크      | 시스템이 켜지는 디스크의 사용량(macOS·리눅스는 `/`, 윈도우는 시스템 드라이브)           |
+| claude 세션 | 돌고 있는 `claude` 프로세스 수                                                          |
 | GitHub 러너 | 작업이 돌고 있으면 **빌드 중**, 러너가 기다리고 있으면 **대기**, 러너가 없으면 **없음** |
 
 패널이 곧 Monitor의 메뉴입니다. 사용량 아래에 로그인할 때 열기, 업데이트 자동 확인, Monitor 정보, 업데이트 확인, 도움말 · 피드백, Monitor 종료가 있습니다. 아이콘을 오른쪽 클릭하면 같은 명령이 시스템 메뉴로 나오고, 맨 위에 상태 줄이 붙습니다.
@@ -53,7 +53,7 @@ Monitor는 메뉴 막대에만 있고 Dock 아이콘이 없습니다. 설치한 
 
 ## 소스에서 빌드
 
-[Rust](https://rustup.rs), Node.js 20 이상, pnpm 이 필요합니다.
+[Rust](https://rustup.rs), Node.js 24, pnpm 이 필요합니다.
 
 ```sh
 pnpm install
@@ -64,7 +64,7 @@ pnpm dist           # 지금 운영체제용 설치 파일을 dist.noindex/ 에 
 
 애플 실리콘 맥에서 인텔 맥용을 만들려면 `rustup target add x86_64-apple-darwin` 뒤에 `pnpm native --target x86_64-apple-darwin` 도 돌립니다.
 
-- `electron/main/` 은 메인 프로세스(트레이, 패널 창, 3초마다 재기, 업데이트), `electron/preload/` 는 화면이 메인 프로세스와 말하는 통로, `src/` 는 패널과 정보 창입니다.
+- `src/main/` 은 메인 프로세스(트레이, 패널 창, 3초마다 재기, 업데이트), `src/preload/` 는 화면이 메인 프로세스와 말하는 통로, `src/renderer/` 는 패널과 정보 창입니다. RUNNERS 앱 공통 부품은 runners-app-kit 에서 복사한 것입니다(`src/main/runners/`, `src/renderer/runners-account/`, 뿌리의 설정 파일). 복사본을 고치면 `pnpm check:account` 가 실패하므로 kit 에서 고칩니다.
 - `native/` 는 하나뿐인 네이티브 모듈(napi-rs)입니다. 컴퓨터 사용량 읽기, 정리할 거리 재기, 앱 끄기, 러너 멈추기, 트레이 그림 그리기를 합니다.
 - 화면 글자는 `locales/` 에 모여 있고 화면과 메인 프로세스가 같은 파일을 읽습니다. `pnpm check:locales` 로 빠진 키를 확인합니다.
 - 개발 실행은 `MONITOR_OPEN=panel|about|update|update-progress`(뒤의 둘은 가짜 바뀐 점으로 업데이트 창을 띄움), `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1`(스크린샷용 가짜 이름), `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup` 를 받습니다.

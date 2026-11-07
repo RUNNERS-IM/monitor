@@ -19,10 +19,23 @@ sysinfo = "0.40.0"
 libc = "0.2"
 # Why: draws the menu-bar bars picture at runtime, so the moving bars need no image files.
 # Pinned to the same version as Remote so every RUNNERS app renders the shared frame with the same pixels.
-tiny-skia = { version = "=0.12.0", default-features = false, features = ["std", "simd", "png-format"] }
+tiny-skia = { version = "=0.12.0", default-features = false, features = [
+  "std",
+  "simd",
+  "png-format"
+] }
 # Why: on macOS the memory number is drawn into the tray picture so it can take the same dark colour as the icon
 # (a tray title only takes eight bright ANSI colours). It reads the system font at runtime, so no font is bundled.
 ab_glyph = "=0.2.32"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+# Why: asks AppKit which app is in front (front.rs) with checked types instead of hand-written objc_msgSend calls.
+objc2-app-kit = { version = "0.3", default-features = false, features = [
+  "std",
+  "NSRunningApplication",
+  "NSWorkspace"
+] }
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSString"] }
 
 [build-dependencies]
 napi-build = "2"

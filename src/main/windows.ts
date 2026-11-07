@@ -1,0 +1,280 @@
+// The windows: the tray panel (frameless, OS blur, closes when focus leaves), the About window and the update question.
+import { app, BrowserWindow, nativeTheme, screen, type Tray } from 'electron'
+import { join } from 'node:path'
+import { t } from './i18n'
+import { createUpdateWindow } from './runners/update-window'
+
+export const PANEL_WIDTH = 300
+const ABOUT_WIDTH = 520
+/** First height only; the page then fits the window to its content. */
+const ABOUT_HEIGHT = 560
+const UPDATE_WIDTH = 400
+/** Space between the menu bar (or taskbar) and the panel. */
+const GAP = 4
+
+/** Dev only: `MONITOR_SOLID=1` turns the blur off so screenshots do not show the desktop behind the window. */
+const SOLID = !app.isPackaged && process.env.MONITOR_SOLID === '1'
+
+/** Whether the OS blurs what is behind the panel; the page draws a solid background when it does not. */
+export const TRANSLUCENT = !SOLID && (process.platform === 'darwin' || process.platform === 'win32')
+
+function load(window: BrowserWindow, page: 'panel' | 'about' | 'update' | 'computers'): void {
+  if (process.env.ELECTRON_RENDERER_URL) {
+    void window.loadURL(`${process.env.ELECTRON_RENDERER_URL}#${page}`)
+  } else {
+    void window.loadFile(join(__dirname, '../renderer/index.html'), { hash: page })
+  }
+}
+
+const preload = join(__dirname, '../preload/index.js')
+
+/** macOS gets the menu material Split's menu has, Windows gets Acrylic, Linux has no blur and stays solid. */
+function blur(): Electron.BrowserWindowConstructorOptions {
+  if (SOLID) {
+    return { backgroundColor: nativeTheme.shouldUseDarkColors ? '#2a2a2a' : '#ececec' }
+  }
+  if (process.platform === 'darwin') {
+    return { vibrancy: 'menu', visualEffectState: 'active', backgroundColor: '#00000000' }
+  }
+  if (process.platform === 'win32') {
+    return { backgroundMaterial: 'acrylic', backgroundColor: '#00000000' }
+  }
+  return { backgroundColor: nativeTheme.shouldUseDarkColors ? '#2a2a2a' : '#ececec' }
+}
+
+export function createPanel(): BrowserWindow {
+  const panel = new BrowserWindow({
+    width: PANEL_WIDTH,
+    height: 360,
+    useContentSize: true,
+    show: false,
+    frame: false,
+    resizable: false,
+    movable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    skipTaskbar: true,
+    alwaysOnTop: true,
+    hasShadow: true,
+    roundedCorners: true,
+    title: 'Monitor',
+    ...blur(),
+    webPreferences: { preload, sandbox: true, contextIsolation: true, backgroundThrottling: false }
+  })
+  // Why: a menu shows over full-screen apps and on every Space, so the panel does too.
+  panel.setAlwaysOnTop(true, 'pop-up-menu')
+  panel.setVisibleOnAllWorkspaces(true, {
+    visibleOnFullScreen: true,
+    skipTransformProcessType: true
+  })
+  load(panel, 'panel')
+  return panel
+}
+
+/** Puts the panel just under the tray icon (above it on Windows), kept inside the screen the icon is on. */
+export function placeUnderTray(panel: BrowserWindow, tray: Tray | null): void {
+  const [width, height] = panel.getSize()
+  const icon = tray && !tray.isDestroyed() ? tray.getBounds() : null
+  // Why: Linux trays do not report where the icon is, so the panel goes to the top-right corner there.
+  const anchor = icon && icon.width > 0 ? icon : null
+  const display = anchor
+    ? screen.getDisplayNearestPoint({ x: anchor.x, y: anchor.y })
+    : screen.getPrimaryDisplay()
+  const area = display.workArea
+  let x: number
+  let y: number
+  if (anchor) {
+    x = Math.round(anchor.x + anchor.width / 2 - width / 2)
+    y = process.platform === 'win32' ? anchor.y - height - GAP : anchor.y + anchor.height + GAP
+  } else {
+    x = area.x + area.width - width - GAP
+    y = area.y + GAP
+  }
+  x = Math.min(Math.max(x, area.x + GAP), area.x + area.width - width - GAP)
+  y = Math.min(Math.max(y, area.y), area.y + area.height - height)
+  panel.setPosition(x, y, false)
+}
+
+let about: BrowserWindow | null = null
+let computers: BrowserWindow | null = null
+const COMPUTERS_WIDTH = 760
+const COMPUTERS_HEIGHT = 560
+
+/** Opens the All Computers window (an ordinary window people can leave open), or brings the open one forward.
+ *  `onOpen(true)` while it is open, so the other computers are asked more often only then. */
+/** Debug runs only: a page in a window that is never shown, at the panel's width or the All Computers window's size,
+ *  in one language (`?lang=`), for the homepage screenshots (MONITOR_SHOTS). */
+export function hiddenPage(
+  page: 'panel' | 'computers' | 'about',
+  query: string,
+  height?: number
+): BrowserWindow {
+  const window = new BrowserWindow({
+    width: page === 'panel' ? PANEL_WIDTH : page === 'about' ? ABOUT_WIDTH : COMPUTERS_WIDTH,
+    // Why: taller than the real window, so no language's last box is cut; the picture is trimmed afterwards.
+    height: height ?? (page === 'panel' ? 360 : COMPUTERS_HEIGHT + 400),
+    useContentSize: true,
+    show: false,
+    frame: page !== 'panel',
+    backgroundColor:
+      page === 'panel'
+        ? nativeTheme.shouldUseDarkColors
+          ? '#2a2a2a'
+          : '#ececec'
+        : nativeTheme.shouldUseDarkColors
+          ? '#1e1e1e'
+          : '#ececec',
+    webPreferences: { preload, sandbox: true, contextIsolation: true, backgroundThrottling: false }
+  })
+  const url = process.env.ELECTRON_RENDERER_URL
+  if (url) {
+    void window.loadURL(`${url}?${query}#${page}`)
+  }
+  return window
+}
+
+/** Debug runs only: the All Computers window loaded but never shown, for screenshots (see MONITOR_CAPTURE). */
+export function showComputersHidden(): BrowserWindow {
+  const window = new BrowserWindow({
+    width: COMPUTERS_WIDTH,
+    height: COMPUTERS_HEIGHT,
+    show: false,
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#1e1e1e' : '#ececec',
+    webPreferences: { preload, sandbox: true, contextIsolation: true, backgroundThrottling: false }
+  })
+  load(window, 'computers')
+  return window
+}
+
+export function showComputers(onOpen: (open: boolean) => void): void {
+  if (computers && !computers.isDestroyed()) {
+    computers.show()
+    computers.focus()
+    return
+  }
+  computers = new BrowserWindow({
+    width: COMPUTERS_WIDTH,
+    height: COMPUTERS_HEIGHT,
+    minWidth: 480,
+    minHeight: 360,
+    show: false,
+    fullscreenable: false,
+    title: t('computers.title'),
+    ...(process.platform === 'darwin'
+      ? {
+          vibrancy: 'under-window' as const,
+          visualEffectState: 'active' as const,
+          backgroundColor: '#00000000'
+        }
+      : process.platform === 'win32'
+        ? { backgroundMaterial: 'acrylic' as const, backgroundColor: '#00000000' }
+        : {}),
+    autoHideMenuBar: true,
+    webPreferences: { preload, sandbox: true, contextIsolation: true }
+  })
+  computers.setMenu(null)
+  computers.on('page-title-updated', (event) => event.preventDefault())
+  computers.once('ready-to-show', () => {
+    computers?.center()
+    computers?.show()
+    computers?.focus()
+  })
+  onOpen(true)
+  computers.on('closed', () => {
+    computers = null
+    onOpen(false)
+  })
+  load(computers, 'computers')
+}
+
+/** Opens the About window, or brings the open one to the front. An ordinary window with a title bar. */
+export function showAbout(): void {
+  if (about && !about.isDestroyed()) {
+    about.show()
+    about.focus()
+    return
+  }
+  about = new BrowserWindow({
+    width: ABOUT_WIDTH,
+    height: ABOUT_HEIGHT,
+    useContentSize: true,
+    show: false,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    title: t('about.title'),
+    ...(process.platform === 'darwin'
+      ? {
+          vibrancy: 'under-window' as const,
+          visualEffectState: 'active' as const,
+          backgroundColor: '#00000000'
+        }
+      : process.platform === 'win32'
+        ? { backgroundMaterial: 'acrylic' as const, backgroundColor: '#00000000' }
+        : {}),
+    autoHideMenuBar: true,
+    webPreferences: { preload, sandbox: true, contextIsolation: true }
+  })
+  about.setMenu(null)
+  // Why: the page's <title> is "Monitor"; the window keeps its own localized "About Monitor".
+  about.on('page-title-updated', (event) => event.preventDefault())
+  about.once('ready-to-show', () => {
+    about?.center()
+    about?.show()
+    // Why: Monitor has no Dock icon, so without focus the window can open behind the app in front.
+    about?.focus()
+  })
+  about.on('closed', () => {
+    about = null
+  })
+  load(about, 'about')
+}
+
+export type { UpdateOffer } from './runners/updates'
+
+/** 업데이트를 묻는 작은 창: 제목, 한 줄, 새 소식, 받는 동안 진행 막대, [나중에] [지금 설치].
+ *  운영체제 알림창에는 스크롤되는 목록도 진행 막대도 넣을 수 없어 창으로 만든다. 답을 받는 규칙은 kit 부품이 맡는다. */
+let openUpdate: BrowserWindow | null = null
+
+const updateWindow = createUpdateWindow({
+  create() {
+    const window = new BrowserWindow({
+      width: UPDATE_WIDTH,
+      height: 200,
+      useContentSize: true,
+      show: false,
+      frame: false,
+      resizable: false,
+      minimizable: false,
+      maximizable: false,
+      fullscreenable: false,
+      hasShadow: true,
+      roundedCorners: true,
+      alwaysOnTop: true,
+      title: 'Monitor',
+      ...blur(),
+      webPreferences: { preload, sandbox: true, contextIsolation: true }
+    })
+    window.on('page-title-updated', (event) => event.preventDefault())
+    load(window, 'update')
+    openUpdate = window
+    // Why: 찍는 실행은 일하는 사람 화면에 창을 띄우지 않는다(MONITOR_CAPTURE).
+    if (!app.isPackaged && process.env.MONITOR_CAPTURE) {
+      window.show = () => undefined
+      window.showInactive = () => undefined
+      window.focus = () => undefined
+    }
+    return window
+  },
+  focusApp: () => app.focus({ steal: true }),
+  channel: 'monitor:updateOffer'
+})
+
+/** 개발 실행에서 찍을 때 쓴다. */
+export const updateWindowOpen = () => openUpdate
+
+export const askUpdate = updateWindow.askUpdate
+export const updateOffer = updateWindow.offer
+export const answerUpdate = updateWindow.answer

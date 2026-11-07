@@ -1,24 +1,11 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "useDefineForClassFields": true,
-    "lib": ["ES2023", "DOM"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
     "jsx": "react-jsx",
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "types": ["vite/client"]
   },
-  "include": ["src", "electron/preload/api.ts"]
+  "include": ["src/renderer", "src/shared", "src/preload/api.ts"]
 }

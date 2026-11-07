@@ -22,7 +22,9 @@ use napi_derive::napi;
 pub struct Work(Option<Box<dyn FnOnce() -> std::result::Result<String, String> + Send>>);
 
 impl Work {
-    fn new(run: impl FnOnce() -> std::result::Result<String, String> + Send + 'static) -> AsyncTask<Work> {
+    fn new(
+        run: impl FnOnce() -> std::result::Result<String, String> + Send + 'static,
+    ) -> AsyncTask<Work> {
         AsyncTask::new(Work(Some(Box::new(run))))
     }
 }
@@ -32,7 +34,10 @@ impl Task for Work {
     type JsValue = String;
 
     fn compute(&mut self) -> Result<String> {
-        let run = self.0.take().ok_or_else(|| Error::from_reason("work already ran"))?;
+        let run = self
+            .0
+            .take()
+            .ok_or_else(|| Error::from_reason("work already ran"))?;
         run().map_err(Error::from_reason)
     }
 
@@ -57,8 +62,12 @@ pub struct Sampler {
 impl Sampler {
     #[napi(constructor)]
     pub fn new() -> Result<Self> {
-        let inner = snapshot::Sampler::new().map_err(|e| Error::from_reason(format!("failed to open system counters: {e}")))?;
-        Ok(Self { inner: Arc::new(Mutex::new(inner)), last: Arc::new(Mutex::new(None)) })
+        let inner = snapshot::Sampler::new()
+            .map_err(|e| Error::from_reason(format!("failed to open system counters: {e}")))?;
+        Ok(Self {
+            inner: Arc::new(Mutex::new(inner)),
+            last: Arc::new(Mutex::new(None)),
+        })
     }
 
     /// Takes one reading and resolves to its JSON.
@@ -92,7 +101,13 @@ impl Sampler {
                 .lock()
                 .map_err(|e| e.to_string())?
                 .as_ref()
-                .and_then(|snap| snap.top_cpu.iter().chain(&snap.top_memory).find(|a| a.name == name).cloned())
+                .and_then(|snap| {
+                    snap.top_cpu
+                        .iter()
+                        .chain(&snap.top_memory)
+                        .find(|a| a.name == name)
+                        .cloned()
+                })
                 .ok_or_else(|| format!("{name} is no longer running"))?;
             to_json(&actions::quit_app(&app)?)
         })
@@ -152,7 +167,9 @@ pub fn cleanup_measure(progress_path: Option<String>) -> AsyncTask<Work> {
 #[napi(ts_return_type = "Promise<string>")]
 pub fn cleanup_empty(kind: String) -> AsyncTask<Work> {
     Work::new(move || {
-        if !["cache", "packages", "build"].contains(&kind.as_str()) && !extra::KINDS.contains(&kind.as_str()) {
+        if !["cache", "packages", "build"].contains(&kind.as_str())
+            && !extra::KINDS.contains(&kind.as_str())
+        {
             return Err(format!("unknown kind {kind}"));
         }
         std::thread::spawn(move || {
@@ -166,7 +183,8 @@ pub fn cleanup_empty(kind: String) -> AsyncTask<Work> {
 
 #[napi]
 pub fn cleanup_save(path: String, json: String) -> Result<()> {
-    let found: cleanup::Cleanup = serde_json::from_str(&json).map_err(|e| Error::from_reason(e.to_string()))?;
+    let found: cleanup::Cleanup =
+        serde_json::from_str(&json).map_err(|e| Error::from_reason(e.to_string()))?;
     cleanup::save(Path::new(&path), &found);
     Ok(())
 }

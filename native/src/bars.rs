@@ -30,7 +30,11 @@ const FRAME_STROKE: f32 = 2.0;
 
 /// Height of one bar on the 24 grid for a usage fraction (0.0 – 1.0).
 pub fn bar_height(fraction: f32) -> f32 {
-    let fraction = if fraction.is_finite() { fraction.clamp(0.0, 1.0) } else { 0.0 };
+    let fraction = if fraction.is_finite() {
+        fraction.clamp(0.0, 1.0)
+    } else {
+        0.0
+    };
     BAR_MIN + fraction * (BAR_MAX - BAR_MIN)
 }
 
@@ -77,17 +81,39 @@ pub fn can_label() -> bool {
 /// Why: one picture keeps the icon and the number the same colour; macOS cannot tint a picture and colour a title alike.
 /// Digits take the widest digit's width so the label does not shift as the number changes.
 pub fn png_with_label(heights: [f32; 3], color: [u8; 3], label: &str) -> Vec<u8> {
-    let Some(font) = label_font() else { return png(heights, color) };
+    let Some(font) = label_font() else {
+        return png(heights, color);
+    };
     let font = font.as_scaled(PxScale::from(LABEL_PX));
-    let digit = ('0'..='9').map(|c| font.h_advance(font.glyph_id(c))).fold(0.0, f32::max);
-    let advance = |c: char| if c.is_ascii_digit() { digit } else { font.h_advance(font.glyph_id(c)) };
+    let digit = ('0'..='9')
+        .map(|c| font.h_advance(font.glyph_id(c)))
+        .fold(0.0, f32::max);
+    let advance = |c: char| {
+        if c.is_ascii_digit() {
+            digit
+        } else {
+            font.h_advance(font.glyph_id(c))
+        }
+    };
     let start = SIZE as f32 * (FRAME.0 + FRAME.2 + FRAME_STROKE / 2.0) / GRID + LABEL_GAP;
     let width = (start + label.chars().map(advance).sum::<f32>() + LABEL_TRAIL).ceil() as u32;
-    let Some(mut pixmap) = Pixmap::new(width, SIZE) else { return png(heights, color) };
-    pixmap.draw_pixmap(0, 0, draw(heights, color).as_ref(), &PixmapPaint::default(), Transform::identity(), None);
+    let Some(mut pixmap) = Pixmap::new(width, SIZE) else {
+        return png(heights, color);
+    };
+    pixmap.draw_pixmap(
+        0,
+        0,
+        draw(heights, color).as_ref(),
+        &PixmapPaint::default(),
+        Transform::identity(),
+        None,
+    );
 
     // Why: centre the digits' height (not ascent + descent) on the frame, which is how the menu bar's own titles sit.
-    let cap = font.outline_glyph(font.scaled_glyph('0')).map(|g| g.px_bounds().height()).unwrap_or(LABEL_PX * 0.7);
+    let cap = font
+        .outline_glyph(font.scaled_glyph('0'))
+        .map(|g| g.px_bounds().height())
+        .unwrap_or(LABEL_PX * 0.7);
     let baseline = SIZE as f32 * (FRAME.1 + FRAME.3 / 2.0) / GRID + cap / 2.0;
     let mut x = start;
     let data = pixmap.data_mut();
@@ -100,7 +126,10 @@ pub fn png_with_label(heights: [f32; 3], color: [u8; 3], label: &str) -> Vec<u8>
         if let Some(outline) = font.outline_glyph(glyph) {
             let bounds = outline.px_bounds();
             outline.draw(|gx, gy, coverage| {
-                let (px, py) = (bounds.min.x as i32 + gx as i32, bounds.min.y as i32 + gy as i32);
+                let (px, py) = (
+                    bounds.min.x as i32 + gx as i32,
+                    bounds.min.y as i32 + gy as i32,
+                );
                 if px < 0 || py < 0 || px >= width as i32 || py >= SIZE as i32 {
                     return;
                 }
@@ -130,7 +159,10 @@ fn draw(heights: [f32; 3], color: [u8; 3]) -> Pixmap {
 
     let (x, y, w, h) = FRAME;
     if let Some(frame) = rounded_rect(x, y, w, h, FRAME_RADIUS) {
-        let stroke = Stroke { width: FRAME_STROKE, ..Stroke::default() };
+        let stroke = Stroke {
+            width: FRAME_STROKE,
+            ..Stroke::default()
+        };
         pixmap.stroke_path(&frame, &paint, &stroke, grid, None);
     }
     for (x, h) in BAR_X.iter().zip(heights) {
@@ -152,7 +184,14 @@ fn rounded_rect(x: f32, y: f32, w: f32, h: f32, r: f32) -> Option<tiny_skia::Pat
     pb.line_to(right - r, y);
     pb.cubic_to(right - r + k, y, right, y + r - k, right, y + r);
     pb.line_to(right, bottom - r);
-    pb.cubic_to(right, bottom - r + k, right - r + k, bottom, right - r, bottom);
+    pb.cubic_to(
+        right,
+        bottom - r + k,
+        right - r + k,
+        bottom,
+        right - r,
+        bottom,
+    );
     pb.line_to(x + r, bottom);
     pb.cubic_to(x + r - k, bottom, x, bottom - r + k, x, bottom - r);
     pb.line_to(x, y + r);
@@ -173,7 +212,9 @@ mod tests {
     /// Opaque pixels in one bar's column, counted down the middle of the bar.
     fn filled_rows(rgba: &[u8], bar: usize) -> usize {
         let col = ((BAR_X[bar] + BAR_WIDTH / 2.0) * SIZE as f32 / GRID) as u32;
-        (0..SIZE).filter(|row| rgba[((row * SIZE + col) * 4 + 3) as usize] > 128).count()
+        (0..SIZE)
+            .filter(|row| rgba[((row * SIZE + col) * 4 + 3) as usize] > 128)
+            .count()
     }
 
     #[test]
@@ -184,7 +225,11 @@ mod tests {
             assert_eq!(image.len(), (SIZE * SIZE * 4) as usize);
         }
         for bar in 0..3 {
-            let (a, b, c) = (filled_rows(&empty, bar), filled_rows(&half, bar), filled_rows(&full, bar));
+            let (a, b, c) = (
+                filled_rows(&empty, bar),
+                filled_rows(&half, bar),
+                filled_rows(&full, bar),
+            );
             assert!(a < b && b < c, "bar {bar}: {a} < {b} < {c}");
         }
         // The frame's stroke rows (top and bottom) are drawn even with every bar at 0 %.

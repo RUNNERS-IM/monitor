@@ -10,13 +10,13 @@ Monitor is made by RUNNERS-IM for the computers in our office. It is built with 
 
 Click the number in the menu bar (macOS) or the tray icon (Windows, Linux) to open the panel.
 
-| Item | What it means |
-|:---|:---|
-| CPU | Average use of all cores |
-| Memory | Memory in use and the total. The menu bar number is this value |
-| Disk | Space used on the disk the system starts from (`/` on macOS and Linux, the system drive on Windows) |
-| claude sessions | Number of running `claude` processes |
-| GitHub runner | **Building** when a job is running, **Idle** when a runner is waiting, **None** when no runner is installed |
+| Item            | What it means                                                                                               |
+| :-------------- | :---------------------------------------------------------------------------------------------------------- |
+| CPU             | Average use of all cores                                                                                    |
+| Memory          | Memory in use and the total. The menu bar number is this value                                              |
+| Disk            | Space used on the disk the system starts from (`/` on macOS and Linux, the system drive on Windows)         |
+| claude sessions | Number of running `claude` processes                                                                        |
+| GitHub runner   | **Building** when a job is running, **Idle** when a runner is waiting, **None** when no runner is installed |
 
 The panel is also Monitor's menu: under the readings are Open at login, Check for Updates Automatically, About Monitor, Check for Updates, Help & Feedback and Quit Monitor. Right-clicking the icon opens the same commands as a native menu, with a status line on top.
 
@@ -53,7 +53,7 @@ Issues and pull requests are welcome in this repository.
 
 ## Building from source
 
-Requires [Rust](https://rustup.rs), Node.js 20 or later and pnpm.
+Requires [Rust](https://rustup.rs), Node.js 24 and pnpm.
 
 ```sh
 pnpm install
@@ -64,7 +64,7 @@ pnpm dist           # build an installer for this OS into dist.noindex/
 
 For an Intel Mac build on Apple silicon, also run `pnpm native --target x86_64-apple-darwin` (after `rustup target add x86_64-apple-darwin`).
 
-- `electron/main/` is the main process (tray, panel window, sampling loop, updates), `electron/preload/` the bridge the page talks through, `src/` the panel and About window.
+- `src/main/` is the main process (tray, panel window, sampling loop, updates), `src/preload/` the bridge the page talks through, `src/renderer/` the panel and About window. Parts shared by the RUNNERS apps are copies from runners-app-kit (`src/main/runners/`, `src/renderer/runners-account/`, the root configs); `pnpm check:account` fails when a copy changed, so change them in the kit.
 - `native/` is the one native module (napi-rs): system readings, the cleanup scan, quitting an app, pausing a runner and the tray picture.
 - Screen text lives in `locales/`; the page and the main process read the same files. Check them with `pnpm check:locales`.
 - Debug runs take `MONITOR_OPEN=panel|about|update|update-progress` (the last two show the update window with made-up notes), `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1` (made-up names for screenshots) and `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup`.
