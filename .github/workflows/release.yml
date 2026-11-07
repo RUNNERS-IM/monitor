@@ -42,7 +42,7 @@ jobs:
       sha: ${{ steps.bump.outputs.sha || github.sha }}
       app_version: ${{ steps.bump.outputs.app_version || steps.current.outputs.app_version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ env.PUBLISH == 'true' && 'release' || github.ref }}
           fetch-depth: 0 # 태그로 같은 날 낸 버전이 있는지 본다
@@ -96,19 +96,17 @@ jobs:
       MONITOR_TAG: ${{ needs.version.outputs.version }}
       CARGO_TARGET_DIR: ${{ github.workspace }}/native/target.noindex
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.version.outputs.sha }}
 
       - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
         with:
-          version: 12
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
 
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.99.1
         with:
           targets: ${{ matrix.os == 'macos' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
       - uses: Swatinem/rust-cache@v2
@@ -236,7 +234,7 @@ jobs:
           done
           ls -la $OUT
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: monitor-${{ matrix.os }}
           path: dist-release/*
@@ -263,10 +261,10 @@ jobs:
       APP_VERSION: ${{ needs.version.outputs.app_version }}
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
-      - uses: actions/download-artifact@v4
+          node-version: 24
+      - uses: actions/download-artifact@v8
         with:
           path: files
           merge-multiple: true
@@ -312,7 +310,7 @@ jobs:
       # 릴리스 본문은 저장소의 RELEASE_NOTES.md("## 한국어" · "## English" 두 칸의 "- " 목록)다. 앱의 업데이트 창이
       # 이 본문에서 자기 언어 칸의 목록만 읽어 "바뀐 점"으로 보여 준다. 설치 안내는 그 뒤 다른 칸에 붙여서 목록에
       # 섞이지 않게 한다. 버전 올리기(scripts/bump-release.sh)가 비었거나 지난 판 그대로인 파일을 막는다.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.version.outputs.sha }}
           path: repo
