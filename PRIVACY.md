@@ -26,7 +26,7 @@ opens the issue page below in your web browser.
 
 You sign in from the first line of Monitor's panel or from the All Computers window. Signed out, Monitor does none of what follows under **Your other computers** and **Phone app**.
 
-Signing in, or making an account there, sends your email and your password, as typed, over an encrypted (HTTPS) connection to the RUNNERS system server (`server.system.runners.im`); To make an account, or to choose a new password after forgetting it, Monitor first sends your email and the window's language to the same server, which mails a six-digit code to that email; the code you type is then sent along with your email and password. The tokens it returns are kept on the computer, encrypted with the system keychain. The same account works in Remote, Prompt and Split. Choosing **Sign Out** from the account badge stops all of it.
+Signing in, or making an account there, sends your email and your password, as typed, over an encrypted (HTTPS) connection to the RUNNERS system server (`server.system.runners.im`). To make an account, or to choose a new password after forgetting it, Monitor first sends your email and the window's language to the same server, which mails a six-digit code to that email; the code you type is then sent along with your email and password. The tokens it returns are kept on the computer, encrypted with the system keychain. The same account works in Remote, Prompt and Split. Choosing **Sign Out** from the account badge stops all of it.
 
 ### Your other computers
 
