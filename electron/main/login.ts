@@ -21,6 +21,8 @@ export function isOn(): boolean {
 }
 
 export function setOn(on: boolean): void {
+  // Why: a dev run would register the dev copy of Electron as Monitor's login item, and the Mac would open that at login.
+  if (!app.isPackaged) return;
   if (process.platform === "linux") {
     if (!on) {
       rmSync(LINUX_AUTOSTART, { force: true });
