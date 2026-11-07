@@ -4,7 +4,9 @@ use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 use serde::Serialize;
-use sysinfo::{Disks, Pid, Process, ProcessRefreshKind, ProcessesToUpdate, RefreshKind, System, UpdateKind};
+use sysinfo::{
+    Disks, Pid, Process, ProcessRefreshKind, ProcessesToUpdate, RefreshKind, System, UpdateKind,
+};
 
 /// About ten minutes of readings at the 3 second interval.
 const HISTORY_LEN: usize = 200;
@@ -15,8 +17,27 @@ const CLAUDE_BUSY_CPU: f32 = 5.0;
 const CLAUDE_CPU_READINGS: usize = 10;
 /// Compilers, linkers and build daemons. Quitting one breaks a build another session is running.
 const BUILD_TOOLS: &[&str] = &[
-    "clang", "clang++", "cc", "c++", "cc1", "cc1plus", "ld", "ld64", "ld.lld", "lld", "swift-frontend", "swiftc",
-    "swift-build", "xcodebuild", "xcbbuildservice", "rustc", "cargo", "java", "gradle", "kotlin-daemon", "go",
+    "clang",
+    "clang++",
+    "cc",
+    "c++",
+    "cc1",
+    "cc1plus",
+    "ld",
+    "ld64",
+    "ld.lld",
+    "lld",
+    "swift-frontend",
+    "swiftc",
+    "swift-build",
+    "xcodebuild",
+    "xcbbuildservice",
+    "rustc",
+    "cargo",
+    "java",
+    "gradle",
+    "kotlin-daemon",
+    "go",
 ];
 // Why: a Runner.Worker is started a few processes below its Runner.Listener, never deeper than this.
 const MAX_PARENT_HOPS: usize = 10;
@@ -25,10 +46,32 @@ const SLOW_CPU: f32 = 80.0;
 const SLOW_CPU_READINGS: usize = 20;
 /// Processes the OS needs to keep running; quitting them would log the user out or hang the computer.
 const SYSTEM_PROCESSES: &[&str] = &[
-    "kernel_task", "launchd", "windowserver", "loginwindow", "dock", "finder", "systemuiserver",
-    "controlcenter", "coreaudiod", "mds", "mds_stores", "mdworker", "mdworker_shared", "mdsync",
-    "system", "system idle process", "csrss", "wininit", "winlogon", "services", "lsass", "dwm",
-    "explorer", "systemd", "xorg", "gnome-shell",
+    "kernel_task",
+    "launchd",
+    "windowserver",
+    "loginwindow",
+    "dock",
+    "finder",
+    "systemuiserver",
+    "controlcenter",
+    "coreaudiod",
+    "mds",
+    "mds_stores",
+    "mdworker",
+    "mdworker_shared",
+    "mdsync",
+    "system",
+    "system idle process",
+    "csrss",
+    "wininit",
+    "winlogon",
+    "services",
+    "lsass",
+    "dwm",
+    "explorer",
+    "systemd",
+    "xorg",
+    "gnome-shell",
 ];
 
 /// One reading of this computer, sent to the panel and later to other computers.
@@ -226,7 +269,9 @@ impl Sampler {
                     Some("idle") => false,
                     _ => average >= CLAUDE_BUSY_CPU,
                 },
-                human: info.as_ref().is_some_and(|i| i.kind.as_deref().is_none_or(|kind| kind == "interactive")),
+                human: info
+                    .as_ref()
+                    .is_some_and(|i| i.kind.as_deref().is_none_or(|kind| kind == "interactive")),
             });
         }
         self.claude_cpu.retain(|pid, _| processes.contains_key(pid));
@@ -241,11 +286,19 @@ impl Sampler {
         let memory_total = self.system.total_memory();
         let (disk_used, disk_total) = self.system_disk();
         push_capped(&mut self.cpu_history, cpu_percent);
-        push_capped(&mut self.memory_history, memory_used as f32 * 100.0 / memory_total.max(1) as f32);
+        push_capped(
+            &mut self.memory_history,
+            memory_used as f32 * 100.0 / memory_total.max(1) as f32,
+        );
         let memory_pressure = memory_pressure(&self.system);
         let breakdown = memory_breakdown(&self.system);
         let slow_cpu = self.cpu_history.len() >= SLOW_CPU_READINGS
-            && self.cpu_history.iter().rev().take(SLOW_CPU_READINGS).all(|&v| v >= SLOW_CPU);
+            && self
+                .cpu_history
+                .iter()
+                .rev()
+                .take(SLOW_CPU_READINGS)
+                .all(|&v| v >= SLOW_CPU);
 
         Snapshot {
             host: System::host_name().unwrap_or_default(),
@@ -308,7 +361,10 @@ fn plain_name(process: &Process) -> String {
 /// Simulators are folded into one entry each for the same reason; their processes carry dozens of iOS names.
 fn app_name(process: &Process) -> (String, Option<PathBuf>, AppKind) {
     let name = plain_name(process);
-    let exe = process.exe().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default();
+    let exe = process
+        .exe()
+        .map(|p| p.to_string_lossy().into_owned())
+        .unwrap_or_default();
     if exe.contains("/CoreSimulator/") || name == "xpcproxy_sim" || name == "launchd_sim" {
         return ("iOS Simulator".into(), None, AppKind::Simulator);
     }
@@ -319,17 +375,30 @@ fn app_name(process: &Process) -> (String, Option<PathBuf>, AppKind) {
         return (tool.to_owned(), None, AppKind::DevServer);
     }
     if BUILD_TOOLS.contains(&name.as_str()) {
-        return (process.name().to_string_lossy().into_owned(), None, AppKind::Build);
+        return (
+            process.name().to_string_lossy().into_owned(),
+            None,
+            AppKind::Build,
+        );
     }
-    if let Some(bundle) = process
-        .exe()
-        .and_then(|exe| exe.ancestors().filter(|p| p.extension().is_some_and(|e| e == "app")).last())
-    {
-        let name = bundle.file_stem().unwrap_or_default().to_string_lossy().into_owned();
+    if let Some(bundle) = process.exe().and_then(|exe| {
+        exe.ancestors()
+            .filter(|p| p.extension().is_some_and(|e| e == "app"))
+            .last()
+    }) {
+        let name = bundle
+            .file_stem()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .into_owned();
         return (name, Some(bundle.to_path_buf()), AppKind::App);
     }
     let name = process.name().to_string_lossy();
-    (name.strip_suffix(".exe").unwrap_or(&name).to_owned(), None, AppKind::App)
+    (
+        name.strip_suffix(".exe").unwrap_or(&name).to_owned(),
+        None,
+        AppKind::App,
+    )
 }
 
 /// The dev server a node, bun or deno process runs, by the words its command line holds.
@@ -337,11 +406,19 @@ fn dev_server(process: &Process, name: &str) -> Option<&'static str> {
     if !matches!(name, "node" | "bun" | "deno") {
         return None;
     }
-    let cmd: Vec<String> = process.cmd().iter().map(|a| a.to_string_lossy().into_owned()).collect();
+    let cmd: Vec<String> = process
+        .cmd()
+        .iter()
+        .map(|a| a.to_string_lossy().into_owned())
+        .collect();
     let has = |tool: &str, word: Option<&str>| {
-        cmd.iter().any(|a| a.rsplit('/').next() == Some(tool)) && word.is_none_or(|w| cmd.iter().any(|a| a == w))
+        cmd.iter().any(|a| a.rsplit('/').next() == Some(tool))
+            && word.is_none_or(|w| cmd.iter().any(|a| a == w))
     };
-    DEV_SERVERS.iter().find(|(tool, word, _)| has(tool, *word)).map(|(_, _, label)| *label)
+    DEV_SERVERS
+        .iter()
+        .find(|(tool, word, _)| has(tool, *word))
+        .map(|(_, _, label)| *label)
 }
 
 /// The repository a build tool works in: the nearest folder above its working folder that holds `.git`.
@@ -366,7 +443,10 @@ struct SessionFile {
 /// Why: every claude process reports the home folder as its working folder, so this file is the only way to tell them apart.
 fn claude_session_file(pid: u32) -> Option<SessionFile> {
     let home = std::env::var_os(if cfg!(windows) { "USERPROFILE" } else { "HOME" })?;
-    let path = PathBuf::from(home).join(".claude").join("sessions").join(format!("{pid}.json"));
+    let path = PathBuf::from(home)
+        .join(".claude")
+        .join("sessions")
+        .join(format!("{pid}.json"));
     serde_json::from_slice(&std::fs::read(path).ok()?).ok()
 }
 
@@ -399,7 +479,10 @@ fn heavy_job() -> Option<HeavyJob> {
     if file.pid.is_some_and(|pid| !alive(pid)) {
         return None;
     }
-    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).ok()?.as_secs();
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .ok()?
+        .as_secs();
     Some(HeavyJob {
         name: file.name.unwrap_or_default(),
         command: file.command,
@@ -415,9 +498,11 @@ fn quit_kind(app: &AppUse) -> Option<QuitKind> {
     }
     match app.kind {
         AppKind::DevServer => Some(QuitKind::Process),
-        AppKind::App if cfg!(target_os = "macos") => {
-            app.bundle_id.as_deref().filter(|id| !keeps_sessions(id)).map(|_| QuitKind::App)
-        }
+        AppKind::App if cfg!(target_os = "macos") => app
+            .bundle_id
+            .as_deref()
+            .filter(|id| !keeps_sessions(id))
+            .map(|_| QuitKind::App),
         AppKind::App if cfg!(windows) => Some(QuitKind::App),
         AppKind::App => Some(QuitKind::Process),
         AppKind::Build | AppKind::Simulator => None,
@@ -426,21 +511,44 @@ fn quit_kind(app: &AppUse) -> Option<QuitKind> {
 
 /// Terminals and editors, by bundle id; an entry ending in "." covers every id that starts with it.
 const KEEPS_SESSIONS: &[&str] = &[
-    "com.apple.Terminal", "com.googlecode.iterm2", "dev.warp.Warp-Stable", "com.mitchellh.ghostty", "net.kovidgoyal.kitty",
-    "org.alacritty", "com.github.wez.wezterm", "im.runners.prompt", "com.microsoft.VSCode", "com.microsoft.VSCodeInsiders",
-    "com.todesktop.230313mzl4w4u92", "dev.zed.Zed", "com.exafunction.windsurf", "com.jetbrains.", "com.google.android.studio",
-    "com.apple.dt.Xcode", "com.sublimetext.", "com.panic.Nova",
+    "com.apple.Terminal",
+    "com.googlecode.iterm2",
+    "dev.warp.Warp-Stable",
+    "com.mitchellh.ghostty",
+    "net.kovidgoyal.kitty",
+    "org.alacritty",
+    "com.github.wez.wezterm",
+    "im.runners.prompt",
+    "com.microsoft.VSCode",
+    "com.microsoft.VSCodeInsiders",
+    "com.todesktop.230313mzl4w4u92",
+    "dev.zed.Zed",
+    "com.exafunction.windsurf",
+    "com.jetbrains.",
+    "com.google.android.studio",
+    "com.apple.dt.Xcode",
+    "com.sublimetext.",
+    "com.panic.Nova",
 ];
 
 fn keeps_sessions(id: &str) -> bool {
-    KEEPS_SESSIONS.iter().any(|known| if known.ends_with('.') { id.starts_with(known) } else { id == *known })
+    KEEPS_SESSIONS.iter().any(|known| {
+        if known.ends_with('.') {
+            id.starts_with(known)
+        } else {
+            id == *known
+        }
+    })
 }
 
 /// The bundle id in an `.app`'s Info.plist, remembered per bundle because it never changes while the app runs.
 fn bundle_id(bundle: &Path) -> Option<String> {
-    static IDS: std::sync::OnceLock<std::sync::Mutex<HashMap<PathBuf, Option<String>>>> = std::sync::OnceLock::new();
+    static IDS: std::sync::OnceLock<std::sync::Mutex<HashMap<PathBuf, Option<String>>>> =
+        std::sync::OnceLock::new();
     let mut ids = IDS.get_or_init(Default::default).lock().ok()?;
-    ids.entry(bundle.to_path_buf()).or_insert_with(|| read_bundle_id(bundle)).clone()
+    ids.entry(bundle.to_path_buf())
+        .or_insert_with(|| read_bundle_id(bundle))
+        .clone()
 }
 
 #[cfg(target_os = "macos")]
@@ -463,7 +571,8 @@ fn read_bundle_id(_bundle: &Path) -> Option<String> {
 /// Whether a process with this id is running. Signal 0 checks without sending anything; EPERM means it runs as someone else.
 #[cfg(unix)]
 fn alive(pid: u32) -> bool {
-    (unsafe { libc::kill(pid as libc::pid_t, 0) == 0 }) || std::io::Error::last_os_error().raw_os_error() == Some(libc::EPERM)
+    (unsafe { libc::kill(pid as libc::pid_t, 0) == 0 })
+        || std::io::Error::last_os_error().raw_os_error() == Some(libc::EPERM)
 }
 
 #[cfg(not(unix))]
@@ -474,13 +583,18 @@ fn alive(_pid: u32) -> bool {
 fn quittable(process: &Process) -> bool {
     let name = plain_name(process);
     let own = process.pid().as_u32() == std::process::id();
-    !own && name != "claude" && !name.eq_ignore_ascii_case("monitor") && !SYSTEM_PROCESSES.contains(&name.as_str()) && owned_by_me(process)
+    !own && name != "claude"
+        && !name.eq_ignore_ascii_case("monitor")
+        && !SYSTEM_PROCESSES.contains(&name.as_str())
+        && owned_by_me(process)
 }
 
 #[cfg(unix)]
 fn owned_by_me(process: &Process) -> bool {
     // Why: other users' and root processes cannot be asked to quit by us anyway.
-    process.user_id().is_some_and(|uid| **uid == unsafe { libc::getuid() })
+    process
+        .user_id()
+        .is_some_and(|uid| **uid == unsafe { libc::getuid() })
 }
 
 #[cfg(not(unix))]
@@ -508,10 +622,18 @@ const DEV_SERVERS: &[(&str, Option<&str>, &str)] = &[
 fn memory_of(pid: Pid, process: &Process) -> u64 {
     let mut info: libc::rusage_info_v2 = unsafe { std::mem::zeroed() };
     let ok = unsafe {
-        libc::proc_pid_rusage(pid.as_u32() as i32, libc::RUSAGE_INFO_V2, (&mut info as *mut libc::rusage_info_v2).cast())
+        libc::proc_pid_rusage(
+            pid.as_u32() as i32,
+            libc::RUSAGE_INFO_V2,
+            (&mut info as *mut libc::rusage_info_v2).cast(),
+        )
     } == 0;
     // Why: other users' processes cannot be asked; their resident size is the best left.
-    if ok { info.ri_phys_footprint } else { process.memory() }
+    if ok {
+        info.ri_phys_footprint
+    } else {
+        process.memory()
+    }
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -561,7 +683,11 @@ fn top_apps(processes: &HashMap<Pid, Process>, cores: f32) -> (Vec<AppUse>, Vec<
     // Why: only the few entries on screen need their repository or bundle id looked up, which touches the disk.
     for app in by_cpu.iter_mut().chain(by_memory.iter_mut()) {
         if matches!(app.kind, AppKind::Build | AppKind::DevServer) {
-            app.folder = app.pids.iter().filter_map(|pid| processes.get(pid)).find_map(repo_name);
+            app.folder = app
+                .pids
+                .iter()
+                .filter_map(|pid| processes.get(pid))
+                .find_map(repo_name);
         }
         app.bundle_id = app.bundle.as_deref().and_then(bundle_id);
         app.quit = quit_kind(app);
@@ -595,7 +721,10 @@ fn runners(processes: &HashMap<Pid, Process>) -> Vec<Runner> {
     let mut runners: Vec<Runner> = listeners
         .into_iter()
         .map(|(pid, dir)| Runner {
-            name: dir.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "runner".into()),
+            name: dir
+                .file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_else(|| "runner".into()),
             busy: busy_listeners.contains(&pid),
             paused_until: None,
             off: false,
@@ -607,8 +736,17 @@ fn runners(processes: &HashMap<Pid, Process>) -> Vec<Runner> {
     for dir in installed_runners() {
         let off = service_label(&dir).is_some_and(|label| disabled.contains(&label));
         if off && !runners.iter().any(|r| r.dir == dir) {
-            let name = dir.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
-            runners.push(Runner { name, busy: false, paused_until: None, off: true, dir });
+            let name = dir
+                .file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            runners.push(Runner {
+                name,
+                busy: false,
+                paused_until: None,
+                off: true,
+                dir,
+            });
         }
     }
     runners.sort_by(|a, b| a.name.cmp(&b.name));
@@ -622,14 +760,26 @@ pub fn runners_home() -> Option<PathBuf> {
 
 /// Runner folders that `svc.sh install` made into a service.
 fn installed_runners() -> Vec<PathBuf> {
-    let Some(Ok(entries)) = runners_home().map(std::fs::read_dir) else { return Vec::new() };
-    entries.flatten().map(|e| e.path()).filter(|dir| dir.join(".service").is_file()).collect()
+    let Some(Ok(entries)) = runners_home().map(std::fs::read_dir) else {
+        return Vec::new();
+    };
+    entries
+        .flatten()
+        .map(|e| e.path())
+        .filter(|dir| dir.join(".service").is_file())
+        .collect()
 }
 
 /// The launchd plist named in the runner folder's `.service`, and its label (the file name without `.plist`).
 pub fn service_plist(dir: &Path) -> Option<(String, String)> {
-    let plist = std::fs::read_to_string(dir.join(".service")).ok()?.trim().to_owned();
-    let label = Path::new(&plist).file_stem()?.to_string_lossy().into_owned();
+    let plist = std::fs::read_to_string(dir.join(".service"))
+        .ok()?
+        .trim()
+        .to_owned();
+    let label = Path::new(&plist)
+        .file_stem()?
+        .to_string_lossy()
+        .into_owned();
     Some((plist, label))
 }
 
@@ -640,16 +790,21 @@ fn service_label(dir: &Path) -> Option<String> {
 /// How long the list of turned-off launchd jobs is reused. Why: asking launchctl every 2 seconds costs a process each time.
 const DISABLED_KEEP: Duration = Duration::from_secs(60);
 
+#[cfg(target_os = "macos")]
+type DisabledLabels = (Instant, Vec<String>);
+
 /// Labels launchd keeps turned off for this user (`launchctl print-disabled gui/<uid>`).
 #[cfg(target_os = "macos")]
 pub fn disabled_labels() -> Vec<String> {
-    static CACHE: OnceLock<Mutex<Option<(Instant, Vec<String>)>>> = OnceLock::new();
+    static CACHE: OnceLock<Mutex<Option<DisabledLabels>>> = OnceLock::new();
     let cache = CACHE.get_or_init(|| Mutex::new(None));
-    let Ok(mut cached) = cache.lock() else { return Vec::new() };
-    if let Some((at, labels)) = cached.as_ref() {
-        if at.elapsed() < DISABLED_KEEP {
-            return labels.clone();
-        }
+    let Ok(mut cached) = cache.lock() else {
+        return Vec::new();
+    };
+    if let Some((at, labels)) = cached.as_ref()
+        && at.elapsed() < DISABLED_KEEP
+    {
+        return labels.clone();
     }
     let domain = format!("gui/{}", unsafe { libc::getuid() });
     let labels = std::process::Command::new("launchctl")
@@ -672,14 +827,20 @@ fn parse_disabled(text: &str) -> Vec<String> {
     text.lines()
         .filter_map(|line| {
             let (label, state) = line.trim().split_once("=>")?;
-            matches!(state.trim(), "disabled" | "true").then(|| label.trim().trim_matches('"').to_owned())
+            matches!(state.trim(), "disabled" | "true")
+                .then(|| label.trim().trim_matches('"').to_owned())
         })
         .collect()
 }
 
 /// The folder above `bin/Runner.Listener`, which is how each runner was installed and named.
 fn runner_dir(process: &Process) -> PathBuf {
-    process.exe().and_then(Path::parent).and_then(Path::parent).map(Path::to_path_buf).unwrap_or_default()
+    process
+        .exe()
+        .and_then(Path::parent)
+        .and_then(Path::parent)
+        .map(Path::to_path_buf)
+        .unwrap_or_default()
 }
 
 #[cfg(target_os = "macos")]
@@ -731,9 +892,17 @@ pub struct MemoryBreakdown {
 
 /// Percent of all CPU time between two tick readings that went to the system (kernel).
 fn system_share(before: [u64; 4], after: [u64; 4]) -> f32 {
-    let diff: Vec<u64> = after.iter().zip(before).map(|(a, b)| a.saturating_sub(b)).collect();
+    let diff: Vec<u64> = after
+        .iter()
+        .zip(before)
+        .map(|(a, b)| a.saturating_sub(b))
+        .collect();
     let all: u64 = diff.iter().sum();
-    if all == 0 { 0.0 } else { diff[1] as f32 * 100.0 / all as f32 }
+    if all == 0 {
+        0.0
+    } else {
+        diff[1] as f32 * 100.0 / all as f32
+    }
 }
 
 /// The counters `top` reads for its "sys" figure, summed over every core.
@@ -761,7 +930,14 @@ fn cpu_ticks() -> [u64; 4] {
 #[cfg(target_os = "linux")]
 fn cpu_ticks() -> [u64; 4] {
     let text = std::fs::read_to_string("/proc/stat").unwrap_or_default();
-    let fields: Vec<u64> = text.lines().next().unwrap_or("").split_whitespace().skip(1).filter_map(|f| f.parse().ok()).collect();
+    let fields: Vec<u64> = text
+        .lines()
+        .next()
+        .unwrap_or("")
+        .split_whitespace()
+        .skip(1)
+        .filter_map(|f| f.parse().ok())
+        .collect();
     match fields.as_slice() {
         [user, nice, system, idle, ..] => [*user, *system, *idle, *nice],
         _ => [0; 4],
@@ -816,13 +992,21 @@ fn parse_meminfo(text: &str) -> MemoryBreakdown {
             .and_then(|rest| rest.split_whitespace().next()?.parse::<u64>().ok())
             .map_or(0, |kib| kib * 1024)
     };
-    MemoryBreakdown { wired: 0, compressed: 0, cache: field("Cached") + field("Buffers"), free: field("MemFree") }
+    MemoryBreakdown {
+        wired: 0,
+        compressed: 0,
+        cache: field("Cached") + field("Buffers"),
+        free: field("MemFree"),
+    }
 }
 
 /// Windows: only free memory; standby cache is not reported by sysinfo.
 #[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn memory_breakdown(system: &System) -> MemoryBreakdown {
-    MemoryBreakdown { free: system.free_memory(), ..Default::default() }
+    MemoryBreakdown {
+        free: system.free_memory(),
+        ..Default::default()
+    }
 }
 
 #[cfg(test)]
@@ -838,7 +1022,10 @@ mod tests {
     #[test]
     fn reads_turned_off_launchd_jobs() {
         let text = "disabled services = {\n\t\"actions.runner.SENSE-IM.m2-pro-sun-1\" => disabled\n\t\"com.apple.ftp-proxy\" => enabled\n\t\"old.style\" => true\n}\n";
-        assert_eq!(parse_disabled(text), vec!["actions.runner.SENSE-IM.m2-pro-sun-1", "old.style"]);
+        assert_eq!(
+            parse_disabled(text),
+            vec!["actions.runner.SENSE-IM.m2-pro-sun-1", "old.style"]
+        );
     }
 
     #[test]
@@ -853,7 +1040,10 @@ mod tests {
     #[cfg(target_os = "macos")]
     #[test]
     fn mac_breakdown_fits_in_total() {
-        let system = System::new_with_specifics(RefreshKind::nothing().with_memory(sysinfo::MemoryRefreshKind::everything())).unwrap();
+        let system = System::new_with_specifics(
+            RefreshKind::nothing().with_memory(sysinfo::MemoryRefreshKind::everything()),
+        )
+        .unwrap();
         let got = memory_breakdown(&system);
         assert!(got.wired > 0 && got.free > 0);
         assert!(got.wired + got.compressed + got.cache + got.free <= system.total_memory());

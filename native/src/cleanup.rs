@@ -6,7 +6,13 @@ use serde::{Deserialize, Serialize};
 use crate::extra;
 
 /// Folders that only hold things a build or package manager can make again, so they are safe places to free disk.
-const BUILD_FOLDERS: &[&str] = &["node_modules", "target", "target.noindex", "build.noindex", "dist.noindex"];
+const BUILD_FOLDERS: &[&str] = &[
+    "node_modules",
+    "target",
+    "target.noindex",
+    "build.noindex",
+    "dist.noindex",
+];
 // Why: projects sit at ~/git/<org>/<repo>, so four levels reach a repo's own build folders without crawling the whole tree.
 const MAX_DEPTH: usize = 4;
 const TOP: usize = 3;
@@ -48,7 +54,12 @@ fn kind_of(path: &str) -> &'static str {
         kind
     } else if path.ends_with("/node_modules") {
         "packages"
-    } else if path.ends_with("/DerivedData") || path.contains("/DerivedData/") || BUILD_FOLDERS.iter().any(|name| path.ends_with(&format!("/{name}"))) {
+    } else if path.ends_with("/DerivedData")
+        || path.contains("/DerivedData/")
+        || BUILD_FOLDERS
+            .iter()
+            .any(|name| path.ends_with(&format!("/{name}")))
+    {
         "build"
     } else {
         "cache"
@@ -61,7 +72,11 @@ fn kind_totals(candidates: &[Candidate]) -> Vec<KindTotal> {
         .chain(extra::KINDS)
         .map(|kind| KindTotal {
             kind: kind.to_string(),
-            bytes: candidates.iter().filter(|c| kind_of(&c.path) == *kind).map(|c| c.bytes).sum(),
+            bytes: candidates
+                .iter()
+                .filter(|c| kind_of(&c.path) == *kind)
+                .map(|c| c.bytes)
+                .sum(),
         })
         .filter(|total| total.bytes > 0)
         .collect();
@@ -75,13 +90,22 @@ fn kind_totals(candidates: &[Candidate]) -> Vec<KindTotal> {
 pub fn measure(progress: Option<&Path>) -> Cleanup {
     let Some(home) = home_dir() else {
         // Why measured_at 0: a run that cannot see the home folder measured nothing, so it must not be loaded as a result.
-        return Cleanup { total: 0, top: Vec::new(), kinds: Vec::new(), measured_at: 0 };
+        return Cleanup {
+            total: 0,
+            top: Vec::new(),
+            kinds: Vec::new(),
+            measured_at: 0,
+        };
     };
     let found = cleanable_folders(&home);
 
     // Why: a folder deleted since the unfinished run must not be counted from the saved progress.
     let mut wanted: Vec<String> = found.iter().map(|folder| tilde(folder, &home)).collect();
-    wanted.extend(extra::KINDS.iter().map(|kind| extra::shown_path(kind).to_owned()));
+    wanted.extend(
+        extra::KINDS
+            .iter()
+            .map(|kind| extra::shown_path(kind).to_owned()),
+    );
     let mut candidates: Vec<Candidate> = progress.and_then(load_progress).unwrap_or_default();
     candidates.retain(|c| wanted.contains(&c.path));
     for folder in found {
@@ -89,7 +113,10 @@ pub fn measure(progress: Option<&Path>) -> Cleanup {
         if candidates.iter().any(|c| c.path == path) {
             continue;
         }
-        candidates.push(Candidate { bytes: folder_size(&folder), path });
+        candidates.push(Candidate {
+            bytes: folder_size(&folder),
+            path,
+        });
         if let Some(file) = progress {
             write_json(file, &candidates);
         }
@@ -99,7 +126,10 @@ pub fn measure(progress: Option<&Path>) -> Cleanup {
         if candidates.iter().any(|c| c.path == path) {
             continue;
         }
-        candidates.push(Candidate { bytes: extra::measure(kind, &home), path });
+        candidates.push(Candidate {
+            bytes: extra::measure(kind, &home),
+            path,
+        });
         if let Some(file) = progress {
             write_json(file, &candidates);
         }
@@ -107,12 +137,19 @@ pub fn measure(progress: Option<&Path>) -> Cleanup {
     if let Some(file) = progress {
         let _ = fs::remove_file(file);
     }
-    candidates.retain(|c| c.bytes > 0 && (extra::kind_of(&c.path).is_none() || c.bytes >= extra::MIN_SHOWN));
+    candidates.retain(|c| {
+        c.bytes > 0 && (extra::kind_of(&c.path).is_none() || c.bytes >= extra::MIN_SHOWN)
+    });
     candidates.sort_by_key(|c| std::cmp::Reverse(c.bytes));
     let total = candidates.iter().map(|c| c.bytes).sum();
     let kinds = kind_totals(&candidates);
     candidates.truncate(TOP);
-    Cleanup { total, top: candidates, kinds, measured_at: now() }
+    Cleanup {
+        total,
+        top: candidates,
+        kinds,
+        measured_at: now(),
+    }
 }
 
 const DERIVED_DATA: &str = "Library/Developer/Xcode/DerivedData";
@@ -120,20 +157,20 @@ const DERIVED_DATA: &str = "Library/Developer/Xcode/DerivedData";
 /// Every folder Monitor counts as cleanable: the fixed caches, then build and package folders under ~/git.
 /// The kinds in `extra` are measured by their own rules after these.
 fn cleanable_folders(home: &Path) -> Vec<PathBuf> {
-    let mut found: Vec<PathBuf> = [
-        "Library/Caches",
-        "Library/pnpm/store",
-        ".npm",
-        ".cache",
-    ]
-    .iter()
-    .map(|p| home.join(p))
-    .filter(|p| p.is_dir())
-    .collect();
+    let mut found: Vec<PathBuf> = ["Library/Caches", "Library/pnpm/store", ".npm", ".cache"]
+        .iter()
+        .map(|p| home.join(p))
+        .filter(|p| p.is_dir())
+        .collect();
     // Why one entry per project: a project built yesterday used to keep the whole folder, so the panel offered 30 GB
     // and emptying freed nothing. Each project folder is now kept or deleted on its own.
     if let Ok(entries) = fs::read_dir(home.join(DERIVED_DATA)) {
-        found.extend(entries.flatten().map(|entry| entry.path()).filter(|path| path.is_dir()));
+        found.extend(
+            entries
+                .flatten()
+                .map(|entry| entry.path())
+                .filter(|path| path.is_dir()),
+        );
     }
     find_build_folders(&home.join("git"), 0, &mut found);
     found
@@ -203,12 +240,20 @@ pub fn empty(kind: &str) -> Emptied {
 /// level further so each browser version is judged on its own.
 fn cache_entries(folder: &Path) -> Vec<PathBuf> {
     let mut entries = Vec::new();
-    let Ok(inside) = fs::read_dir(folder) else { return entries };
+    let Ok(inside) = fs::read_dir(folder) else {
+        return entries;
+    };
     for entry in inside.flatten() {
         let path = entry.path();
         let name = entry.file_name();
         if TEST_BROWSERS.contains(&name.to_string_lossy().as_ref()) && path.is_dir() {
-            entries.extend(fs::read_dir(&path).into_iter().flatten().flatten().map(|inner| inner.path()));
+            entries.extend(
+                fs::read_dir(&path)
+                    .into_iter()
+                    .flatten()
+                    .flatten()
+                    .map(|inner| inner.path()),
+            );
         } else {
             entries.push(path);
         }
@@ -226,14 +271,24 @@ fn size_of(path: &Path) -> u64 {
 
 /// Removes a file or folder and returns the space it took. Errors (a file the system protects) leave that part in place.
 pub(crate) fn remove(path: &Path) -> u64 {
-    let Ok(meta) = path.symlink_metadata() else { return 0 };
+    let Ok(meta) = path.symlink_metadata() else {
+        return 0;
+    };
     if meta.is_dir() {
         let size = folder_size(path);
         // Why: a folder that could only partly go still freed part of its size, so measure what is left.
-        if fs::remove_dir_all(path).is_ok() { size } else { size.saturating_sub(folder_size(path)) }
+        if fs::remove_dir_all(path).is_ok() {
+            size
+        } else {
+            size.saturating_sub(folder_size(path))
+        }
     } else {
         let size = disk_bytes(&meta);
-        if fs::remove_file(path).is_ok() { size } else { 0 }
+        if fs::remove_file(path).is_ok() {
+            size
+        } else {
+            0
+        }
     }
 }
 
@@ -247,8 +302,16 @@ fn last_used(folder: &Path) -> u64 {
             .and_then(|time| time.duration_since(std::time::UNIX_EPOCH).ok())
             .map_or(0, |since| since.as_secs())
     };
-    let children = fs::read_dir(folder).into_iter().flatten().flatten().filter(|entry| entry.path().is_dir());
-    children.map(|entry| modified(&entry.path())).chain([modified(folder)]).max().unwrap_or(0)
+    let children = fs::read_dir(folder)
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter(|entry| entry.path().is_dir());
+    children
+        .map(|entry| modified(&entry.path()))
+        .chain([modified(folder)])
+        .max()
+        .unwrap_or(0)
 }
 
 /// The last result saved in `file`. Why: measuring takes minutes, so a restart shows the saved numbers instead of "measuring".
@@ -274,7 +337,9 @@ fn write_json<T: Serialize + ?Sized>(file: &Path, value: &T) {
     if let Some(dir) = file.parent() {
         let _ = fs::create_dir_all(dir);
     }
-    let Ok(json) = serde_json::to_vec(value) else { return };
+    let Ok(json) = serde_json::to_vec(value) else {
+        return;
+    };
     let temp = file.with_extension("tmp");
     if fs::write(&temp, json).is_ok() {
         let _ = fs::rename(&temp, file);
@@ -282,7 +347,10 @@ fn write_json<T: Serialize + ?Sized>(file: &Path, value: &T) {
 }
 
 pub fn now() -> u64 {
-    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_secs()
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs()
 }
 
 /// Lowers this thread's CPU and disk priority so measuring never makes the computer feel slower.
@@ -312,9 +380,13 @@ fn find_build_folders(dir: &Path, depth: usize, found: &mut Vec<PathBuf>) {
     if depth > MAX_DEPTH {
         return;
     }
-    let Ok(entries) = fs::read_dir(dir) else { return };
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
     for entry in entries.flatten() {
-        let Ok(kind) = entry.file_type() else { continue };
+        let Ok(kind) = entry.file_type() else {
+            continue;
+        };
         if !kind.is_dir() {
             continue;
         }
@@ -333,9 +405,13 @@ pub(crate) fn folder_size(dir: &Path) -> u64 {
     let mut total = 0;
     let mut stack = vec![dir.to_path_buf()];
     while let Some(dir) = stack.pop() {
-        let Ok(entries) = fs::read_dir(&dir) else { continue };
+        let Ok(entries) = fs::read_dir(&dir) else {
+            continue;
+        };
         for entry in entries.flatten() {
-            let Ok(meta) = entry.path().symlink_metadata() else { continue };
+            let Ok(meta) = entry.path().symlink_metadata() else {
+                continue;
+            };
             if meta.is_dir() {
                 stack.push(entry.path());
             } else {
@@ -368,7 +444,10 @@ mod tests {
         assert_eq!(kind_of("~/git/acme/app/target"), "build");
         assert_eq!(kind_of("~/git/acme/app/dist.noindex"), "build");
         assert_eq!(kind_of("~/Library/Developer/Xcode/DerivedData"), "build");
-        assert_eq!(kind_of("~/Library/Developer/Xcode/DerivedData/Monitor-abcdef"), "build");
+        assert_eq!(
+            kind_of("~/Library/Developer/Xcode/DerivedData/Monitor-abcdef"),
+            "build"
+        );
         assert_eq!(kind_of("~/Library/Caches"), "cache");
         assert_eq!(kind_of("~/Library/pnpm/store"), "cache");
     }
@@ -390,19 +469,44 @@ mod tests {
         fs::create_dir_all(dir.join("ms-playwright/chromium-1228")).unwrap();
         fs::create_dir_all(dir.join("ms-playwright/chromium-1248")).unwrap();
         fs::create_dir_all(dir.join("com.example.app")).unwrap();
-        let mut entries: Vec<String> =
-            cache_entries(&dir).iter().map(|p| p.strip_prefix(&dir).unwrap().display().to_string()).collect();
+        let mut entries: Vec<String> = cache_entries(&dir)
+            .iter()
+            .map(|p| p.strip_prefix(&dir).unwrap().display().to_string())
+            .collect();
         entries.sort();
-        assert_eq!(entries, ["com.example.app", "ms-playwright/chromium-1228", "ms-playwright/chromium-1248"]);
+        assert_eq!(
+            entries,
+            [
+                "com.example.app",
+                "ms-playwright/chromium-1228",
+                "ms-playwright/chromium-1248"
+            ]
+        );
         let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]
     fn an_empty_measurement_is_loaded_again() {
         let file = std::env::temp_dir().join(format!("monitor-empty-{}.json", std::process::id()));
-        save(&file, &Cleanup { total: 0, top: Vec::new(), kinds: Vec::new(), measured_at: 1 });
+        save(
+            &file,
+            &Cleanup {
+                total: 0,
+                top: Vec::new(),
+                kinds: Vec::new(),
+                measured_at: 1,
+            },
+        );
         assert!(load(&file).is_some());
-        save(&file, &Cleanup { total: 0, top: Vec::new(), kinds: Vec::new(), measured_at: 0 });
+        save(
+            &file,
+            &Cleanup {
+                total: 0,
+                top: Vec::new(),
+                kinds: Vec::new(),
+                measured_at: 0,
+            },
+        );
         assert!(load(&file).is_none());
         let _ = fs::remove_file(&file);
     }

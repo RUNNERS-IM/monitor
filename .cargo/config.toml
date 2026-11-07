@@ -2,3 +2,8 @@
 # In the repository root because cargo looks for this file from where it runs (`pnpm native` runs here).
 [target.'cfg(all(windows, target_env = "msvc"))']
 rustflags = ["-C", "target-feature=+crt-static"]
+
+# Why: napi 가 타입 파일(index.d.ts)을 쓸 임시 폴더를 빌드 폴더 경로로 만든다. `--target-dir` 에 상대 경로를 주면 그 임시 폴더도
+# 상대 경로가 되어, native/ 에서 도는 컴파일러가 찾지 못하고 index.d.ts 가 0바이트로 남았다. 여기 적으면 절대 경로로 넘어간다.
+[build]
+target-dir = "native/target.noindex"
