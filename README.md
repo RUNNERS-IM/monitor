@@ -53,7 +53,7 @@ Issues and pull requests are welcome in this repository.
 
 ## Building from source
 
-Requires [Rust](https://rustup.rs), Node.js 20 or later and pnpm.
+Requires [Rust](https://rustup.rs), Node.js 24 and pnpm.
 
 ```sh
 pnpm install
@@ -64,7 +64,7 @@ pnpm dist           # build an installer for this OS into dist.noindex/
 
 For an Intel Mac build on Apple silicon, also run `pnpm native --target x86_64-apple-darwin` (after `rustup target add x86_64-apple-darwin`).
 
-- `electron/main/` is the main process (tray, panel window, sampling loop, updates), `electron/preload/` the bridge the page talks through, `src/` the panel and About window.
+- `src/main/` is the main process (tray, panel window, sampling loop, updates), `src/preload/` the bridge the page talks through, `src/renderer/` the panel and About window. Parts shared by the RUNNERS apps are copies from runners-app-kit (`src/main/runners/`, `src/renderer/runners-account/`, the root configs); `pnpm check:account` fails when a copy changed, so change them in the kit.
 - `native/` is the one native module (napi-rs): system readings, the cleanup scan, quitting an app, pausing a runner and the tray picture.
 - Screen text lives in `locales/`; the page and the main process read the same files. Check them with `pnpm check:locales`.
 - Debug runs take `MONITOR_OPEN=panel|about|update|update-progress` (the last two show the update window with made-up notes), `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1` (made-up names for screenshots) and `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup`.
