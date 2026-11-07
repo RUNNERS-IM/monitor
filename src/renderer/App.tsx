@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronRight,
   CircleHelp,
+  Download,
   Cpu,
   HardDrive,
   Info,
@@ -650,7 +651,7 @@ function Commands() {
     </button>
   )
   // Why: on/off lines are the icon for what they do and a switch at the right, like System Settings
-  // (shared decision 2026-11-02 "[PROGRAM] 켬 끔 토글" 1B; icons from the shared table: power, refresh-cw).
+  // (shared decision 2026-11-02 "[PROGRAM] 켬 끔 토글" 1B; icons from the shared table: power, download).
   const toggle = (name: MenuCommand, icon: LucideIcon, label: string, on: boolean) => (
     <MenuSwitch icon={<Icon icon={icon} />} label={label} checked={on} onChange={() => run(name)} />
   )
@@ -658,7 +659,7 @@ function Commands() {
   return (
     <>
       {toggle('login', Power, t('menu.openAtLogin'), !!state?.openAtLogin)}
-      {toggle('autoUpdate', RefreshCw, t('menu.autoUpdate'), !!state?.autoUpdate)}
+      {toggle('autoUpdate', Download, t('menu.autoUpdate'), !!state?.autoUpdate)}
       <div className="rm-separator" />
       {line('about', Info, t('menu.about'))}
       {line('updates', RefreshCw, t('menu.checkUpdates'))}

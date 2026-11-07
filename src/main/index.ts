@@ -8,10 +8,12 @@ import {
   ipcMain,
   nativeTheme,
   Notification,
+  screen,
   shell,
   systemPreferences,
   type Tray
 } from 'electron'
+import { execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import * as account from './account'
@@ -934,6 +936,20 @@ async function captureHidden(folder: string): Promise<void> {
     await sleep(2500)
     await save(page, `panel-${section}`)
     page.destroy()
+  }
+  // `MONITOR_CAPTURE_MENU=1` pops the tray menu up near the top right for a moment and photographs that part of the
+  // screen, since a native menu cannot be captured like a page. It shows on screen for about a second.
+  if (process.env.MONITOR_CAPTURE_MENU) {
+    const { width } = screen.getPrimaryDisplay().bounds
+    const [x, y] = [width - 460, 60]
+    const spot = new BrowserWindow({ x, y, width: 1, height: 1, frame: false, transparent: true })
+    await sleep(400)
+    const menu = buildMenu(latest && held(latest), menuState(), run)
+    menu.popup({ window: spot, x: 0, y: 0 })
+    await sleep(700)
+    execFileSync('screencapture', ['-x', `-R${x - 10},${y - 10},440,420`, join(folder, 'menu.png')])
+    menu.closePopup(spot)
+    spot.destroy()
   }
   // `MONITOR_CAPTURE_SIGNIN=1` captures the window with the sign-in sheet up, as the panel's account line opens it.
   if (process.env.MONITOR_CAPTURE_SIGNIN) {

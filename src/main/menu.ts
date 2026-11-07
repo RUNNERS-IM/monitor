@@ -83,18 +83,25 @@ export function buildMenu(
       registerAccelerator: false,
       click: () => run(id)
     })
-  const toggle = (id: Command, key: string, checked: boolean) =>
-    new MenuItem({ id, label: t(key), type: 'checkbox', checked, click: () => run(id) })
+  const toggle = (id: Command, key: string, iconName: string, checked: boolean) =>
+    new MenuItem({
+      id,
+      label: t(key),
+      icon: icon(iconName),
+      type: 'checkbox',
+      checked,
+      click: () => run(id)
+    })
   const separator = () => new MenuItem({ type: 'separator' })
   return Menu.buildFromTemplate([
     { label: readout, icon: icon('chart-column'), enabled: false },
     { label: t(level.key, { name: snap?.host ?? '' }), icon: icon(level.dot), enabled: false },
     separator(),
     line('usage', 'menu.showUsage', 'chart-column'),
-    // Why: on/off lines use the system check mark, as every RUNNERS app's native menu does (shared decision 2A);
-    // a native check cannot sit next to an icon, so these two have none.
-    toggle('login', 'menu.openAtLogin', state.openAtLogin),
-    toggle('autoUpdate', 'menu.autoUpdate', state.autoUpdate),
+    // Why: on/off lines keep the system check mark (shared decision 2A) and an icon like every other line;
+    // macOS draws the check in its own column to the left of the icon, so all labels line up.
+    toggle('login', 'menu.openAtLogin', 'power', state.openAtLogin),
+    toggle('autoUpdate', 'menu.autoUpdate', 'download', state.autoUpdate),
     separator(),
     line('about', 'menu.about', 'info'),
     line('updates', 'menu.checkUpdates', 'refresh-cw'),
