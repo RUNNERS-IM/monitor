@@ -47,6 +47,14 @@ const clock = (ms: number) =>
 const slowOf = (u: PeerUsage | null) => !!u && (u.slowMemory || u.slowCpu)
 /** Why: the panel colours memory by macOS's pressure level, and a Mac uses most of its memory on purpose, so this
  *  window does the same; otherwise one Mac looked fine in the panel and slow here. */
+/** 메인이 돌려준 로그인 창 오류 코드를 로그인 창이 읽는 Error 로 다시 던진다. */
+const rethrow = (problem: string | null) => {
+  if (problem) {
+    throw new Error(problem)
+  }
+}
+const sendCode = async (purpose: 'signup' | 'reset', email: string) =>
+  rethrow(await native.sendCode(purpose, email))
 const memoryTone = (u: PeerUsage) =>
   u.memoryPressure === 'critical' ? 'full' : u.memoryPressure === 'warn' ? 'high' : 'ok'
 
@@ -514,11 +522,15 @@ export default function Computers() {
     window.addEventListener('keydown', close)
     return () => window.removeEventListener('keydown', close)
   }, [signingIn])
-  const signIn = useCallback(async (mode: SignMode, email: string, password: string) => {
-    const problem = await native.signIn(mode, email, password)
-    if (problem) {
-      throw new Error(problem)
-    }
+  const signIn = useCallback(
+    async (mode: SignMode, email: string, password: string, code?: string) => {
+      rethrow(await native.signIn(mode, email, password, code))
+      setState(await native.account())
+    },
+    []
+  )
+  const resetPassword = useCallback(async (email: string, code: string, password: string) => {
+    rethrow(await native.resetPassword(email, code, password))
     setState(await native.account())
   }, [])
   const closeSignIn = useCallback(() => setSigningIn(false), [])
@@ -615,7 +627,15 @@ export default function Computers() {
           onGo={() => go(asking)}
         />
       )}
-      {signingIn && <SignInSheet lang={locale} signIn={signIn} onClose={closeSignIn} />}
+      {signingIn && (
+        <SignInSheet
+          lang={locale}
+          signIn={signIn}
+          sendCode={sendCode}
+          resetPassword={resetPassword}
+          onClose={closeSignIn}
+        />
+      )}
     </main>
   )
 }

@@ -11,9 +11,15 @@ import './runners-account.css'
 
 export type SignMode = 'login' | 'signup'
 
-/** The code a failed `signIn` rejects with (as the Error's message): a wrong password, a taken email, or anything
- *  else, which the sheet shows as "could not reach the server". */
-export type SignInProblem = 'bad' | 'exists'
+/** The code a failed call rejects with (as the Error's message): a wrong password, no account for the email, a password
+ *  of the wrong shape, a taken email, a wrong emailed code, or too many tries. Anything else reads as "could not reach
+ *  the server". main/account.ts makes these from the server's answers. */
+export type SignInProblem = 'bad' | 'none' | 'format' | 'exists' | 'code' | 'many'
+
+const PROBLEMS: readonly string[] = ['bad', 'none', 'format', 'exists', 'code', 'many']
+
+/** What the emailed six-digit code is for: making the account or choosing a new password. */
+export type CodePurpose = 'signup' | 'reset'
 
 export type AccountMenuItem = {
   label: string
@@ -181,20 +187,36 @@ export function AccountButton(props: {
   )
 }
 
-/** The sign-in sheet over the window: email and password, signing in or making the account. `signIn` resolves when
- *  signed in (the sheet then closes) and rejects with an Error whose message is a SignInProblem or anything else. */
+type Step = 'login' | 'signup' | 'signupCode' | 'forgot' | 'reset'
+
+/** The system server's password rule (IsPasswordOrHash): letters and digits, 6 to 20, some symbols allowed. Checked
+ *  here before a code is mailed, so a password of the wrong shape never costs a code. */
+const PASSWORD_RULE = /^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};:,.<>?|]{6,20}$/
+
+/** The sign-in sheet over the window (user decisions 「[REMOTE] 개발 - 로그인 창 개선」 1A and the email check, 2026-11-07):
+ *  - log in: email and password, "Forgot your password?" under the password, and when no account has that email a
+ *    button that makes one with it;
+ *  - make the account: email and password, then the six-digit code mailed to that email;
+ *  - forgot: email, then the mailed code and a new password, which signs in (one password for the four apps).
+ *  Each call resolves when done and rejects with an Error whose message is a SignInProblem or anything else. Without
+ *  `sendCode` the sheet makes the account without the code step and offers no password reset. */
 export function SignInSheet(props: {
   lang: string
-  signIn: (mode: SignMode, email: string, password: string) => Promise<unknown>
+  signIn: (mode: SignMode, email: string, password: string, code?: string) => Promise<unknown>
+  sendCode?: (purpose: CodePurpose, email: string) => Promise<unknown>
+  resetPassword?: (email: string, code: string, password: string) => Promise<unknown>
   onClose: () => void
 }) {
   const text = (key: TextKey) => accountText(props.lang, key)
-  const [mode, setMode] = useState<SignMode>('login')
+  const [step, setStep] = useState<Step>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState<string | null>(null)
-  const { onClose } = props
+  const [resent, setResent] = useState(false)
+  const { onClose, sendCode, resetPassword } = props
+  const canReset = !!sendCode && !!resetPassword
 
   useEffect(() => {
     const escape = (event: KeyboardEvent) => {
@@ -206,66 +228,229 @@ export function SignInSheet(props: {
     return () => document.removeEventListener('keydown', escape)
   }, [onClose])
 
-  const submit = (event: FormEvent) => {
-    event.preventDefault()
-    if (!email || !password || busy) {
-      return
-    }
+  const go = (next: Step) => {
+    setStep(next)
+    setProblem(null)
+    setResent(false)
+    setCode('')
+  }
+
+  const run = (work: () => Promise<unknown>, then: () => void) => {
     setBusy(true)
     setProblem(null)
-    props
-      .signIn(mode, email, password)
-      .then(() => {
-        setPassword('')
-        onClose()
-      })
+    setResent(false)
+    work()
+      .then(then)
       .catch((error: unknown) => {
-        const code = error instanceof Error ? error.message : ''
-        setProblem(text(code === 'bad' || code === 'exists' ? code : 'network'))
+        const said = error instanceof Error ? error.message : ''
+        setProblem(PROBLEMS.includes(said) ? said : 'network')
       })
       .finally(() => setBusy(false))
   }
+
+  const done = () => {
+    setPassword('')
+    onClose()
+  }
+
+  const ready =
+    !!email &&
+    (step === 'forgot' ||
+      (step === 'signupCode'
+        ? code.length === 6
+        : step === 'reset'
+          ? code.length === 6 && !!password
+          : !!password))
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    if (!ready || busy) {
+      return
+    }
+    if (step === 'login') {
+      run(() => props.signIn('login', email, password), done)
+    } else if ((step === 'signup' || step === 'reset') && !PASSWORD_RULE.test(password)) {
+      setProblem('format')
+    } else if (step === 'signup') {
+      if (sendCode) {
+        run(
+          () => sendCode('signup', email),
+          () => go('signupCode')
+        )
+      } else {
+        run(() => props.signIn('signup', email, password), done)
+      }
+    } else if (step === 'signupCode') {
+      run(() => props.signIn('signup', email, password, code), done)
+    } else if (step === 'forgot' && sendCode) {
+      run(
+        () => sendCode('reset', email),
+        () => {
+          setPassword('')
+          go('reset')
+        }
+      )
+    } else if (step === 'reset' && resetPassword) {
+      run(() => resetPassword(email, code, password), done)
+    }
+  }
+
+  const resend = () => {
+    if (sendCode && !busy) {
+      run(
+        () => sendCode(step === 'reset' ? 'reset' : 'signup', email),
+        () => setResent(true)
+      )
+    }
+  }
+
+  const withEmail = (key: TextKey) => text(key).replace('{email}', email)
+  const title: Record<Step, TextKey> = {
+    login: 'sheetTitle',
+    signup: 'sheetTitleSignUp',
+    signupCode: 'codeTitle',
+    forgot: 'forgotTitle',
+    reset: 'forgotTitle'
+  }
+  const intro =
+    step === 'signupCode'
+      ? withEmail('codeIntro')
+      : step === 'reset'
+        ? withEmail('resetIntro')
+        : step === 'forgot'
+          ? text('forgotIntro')
+          : text('sheetIntro')
+  const codeStep = step === 'signupCode' || step === 'reset'
+  const emailStep = step === 'login' || step === 'signup' || step === 'forgot'
+  const passwordStep = step === 'login' || step === 'signup' || step === 'reset'
+  const forgotLink = canReset && (
+    <button className="ra-link ra-forgot" type="button" onClick={() => go('forgot')}>
+      {text('forgot')}
+    </button>
+  )
 
   return (
     <div
       className="ra-cover"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
-      <form className="ra-sheet" onSubmit={submit} aria-label={text('sheetTitle')}>
+      <form className="ra-sheet" onSubmit={submit} aria-label={text(title[step])}>
         <button type="button" className="ra-close" aria-label={text('close')} onClick={onClose}>
           <CloseIcon />
         </button>
         <RunnersMark />
-        <div className="ra-title">{text(mode === 'login' ? 'sheetTitle' : 'sheetTitleSignUp')}</div>
-        <div className="ra-hint ra-intro">{text('sheetIntro')}</div>
-        <input
-          className="ra-field"
-          type="email"
-          autoFocus
-          autoComplete="email"
-          placeholder={text('email')}
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-        />
-        <input
-          className="ra-field"
-          type="password"
-          autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-          placeholder={text('password')}
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-        />
-        {problem && <div className="ra-hint ra-error">{problem}</div>}
-        <button className="ra-submit" type="submit" disabled={!email || !password || busy}>
-          {text(mode === 'login' ? 'signIn' : 'signUp')}
-        </button>
-        <button
-          className="ra-link"
-          type="button"
-          onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-        >
-          {text(mode === 'login' ? 'toSignUp' : 'toSignIn')}
-        </button>
+        <div className="ra-title">{text(title[step])}</div>
+        <div className="ra-hint ra-intro">{intro}</div>
+        {emailStep && (
+          <input
+            key="email"
+            className="ra-field"
+            type="email"
+            autoFocus
+            autoComplete="email"
+            placeholder={text('email')}
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+        )}
+        {codeStep && (
+          <input
+            key="code"
+            className="ra-field ra-code"
+            type="text"
+            inputMode="numeric"
+            autoFocus
+            autoComplete="one-time-code"
+            maxLength={6}
+            placeholder={text('codeField')}
+            value={code}
+            onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+          />
+        )}
+        {passwordStep && (
+          <input
+            key={step === 'reset' ? 'new-password' : 'password'}
+            className="ra-field"
+            type="password"
+            autoComplete={step === 'login' ? 'current-password' : 'new-password'}
+            placeholder={text(step === 'reset' ? 'newPassword' : 'password')}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+        )}
+        {(step === 'signup' || step === 'reset') && problem !== 'exists' && (
+          <div className="ra-hint ra-rule">{text('passwordRule')}</div>
+        )}
+        {step === 'login' && forgotLink}
+        {problem && <div className="ra-hint ra-error">{text(problem as TextKey)}</div>}
+        {resent && <div className="ra-hint ra-note">{text('resent')}</div>}
+        {problem === 'exists' ? (
+          <>
+            <button
+              className="ra-submit"
+              type="button"
+              onClick={() => {
+                setPassword('')
+                go('login')
+              }}
+            >
+              {text('signInThisEmail')}
+            </button>
+            {forgotLink}
+          </>
+        ) : problem === 'none' && step === 'login' ? (
+          <>
+            <button
+              className="ra-submit"
+              type="button"
+              onClick={() => {
+                setPassword('')
+                go('signup')
+              }}
+            >
+              {text('signUpThisEmail')}
+            </button>
+            <button className="ra-link" type="button" onClick={() => setProblem(null)}>
+              {text('otherEmail')}
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="ra-submit" type="submit" disabled={!ready || busy}>
+              {text(
+                step === 'login'
+                  ? 'signIn'
+                  : step === 'forgot'
+                    ? 'sendCode'
+                    : step === 'reset'
+                      ? 'resetSubmit'
+                      : 'signUp'
+              )}
+            </button>
+            {codeStep && (
+              <button className="ra-link" type="button" disabled={busy} onClick={resend}>
+                {text('resend')}
+              </button>
+            )}
+            <button
+              className="ra-link"
+              type="button"
+              onClick={() =>
+                go(step === 'login' ? 'signup' : step === 'signupCode' ? 'signup' : 'login')
+              }
+            >
+              {text(
+                step === 'login'
+                  ? 'toSignUp'
+                  : step === 'signup'
+                    ? 'toSignIn'
+                    : step === 'signupCode'
+                      ? 'otherEmail'
+                      : 'backToSignIn'
+              )}
+            </button>
+          </>
+        )}
       </form>
     </div>
   )

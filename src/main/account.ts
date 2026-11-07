@@ -25,6 +25,10 @@ export const current = () => account().current()
 export const onChange = (listener: () => void) => account().onChange(listener)
 export const accessToken = () => account().accessToken()
 export const refresh = () => account().refresh()
-export const signIn = (mode: 'login' | 'signup', email: string, password: string) =>
-  account().signIn(mode, email, password)
+export const signIn = (mode: 'login' | 'signup', email: string, password: string, code?: string) =>
+  account().signIn(mode, email, password, code)
+export const sendCode = (purpose: 'signup' | 'reset', email: string, locale: string) =>
+  account().sendCode(purpose, email, locale)
+export const resetPassword = (email: string, code: string, password: string) =>
+  account().resetPassword(email, code, password)
 export const signOut = () => account().signOut()

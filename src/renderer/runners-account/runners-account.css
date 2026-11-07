@@ -239,6 +239,37 @@
   cursor: pointer;
 }
 
+.ra-link:disabled {
+  opacity: 0.5;
+}
+
+/* "Forgot your password?" sits at the end of the password field's line. */
+.ra-forgot {
+  align-self: flex-end;
+  margin-top: -4px;
+}
+
+.ra-rule {
+  margin-top: -4px;
+}
+
+.ra-note {
+  color: var(--ra-sub);
+}
+
+.ra-code {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.4em;
+  text-align: center;
+}
+
+/* The hint reads as words while the field is empty; only the digits spread out. */
+.ra-code:placeholder-shown {
+  font-size: 13px;
+  letter-spacing: normal;
+}
+
 .ra-close {
   position: absolute;
   top: 10px;

@@ -46,7 +46,11 @@ const api: MonitorApi = {
     ipcRenderer.on('monitor:account', relay)
     return () => ipcRenderer.off('monitor:account', relay)
   },
-  signIn: (mode, email, password) => ipcRenderer.invoke('monitor:signIn', mode, email, password),
+  signIn: (mode, email, password, code) =>
+    ipcRenderer.invoke('monitor:signIn', mode, email, password, code),
+  sendCode: (purpose, email) => ipcRenderer.invoke('monitor:sendCode', purpose, email),
+  resetPassword: (email, code, password) =>
+    ipcRenderer.invoke('monitor:resetPassword', email, code, password),
   takeSignIn: () => ipcRenderer.invoke('monitor:takeSignIn'),
   onSignIn: (listener) => {
     const relay = () => listener()

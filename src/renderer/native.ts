@@ -76,8 +76,12 @@ export const onUpdateOffer = (listener: (offer: UpdateOffer) => void) =>
 export const answerUpdate = (answer: 'install' | 'later') => api().answerUpdate(answer)
 export const account = () => api().account()
 export const onAccount = (listener: (state: AccountState) => void) => api().onAccount(listener)
-export const signIn = (mode: 'login' | 'signup', email: string, password: string) =>
-  api().signIn(mode, email, password)
+export const signIn = (mode: 'login' | 'signup', email: string, password: string, code?: string) =>
+  api().signIn(mode, email, password, code)
+export const sendCode = (purpose: 'signup' | 'reset', email: string) =>
+  api().sendCode(purpose, email)
+export const resetPassword = (email: string, code: string, password: string) =>
+  api().resetPassword(email, code, password)
 export const takeSignIn = () => api().takeSignIn()
 export const onSignIn = (listener: () => void) => api().onSignIn(listener)
 export const signOut = () => api().signOut()

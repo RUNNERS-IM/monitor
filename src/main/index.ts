@@ -594,6 +594,8 @@ const phoneCommands: Record<string, relay.Handler> = {
 
 const COMPUTER_COMMANDS = new Set(['app.quit', 'cleanup.empty', 'runner.pause', 'runner.resume'])
 /** How long the other computer has to say it took a command; the kit then waits on for the result. */
+/** 공통 로그인 창이 원인별로 보여 주는 오류 코드(kit runners-account.tsx 의 SignInProblem). */
+const SIGN_IN_PROBLEMS = ['bad', 'none', 'format', 'exists', 'code', 'many']
 const COMMAND_ANSWER_MS = 20 * 1000
 
 /** Set when the All Computers window is opened to sign in, and taken by that window once it has loaded. */
@@ -705,21 +707,37 @@ function registerIpc(): void {
     email: account.current(),
     status: relay.currentStatus()
   }))
+  // Why: IPC 로 던진 오류는 메시지 앞에 꼬리가 붙어, 로그인 창이 읽는 코드만 답으로 돌려준다.
+  const signInProblem = async (work: () => Promise<unknown>) => {
+    try {
+      await work()
+      return null
+    } catch (error) {
+      const code = error instanceof Error ? error.message : ''
+      return SIGN_IN_PROBLEMS.includes(code) ? code : 'network'
+    }
+  }
   ipcMain.handle(
     'monitor:signIn',
-    async (_event, mode: unknown, email: unknown, password: unknown) => {
-      try {
-        await account.signIn(
+    (_event, mode: unknown, email: unknown, password: unknown, code: unknown) =>
+      signInProblem(() =>
+        account.signIn(
           mode === 'signup' ? 'signup' : 'login',
           String(email),
-          String(password)
+          String(password),
+          typeof code === 'string' && code ? code : undefined
         )
-        return null
-      } catch (error) {
-        const code = error instanceof Error ? error.message : ''
-        return code === 'bad' || code === 'exists' ? code : 'network'
-      }
-    }
+      )
+  )
+  ipcMain.handle('monitor:sendCode', (_event, purpose: unknown, email: unknown) =>
+    signInProblem(() =>
+      account.sendCode(purpose === 'reset' ? 'reset' : 'signup', String(email), currentLocale())
+    )
+  )
+  ipcMain.handle(
+    'monitor:resetPassword',
+    (_event, email: unknown, code: unknown, password: unknown) =>
+      signInProblem(() => account.resetPassword(String(email), String(code), String(password)))
   )
   ipcMain.handle('monitor:takeSignIn', () => {
     const wanted = signInWanted
@@ -843,6 +861,8 @@ type CaptureStep =
   | { act: string }
   | { go: true }
   | { cancel: true }
+  | { type: [selector: string, text: string] }
+  | { press: string }
   | { wait: number }
   | { shot: string }
 
@@ -873,6 +893,20 @@ async function captureSteps(
       await run(`document.querySelector('.c-confirm-go')?.click()`)
     } else if ('cancel' in step) {
       await run(`document.querySelector('.c-confirm-cancel')?.click()`)
+    } else if ('type' in step) {
+      // Why: React reads the value through the input's own setter, so a plain assignment would not reach the form.
+      await run(
+        `(()=>{const f=document.querySelector(${JSON.stringify(step.type[0])});if(!f)return;Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(f,${JSON.stringify(step.type[1])});f.dispatchEvent(new Event('input',{bubbles:true}))})()`
+      )
+    } else if ('press' in step) {
+      // Why: the sign-in sheet's buttons come first, since the window behind it has its own Sign In button.
+      console.log(
+        'press',
+        step.press,
+        await run(
+          `(()=>{const b=[...document.querySelectorAll('.ra-sheet button'),...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(step.press)});b?.click();return !!b})()`
+        )
+      )
     } else if ('wait' in step) {
       await sleep(step.wait)
     } else {

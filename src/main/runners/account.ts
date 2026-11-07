@@ -38,6 +38,35 @@ export class AccountApiError extends Error {
   }
 }
 
+type SignedIn = { user?: { email?: string }; tokens: AccountTokens }
+
+/** 서버 답을 공통 로그인 창이 읽는 코드로 바꾼다(runners-account.tsx 의 SignInProblem).
+ *  404 · 'User not found' 계정 없음, 401 비밀번호 틀림, 400 비밀번호 모양, 409 이미 있는 계정, 422 틀린 숫자,
+ *  429 너무 잦음. 그 밖은 그대로 던져 창이 「서버에 연결할 수 없음」으로 보인다. */
+export function accountProblem(error: unknown): unknown {
+  if (!(error instanceof AccountApiError)) {
+    return error
+  }
+  const said = JSON.stringify(error.body ?? '')
+  const code =
+    error.status === 404 || (error.status === 401 && said.includes('User not found'))
+      ? 'none'
+      : (
+          {
+            400: 'format',
+            401: 'bad',
+            409: 'exists',
+            422: 'code',
+            429: 'many'
+          } as Record<number, string>
+        )[error.status]
+  return code ? new Error(code, { cause: error }) : error
+}
+
+const problem = (error: unknown): never => {
+  throw accountProblem(error)
+}
+
 export type Account = ReturnType<typeof createAccount>
 
 export function createAccount(options: AccountOptions) {
@@ -115,34 +144,48 @@ export function createAccount(options: AccountOptions) {
         listeners.delete(listener)
       }
     },
-    /** 로그인하거나 계정을 만든다. 틀린 이메일 · 비밀번호는 Error("bad"), 이미 있는 이메일은 Error("exists"),
-     *  그 밖의 오류는 서버에 닿지 못한 것이다. 공통 로그인 창이 이 셋을 나눠 보여 준다. */
-    async signIn(mode: 'login' | 'signup', email: string, password: string) {
+    /** 로그인하거나 계정을 만든다. 실패하면 공통 로그인 창이 읽는 코드(SignInProblem)를 메시지로 던진다.
+     *  code 는 가입할 때 메일로 받은 숫자다. */
+    async signIn(mode: 'login' | 'signup', email: string, password: string, code?: string) {
       const typed = email.trim()
-      try {
-        // 서버는 비밀번호를 입력한 그대로 받아(영문 + 숫자 6~20자) 직접 해시한다.
-        const res = await post<{ user?: { email?: string }; tokens: AccountTokens }>(
-          `/api/mobile/auth/${mode}`,
-          { email: typed, password, projectName: project }
-        )
-        store({ email: res.user?.email ?? typed, tokens: res.tokens })
-      } catch (error) {
-        if (error instanceof AccountApiError && error.status === 409) {
-          throw new Error('exists', { cause: error })
+      // 서버는 비밀번호를 입력한 그대로 받아(영문 + 숫자 6~20자) 직접 해시한다.
+      const res = await post<SignedIn>(`/api/mobile/auth/${mode}`, {
+        email: typed,
+        password,
+        projectName: project,
+        ...(code ? { code } : {})
+      }).catch(problem)
+      store({ email: res.user?.email ?? typed, tokens: res.tokens })
+    },
+    /** 메일로 6자리 숫자를 보낸다. signup 은 가입용(이미 계정이 있으면 exists), reset 은 비밀번호 찾기용(없으면 none). */
+    async sendCode(purpose: 'signup' | 'reset', email: string, locale?: string) {
+      await post(
+        purpose === 'signup' ? '/api/mobile/auth/email-code' : '/api/mobile/auth/password-reset',
+        {
+          email: email.trim(),
+          projectName: project,
+          locale
         }
-        if (error instanceof AccountApiError && [400, 401, 404].includes(error.status)) {
-          throw new Error('bad', { cause: error })
-        }
-        throw error
-      }
+      ).catch(problem)
+    },
+    /** 메일로 받은 숫자로 새 비밀번호를 정하고 그대로 로그인한다. 네 앱이 한 비밀번호라 넷 다 바뀐다. */
+    async resetPassword(email: string, code: string, password: string) {
+      const typed = email.trim()
+      const res = await post<SignedIn>('/api/mobile/auth/password-reset/confirm', {
+        email: typed,
+        code,
+        password,
+        projectName: project
+      }).catch(problem)
+      store({ email: res.user?.email ?? typed, tokens: res.tokens })
     },
     async signOut() {
       const was = load()
       store(null)
       if (was) {
-        await post('/api/mobile/auth/logout', { refreshToken: was.tokens.refreshToken }).catch(
-          () => undefined
-        )
+        await post('/api/mobile/auth/logout', {
+          refreshToken: was.tokens.refreshToken
+        }).catch(() => undefined)
       }
     },
     accessToken: () => load()?.tokens.accessToken ?? null,

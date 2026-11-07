@@ -1,5 +1,8 @@
 // What the preload script gives the page as `window.monitor`.
 
+/** What a sign-in call answers: null when it worked, otherwise the sign-in sheet's problem code. */
+export type SignInAnswer = 'bad' | 'none' | 'format' | 'exists' | 'code' | 'many' | 'network' | null
+
 export type MenuCommand = 'usage' | 'login' | 'autoUpdate' | 'about' | 'updates' | 'help' | 'quit'
 
 /** The RUNNERS account this computer is signed in with, and whether it is on the relay (for the account's other
@@ -144,13 +147,20 @@ export type MonitorApi = {
   account: () => Promise<AccountState>
   /** Calls back when the sign-in or the relay connection changes; returns a function that stops it. */
   onAccount: (listener: (state: AccountState) => void) => () => void
-  /** Signs in or makes the account. Null when signed in; "bad" for a refused email or password, "exists" when the
-   *  email already has an account, "network" when the server could not be reached. */
+  /** Signs in or makes the account (`code` is the number mailed for a new account). Null when signed in, otherwise
+   *  the sign-in sheet's problem code: "bad" wrong password, "none" no account with that email, "format" a password
+   *  that is not 6-20 letters and digits, "exists" the email already has an account, "code" a wrong mailed number,
+   *  "many" too many tries, "network" when the server could not be reached. */
   signIn: (
     mode: 'login' | 'signup',
     email: string,
-    password: string
-  ) => Promise<'bad' | 'exists' | 'network' | null>
+    password: string,
+    code?: string
+  ) => Promise<SignInAnswer>
+  /** Mails a six-digit number: "signup" to make the account, "reset" to choose a new password. */
+  sendCode: (purpose: 'signup' | 'reset', email: string) => Promise<SignInAnswer>
+  /** Sets a new password with the mailed number and signs in with it. */
+  resetPassword: (email: string, code: string, password: string) => Promise<SignInAnswer>
   /** True once when the All Computers window was opened to sign in (the panel's account line while signed out). */
   takeSignIn: () => Promise<boolean>
   /** Calls back when the open All Computers window is asked to show the sign-in sheet. */
