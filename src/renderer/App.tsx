@@ -23,7 +23,7 @@ import { locale, t } from './i18n'
 import * as native from './native'
 import type { AccountState, CleanupKind, MenuCommand, MenuState, Peer, QuitReport } from './native'
 import { RunnersMark } from './runners-account/runners-account'
-import { MenuSwitch } from './runners-account/runners-menu'
+import { MenuHead, MenuSwitch } from './runners-account/runners-menu'
 import './runners-account/runners-account.css'
 import type { AppUse, Cleanup, Pressure, QuitKind, Snapshot, Suggestion } from './types'
 import './runners-account/runners-menu.css'
@@ -827,16 +827,18 @@ function App() {
     <main ref={panelRef} className="panel">
       <AccountRow />
       <div className="rm-separator" />
-      <header className="head">
-        <span className="host">{snap.host}</span>
-        <span className="os">{snap.os}</span>
-        {/* Why: a "normal" badge on every open said nothing, so the badge shows only when something is wrong. */}
-        {slow && (
-          <span className={`badge ${snap.level === 'bad' ? 'full' : 'high'}`}>
-            {t(`status.${status}`)}
-          </span>
-        )}
-      </header>
+      <MenuHead
+        name={snap.host}
+        sub={snap.os}
+        // Why: a "normal" badge on every open said nothing, so the badge shows only when something is wrong.
+        badge={
+          slow ? (
+            <span className={`badge ${snap.level === 'bad' ? 'full' : 'high'}`}>
+              {t(`status.${status}`)}
+            </span>
+          ) : undefined
+        }
+      />
       <div className="rm-separator" />
       {snap.suggestions.length > 0 && (
         <section className="suggest" aria-label={t('suggest.title')}>

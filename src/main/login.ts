@@ -1,85 +1,52 @@
-// "Open at login": Monitor starts with the computer so a slow computer is always shown on the tray (decided default on).
-// The first release run turns it on once; after that only the menu line changes it, so turning it off sticks.
-// macOS 13+ registers the app itself (listed by name under Login Items), Windows uses the Run key, Linux an
-// autostart .desktop file.
+// 「로그인할 때 열기」. 동작은 kit 부품이 하고, 여기에는 Monitor 만의 두 가지를 둔다: 개발 실행 막기와 Tauri 판에서 넘어오기.
 import { app } from 'electron'
-import { existsSync, mkdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, unlinkSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { createLoginItem } from './runners/login-item'
 
-/** Marks that the one-time default was applied, so a later launch never turns it back on. */
-const DEFAULT_APPLIED = 'open-at-login-default'
-/** Folder the Tauri build of Monitor kept its data in; its marker counts too, so a choice made there is kept. */
+/** Tauri 판 Monitor 가 데이터를 두던 폴더. 그 표시도 인정해 거기서 고른 값을 지킨다. */
 const TAURI_DATA = 'im.runners.monitor'
-/** Login item the Tauri build wrote (tauri-plugin-autostart, LaunchAgent mode). */
+const TAURI_MARKER = 'open-at-login-default'
+/** Tauri 판이 남긴 로그인 항목(tauri-plugin-autostart). */
 const TAURI_LAUNCH_AGENT = join(homedir(), 'Library', 'LaunchAgents', 'Monitor.plist')
-const LINUX_AUTOSTART = join(homedir(), '.config', 'autostart', 'monitor.desktop')
 
-export function isOn(): boolean {
-  if (process.platform === 'linux') {
-    return existsSync(LINUX_AUTOSTART)
-  }
-  return app.getLoginItemSettings().openAtLogin
-}
+const item = createLoginItem({
+  app,
+  name: 'Monitor',
+  migrate: () => existsSync(join(app.getPath('appData'), TAURI_DATA, TAURI_MARKER))
+})
+
+export const isOn = item.isOn
 
 export function setOn(on: boolean): void {
-  // Why: a dev run would register the dev copy of Electron as Monitor's login item, and the Mac would open that at login.
+  // Why: 개발 실행이 쓰면 개발용 Electron.app 이 맥의 로그인 항목에 남아, 로그인 때 그것이 열린다.
   if (!app.isPackaged) {
     return
   }
-  if (process.platform === 'linux') {
-    if (!on) {
-      rmSync(LINUX_AUTOSTART, { force: true })
-      return
-    }
-    // Why: an AppImage runs from a temporary mount, so the file names the AppImage itself.
-    const exec = process.env.APPIMAGE ?? process.execPath
-    mkdirSync(join(homedir(), '.config', 'autostart'), { recursive: true })
-    writeFileSync(
-      LINUX_AUTOSTART,
-      `[Desktop Entry]\nType=Application\nName=Monitor\nExec="${exec}"\nX-GNOME-Autostart-enabled=true\n`
-    )
-    return
-  }
-  app.setLoginItemSettings({ openAtLogin: on })
+  item.setOn(on)
 }
 
-/** The menu line: flips the setting and returns what it is now. */
+/** 메뉴 줄: 뒤집고 지금 값을 돌려준다. */
 export function toggle(): boolean {
   setOn(!isOn())
   return isOn()
 }
 
-/**
- * Release builds only. Moves a Tauri login item over to the app's own, then turns it on the first time.
- * Debug runs leave the login items alone, so a dev copy of Electron is never registered.
- */
+/** 출시판에서만 처음 한 번 켠다. */
 export function applyDefault(): void {
   if (!app.isPackaged) {
     return
   }
-  const marker = join(app.getPath('userData'), DEFAULT_APPLIED)
-  // Why: the Tauri build left a LaunchAgent pointing at its binary; it is replaced by the app's own login item
-  // so Monitor is listed by name, and the person's choice (on) is kept.
+  // Why: Tauri 판의 LaunchAgent 는 옛 실행 파일을 가리킨다. 앱 자신의 항목으로 바꿔 이름으로 보이게 하고, 켜 둔 선택은 지킨다.
   if (process.platform === 'darwin' && existsSync(TAURI_LAUNCH_AGENT)) {
     try {
       unlinkSync(TAURI_LAUNCH_AGENT)
-      setOn(true)
-      writeMarker(marker)
+      item.setOn(true)
     } catch {
-      // Left for the next launch.
+      // 다음 실행 때 다시 한다.
+      return
     }
-    return
   }
-  const tauriMarker = join(app.getPath('appData'), TAURI_DATA, DEFAULT_APPLIED)
-  if (existsSync(marker) || existsSync(tauriMarker)) {
-    return
-  }
-  setOn(true)
-  writeMarker(marker)
-}
-
-function writeMarker(marker: string): void {
-  mkdirSync(app.getPath('userData'), { recursive: true })
-  writeFileSync(marker, '')
+  item.applyDefault()
 }

@@ -1,58 +1,26 @@
-// Screen text for the tray, the native menu, dialogs and notifications. The page reads the same files in
-// `locales/`, so every language lives in one place; vite bundles them into the main process.
+// 트레이 · 메뉴 · 알림창 · 알림의 글.
 import { app } from 'electron'
+import { currentLocale as locale, startI18n, t as translate } from '../shared/i18n'
 
-type Table = Record<string, string>
+let started = false
 
-const files = import.meta.glob<Table>('../../locales/*.json', { eager: true, import: 'default' })
-const tables: Record<string, Table> = Object.fromEntries(
-  Object.entries(files).map(([path, table]) => [path.replace(/^.*\/(.+)\.json$/, '$1'), table])
-)
-
-/** The bundled locale for a tag like `de-AT` or `zh-Hant-TW`: exact code, then language, else none. */
-function matchLocale(tag: string): string | null {
-  const exact = Object.keys(tables).find((code) => code.toLowerCase() === tag.toLowerCase())
-  if (exact) {
-    return exact
+// Why: 시스템 언어 목록은 앱이 준비된 뒤에야 알 수 있어, 처음 쓸 때 언어를 정한다.
+function start(): void {
+  if (started) {
+    return
   }
-  const language = tag.split(/[-_]/)[0].toLowerCase()
-  // Why: Taiwan, Hong Kong and Macau write traditional characters; every other Chinese tag reads simplified.
-  if (language === 'zh') {
-    return /-(hant|tw|hk|mo)\b/i.test(tag.replace(/_/g, '-')) ? 'zh-Hant' : 'zh-Hans'
-  }
-  return language in tables ? language : null
-}
-
-/** The first language in the person's list that has a table, else `en`. Why the whole list: someone with a language
- *  we lack on top and Korean second should read Korean, not English. */
-function pickLocale(tags: readonly string[]): string {
-  for (const tag of tags) {
-    const code = matchLocale(tag)
-    if (code) {
-      return code
-    }
-  }
-  return 'en'
-}
-
-let table: Table | null = null
-let code: string | null = null
-
-/** The locale code the app speaks (`ko`, `en`, `zh-Hant`, …). */
-export function currentLocale(): string {
-  // Why: debug runs take `MONITOR_LANG=en` so the homepage can get English screenshots from a Korean Mac.
+  started = true
+  // Why: 개발 실행은 `MONITOR_LANG=en` 으로 한국어 맥에서도 영어 화면을 찍을 수 있다.
   const forced = app.isPackaged ? undefined : process.env.MONITOR_LANG
-  code ??= pickLocale(forced ? [forced] : [...app.getPreferredSystemLanguages(), app.getLocale()])
-  return code
+  startI18n(forced ? [forced] : [...app.getPreferredSystemLanguages(), app.getLocale()])
 }
 
-/** Looks up `key` and fills `{{name}}` slots; a key this language lacks reads in English. */
-export function t(key: string, args: Record<string, string | number> = {}): string {
-  // Why: the system language list is only known once the app is ready, so the table is picked on first use.
-  table ??= tables[currentLocale()] ?? tables.en
-  let text = table[key] ?? tables.en[key] ?? key
-  for (const [name, value] of Object.entries(args)) {
-    text = text.replaceAll(`{{${name}}}`, String(value))
-  }
-  return text
+export function currentLocale(): string {
+  start()
+  return locale()
+}
+
+export function t(key: string, args?: Record<string, string | number>): string {
+  start()
+  return translate(key, args)
 }

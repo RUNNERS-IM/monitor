@@ -1,5 +1,11 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "extends": ["./.oxlintrc.json"],
-  "ignorePatterns": ["out/**", "dist.noindex/**", "version-parts.cjs", "native/target.noindex/**"]
+  "ignorePatterns": [
+    "out/**",
+    "dist.noindex/**",
+    "version-parts.cjs",
+    "native/target.noindex/**",
+    "native/index.d.ts"
+  ]
 }

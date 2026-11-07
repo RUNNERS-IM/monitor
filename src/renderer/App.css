@@ -29,32 +29,7 @@ body,
   padding: var(--rm-pad-y) 0;
 }
 
-.head {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  min-height: var(--rm-row);
-  margin: 0 var(--rm-inset);
-  line-height: var(--rm-row);
-}
-
-.host {
-  flex: none;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.os {
-  flex: 1;
-  min-width: 0;
-  font-size: var(--rm-font-small);
-  color: var(--rm-text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.head .badge {
+.rm-head .badge {
   align-self: center;
 }
 

@@ -1,7 +1,7 @@
-// Monitor's few settings, kept in settings.json in the user data folder.
+// Monitor 의 설정(userData 안의 settings.json). 읽고 쓰는 일은 kit 부품이 한다.
 import { app } from 'electron'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { createSettingsFile } from './runners/settings-file'
 
 export type Settings = {
   /** Check GitHub for a new release once a day. On by default. */
@@ -16,27 +16,20 @@ export type Settings = {
   /** Runners paused from the panel or a phone, by name, with the Unix time (seconds) they come back.
    *  Why: a restart of Monitor inside the hour would otherwise show the runner as gone instead of paused. */
   pausedRunners?: Record<string, number>
-  /** This computer's id on the relay (electron/main/relay.ts), made once so phones keep seeing the same computer. */
+  /** This computer's id on the relay (src/main/relay.ts), made once so phones keep seeing the same computer. */
   deviceId?: string
 }
 
 const DEFAULTS: Settings = { autoUpdate: true, updateLaterOn: null, noticedOn: {} }
 
-function file(): string {
-  return join(app.getPath('userData'), 'settings.json')
-}
+// Why: 개발 실행은 index.ts 가 userData 를 바꾸므로 부를 때마다 위치를 읽는다.
+const file = () =>
+  createSettingsFile<Settings>(join(app.getPath('userData'), 'settings.json'), DEFAULTS)
 
 export function readSettings(): Settings {
-  try {
-    return { ...DEFAULTS, ...JSON.parse(readFileSync(file(), 'utf8')) }
-  } catch {
-    return { ...DEFAULTS }
-  }
+  return file().read()
 }
 
 export function writeSettings(change: Partial<Settings>): Settings {
-  const next = { ...readSettings(), ...change }
-  mkdirSync(app.getPath('userData'), { recursive: true })
-  writeFileSync(file(), JSON.stringify(next, null, 2))
-  return next
+  return file().write(change)
 }

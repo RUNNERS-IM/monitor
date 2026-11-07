@@ -2,14 +2,13 @@
 import { app, BrowserWindow, nativeTheme, screen, type Tray } from 'electron'
 import { join } from 'node:path'
 import { t } from './i18n'
+import { createUpdateWindow } from './runners/update-window'
 
 export const PANEL_WIDTH = 300
 const ABOUT_WIDTH = 520
 /** First height only; the page then fits the window to its content. */
 const ABOUT_HEIGHT = 560
 const UPDATE_WIDTH = 400
-/** Buttons and keys in the update window do nothing this long after it appears. */
-const UPDATE_GUARD_MS = 1000
 /** Space between the menu bar (or taskbar) and the panel. */
 const GAP = 4
 
@@ -107,12 +106,12 @@ const COMPUTERS_HEIGHT = 560
 /** Debug runs only: a page in a window that is never shown, at the panel's width or the All Computers window's size,
  *  in one language (`?lang=`), for the homepage screenshots (MONITOR_SHOTS). */
 export function hiddenPage(
-  page: 'panel' | 'computers',
+  page: 'panel' | 'computers' | 'about',
   query: string,
   height?: number
 ): BrowserWindow {
   const window = new BrowserWindow({
-    width: page === 'panel' ? PANEL_WIDTH : COMPUTERS_WIDTH,
+    width: page === 'panel' ? PANEL_WIDTH : page === 'about' ? ABOUT_WIDTH : COMPUTERS_WIDTH,
     // Why: taller than the real window, so no language's last box is cut; the picture is trimmed afterwards.
     height: height ?? (page === 'panel' ? 360 : COMPUTERS_HEIGHT + 400),
     useContentSize: true,
@@ -233,129 +232,49 @@ export function showAbout(): void {
   load(about, 'about')
 }
 
-/** What the update window shows: the new version (as people see it), its "What's new" lines (null hides the box) and,
- *  while it is still being downloaded, how far along it is (0–100). */
-export type UpdateOffer = {
-  version: string
-  notes: string[] | null
-  downloading: boolean
-  percent: number
-}
-export type UpdateAnswer = 'install' | 'later'
+export type { UpdateOffer } from './runners/updates'
 
-/** An open update window: its answer once a button is pressed (closing it is Later), and a way to change its state. */
-export type UpdatePrompt = {
-  answer: Promise<UpdateAnswer>
-  set: (change: Partial<UpdateOffer>) => void
-  close: () => void
-}
+/** 업데이트를 묻는 작은 창: 제목, 한 줄, 새 소식, 받는 동안 진행 막대, [나중에] [지금 설치].
+ *  운영체제 알림창에는 스크롤되는 목록도 진행 막대도 넣을 수 없어 창으로 만든다. 답을 받는 규칙은 kit 부품이 맡는다. */
+let openUpdate: BrowserWindow | null = null
 
-let update: {
-  window: BrowserWindow
-  offer: UpdateOffer
-  answer: (answer: UpdateAnswer) => void
-} | null = null
+const updateWindow = createUpdateWindow({
+  create() {
+    const window = new BrowserWindow({
+      width: UPDATE_WIDTH,
+      height: 200,
+      useContentSize: true,
+      show: false,
+      frame: false,
+      resizable: false,
+      minimizable: false,
+      maximizable: false,
+      fullscreenable: false,
+      hasShadow: true,
+      roundedCorners: true,
+      alwaysOnTop: true,
+      title: 'Monitor',
+      ...blur(),
+      webPreferences: { preload, sandbox: true, contextIsolation: true }
+    })
+    window.on('page-title-updated', (event) => event.preventDefault())
+    load(window, 'update')
+    openUpdate = window
+    // Why: 찍는 실행은 일하는 사람 화면에 창을 띄우지 않는다(MONITOR_CAPTURE).
+    if (!app.isPackaged && process.env.MONITOR_CAPTURE) {
+      window.show = () => undefined
+      window.showInactive = () => undefined
+      window.focus = () => undefined
+    }
+    return window
+  },
+  focusApp: () => app.focus({ steal: true }),
+  channel: 'monitor:updateOffer'
+})
 
-/** Asks whether to install, in a small window drawn like the menu: title, one line, "What's new", a progress bar while
- *  downloading, [Later] [Install Now]. Why a window and not a message box: the native box can hold neither a list that
- *  scrolls nor a progress bar. Closing it counts as Later.
- *  `focus` is for the menu's "Check for Updates…", where the person is waiting for it. The daily check shows the
- *  window without taking focus, so a Return typed into another app never lands on Install Now. */
-export function askUpdate(offer: UpdateOffer, focus: boolean): UpdatePrompt {
-  if (update && !update.window.isDestroyed()) {
-    update.window.close()
-  }
-  let resolve!: (answer: UpdateAnswer) => void
-  const answerPromise = new Promise<UpdateAnswer>((done) => {
-    resolve = done
-  })
-  const window = new BrowserWindow({
-    width: UPDATE_WIDTH,
-    height: 200,
-    useContentSize: true,
-    show: false,
-    frame: false,
-    resizable: false,
-    minimizable: false,
-    maximizable: false,
-    fullscreenable: false,
-    hasShadow: true,
-    roundedCorners: true,
-    alwaysOnTop: true,
-    title: 'Monitor',
-    ...blur(),
-    webPreferences: { preload, sandbox: true, contextIsolation: true }
-  })
-  const current = { window, offer: { ...offer }, answer: (_: UpdateAnswer) => {} }
-  let answered = false
-  let shownAt = Number.POSITIVE_INFINITY
-  current.answer = (value: UpdateAnswer) => {
-    // Why: a Return or click meant for something else must not answer a window that just appeared (a test window
-    // was answered Install Now this way while someone was typing). Closing the window is still Later at any time.
-    if (Date.now() - shownAt < UPDATE_GUARD_MS) {
-      return
-    }
-    // Why: Install Now cannot be chosen before the download is done; the button is off then, this guards Return too.
-    if (answered || (value === 'install' && current.offer.downloading)) {
-      return
-    }
-    answered = true
-    resolve(value)
-    // Why: after Install Now the window stays up showing "Installing…" until the app quits.
-    if (value === 'later' && !window.isDestroyed()) {
-      window.close()
-    }
-  }
-  update = current
-  window.on('page-title-updated', (event) => event.preventDefault())
-  window.once('ready-to-show', () => {
-    window.center()
-    shownAt = Date.now()
-    if (!focus) {
-      window.showInactive()
-      return
-    }
-    app.focus({ steal: true })
-    window.show()
-    window.focus()
-  })
-  window.on('closed', () => {
-    if (update === current) {
-      update = null
-    }
-    // Why: closing is Later, also within the first second and while still downloading.
-    if (!answered) {
-      answered = true
-      resolve('later')
-    }
-  })
-  load(window, 'update')
-  return {
-    answer: answerPromise,
-    set: (change) => {
-      // Why: the buttons appear only when the download is done, so the one-second guard starts again then.
-      if (current.offer.downloading && change.downloading === false) {
-        shownAt = Date.now()
-      }
-      current.offer = { ...current.offer, ...change }
-      if (!window.isDestroyed()) {
-        window.webContents.send('monitor:updateOffer', current.offer)
-      }
-    },
-    close: () => {
-      if (!window.isDestroyed()) {
-        window.close()
-      }
-    }
-  }
-}
+/** 개발 실행에서 찍을 때 쓴다. */
+export const updateWindowOpen = () => openUpdate
 
-/** The offer for the update page, so the page can draw it. */
-export function updateOffer(): UpdateOffer | null {
-  return update?.offer ?? null
-}
-
-/** The button the update page's reader pressed. */
-export function answerUpdate(value: UpdateAnswer): void {
-  update?.answer(value)
-}
+export const askUpdate = updateWindow.askUpdate
+export const updateOffer = updateWindow.offer
+export const answerUpdate = updateWindow.answer

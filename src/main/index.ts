@@ -22,13 +22,13 @@ import { native, type Sampler } from './native'
 import { askLoop, askNow, demoPeers, peerList, setFast, topApps, type Usage } from './peers'
 import * as relay from './relay'
 import { tailnet } from './tailnet'
-import { releaseNoteLines } from './releaseNotes'
+import { releaseNoteLines } from './runners/release-notes'
 import { readSettings, writeSettings } from './settings'
 import { noteCpu, noteFrontApp, suggestions, type Suggestion } from './suggest'
 import { createTray, showReading, type Level } from './tray'
 import type { Emptied, QuitReport } from '../preload/api'
 import { diskPercent, type Snapshot } from './types'
-import { checkNow, displayVersion, startUpdates } from './updates'
+import { checkNow, startUpdates } from './updates'
 import {
   answerUpdate,
   askUpdate,
@@ -38,6 +38,7 @@ import {
   showComputers,
   showComputersHidden,
   hiddenPage,
+  updateWindowOpen,
   TRANSLUCENT,
   updateOffer
 } from './windows'
@@ -520,7 +521,7 @@ function usage(from: Snapshot | null = latest): Usage | null {
   return {
     host: snap.host,
     os: DEMO ? DEMO_OS : (snap.os ?? ''),
-    version: DEMO ? DEMO_VERSION : displayVersion(),
+    version: DEMO ? DEMO_VERSION : app.getVersion(),
     cpuPercent: snap.cpuPercent,
     memoryUsed: snap.memoryUsed,
     memoryTotal: snap.memoryTotal,
@@ -645,7 +646,7 @@ function registerIpc(): void {
     openComputers(signIn === true)
   )
   ipcMain.handle('monitor:translucent', () => TRANSLUCENT)
-  ipcMain.handle('monitor:version', () => displayVersion())
+  ipcMain.handle('monitor:version', () => app.getVersion())
   ipcMain.handle('monitor:accentColor', () => accentColor())
   ipcMain.handle('monitor:menuState', () => menuState())
   ipcMain.handle('monitor:command', (_event, command: Command) => {
@@ -743,11 +744,7 @@ function debugHooks(): void {
     setTimeout(showWithoutFocus, 1500)
   }
   if (which === 'update' || which === 'update-progress') {
-    // Why: the window shows the notes the next release will carry, so screenshots match the real thing.
-    const notes = releaseNoteLines(
-      readFileSync(join(app.getAppPath(), 'RELEASE_NOTES.md'), 'utf8'),
-      currentLocale() === 'ko' ? 'ko' : 'en'
-    )
+    const notes = debugNotes()
     // Why: `update-progress` shows the menu check's download state, held at a made-up 42%.
     const downloading = which === 'update-progress'
     setTimeout(() => {
@@ -758,6 +755,14 @@ function debugHooks(): void {
       void prompt.answer.then((answer) => console.log('update answer:', answer))
     }, 1500)
   }
+}
+
+/** Why: the window shows the notes the next release will carry, so screenshots match the real thing. */
+function debugNotes(): string[] | null {
+  return releaseNoteLines(
+    readFileSync(join(app.getAppPath(), 'RELEASE_NOTES.md'), 'utf8'),
+    currentLocale() === 'ko' ? 'ko' : 'en'
+  )
 }
 
 const HOMEPAGE_LANGS = [
@@ -830,6 +835,19 @@ async function captureHidden(folder: string): Promise<void> {
   const open = showComputersHidden()
   await sleep(4000)
   await save(open, 'computers')
+  const about = hiddenPage('about', '', 560)
+  await sleep(2500)
+  await save(about, 'about')
+  about.destroy()
+  for (const downloading of [false, true]) {
+    const prompt = askUpdate(
+      { version: '2.6.110701', notes: debugNotes(), downloading, percent: downloading ? 42 : 100 },
+      false
+    )
+    await sleep(2500)
+    await save(updateWindowOpen(), downloading ? 'update-progress' : 'update')
+    prompt.close()
+  }
   app.quit()
 }
 

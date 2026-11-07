@@ -1,5 +1,5 @@
 // The page's way to the app: a thin wrapper over `window.monitor`, which the preload script provides
-// (electron/preload). Everything the page asks of the main process goes through here.
+// (src/preload). Everything the page asks of the main process goes through here.
 import type {
   AccountState,
   CleanupKind,
@@ -11,10 +11,11 @@ import type {
   PeerUsage,
   QuitReport,
   UpdateOffer
-} from '../electron/preload/api'
+} from '../preload/api'
 import type { Cleanup, Snapshot } from './types'
 
 declare global {
+  // oxlint-disable-next-line typescript/consistent-type-definitions -- 전역 Window 에 더하려면 interface 여야 한다
   interface Window {
     monitor: MonitorApi
   }

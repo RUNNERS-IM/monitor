@@ -1,61 +1,15 @@
-// Loads Monitor's one native module (native/, napi-rs): readings, the cleanup scan, quit / pause and the tray picture.
-// Why a path instead of a package: the build leaves one file per OS and CPU (monitor-native.darwin-arm64.node …);
-// a dev run reads it from native/, a packaged app from Resources/native/ (electron-builder extraResources).
+// Monitor 의 Rust 모듈(native/, napi-rs): 숫자 읽기, 정리할 거리 재기, 끄기 · 멈추기, 트레이 그림.
+// 타입은 빌드가 만드는 native/index.d.ts 를 쓴다. 개발 실행은 native/ 에서, 출시판은 Resources/native/ 에서 읽는다.
 import { app } from 'electron'
-import { readdirSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
+import type * as NativeModule from '../../native/index'
+import { loadNative } from './runners/native-loader'
 
-export type Sampler = {
-  /** One reading as JSON. */
-  sample(): Promise<string>
-  /** The last reading with made-up names and numbers (debug runs only, `MONITOR_DEMO=1`); `korean` picks the session names. */
-  demoSnapshot(korean: boolean): string | null
-  quitApp(name: string): Promise<string>
-  /** Resolves to the Unix time the runner comes back, as text. */
-  pauseRunner(name: string): Promise<string>
-  /** Starts a paused runner now. */
-  resumeRunner(name: string): Promise<string>
-}
+export type Sampler = NativeModule.Sampler
 
-export type Native = {
-  Sampler: new () => Sampler
-  cleanupLoad(path: string): string | null
-  cleanupMeasure(progressPath?: string): Promise<string>
-  cleanupSave(path: string, json: string): void
-  /** Deletes the cleanable folders of one kind; resolves to `{"freed":bytes,"skipped":folders}` as JSON. */
-  cleanupEmpty(kind: string): Promise<string>
-  /** A made-up cleanup result as JSON (debug runs only, `MONITOR_DEMO=1`). */
-  demoCleanup(): string | null
-  nowSecs(): number
-  /** The bundle id of the app in front (macOS), or null. */
-  frontBundleId(): string | null
-  barsPng(h0: number, h1: number, h2: number, r: number, g: number, b: number): Buffer
-  /** The tray picture with `label` drawn after it in the same colour (macOS: needs the system font, see `canLabel`). */
-  barsLabelPng(
-    h0: number,
-    h1: number,
-    h2: number,
-    r: number,
-    g: number,
-    b: number,
-    label: string
-  ): Buffer
-  canLabel(): boolean
-  barHeight(fraction: number): number
-  easeOut(t: number): number
-}
-
-function load(): Native {
-  const dir = app.isPackaged
-    ? join(process.resourcesPath, 'native')
-    : join(app.getAppPath(), 'native')
-  const prefix = `monitor-native.${process.platform}-${process.arch}`
-  const file = readdirSync(dir).find((name) => name.startsWith(prefix) && name.endsWith('.node'))
-  if (!file) {
-    throw new Error(`no ${prefix}*.node in ${dir}; run pnpm native`)
-  }
-  return createRequire(__filename)(join(dir, file)) as Native
-}
-
-export const native = load()
+export const native = loadNative<typeof NativeModule>({
+  dir: app.isPackaged ? join(process.resourcesPath, 'native') : join(app.getAppPath(), 'native'),
+  prefix: 'monitor-native',
+  require: createRequire(__filename)
+})

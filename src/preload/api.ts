@@ -43,7 +43,7 @@ export type UpdateOffer = {
   percent: number
 }
 
-/** Another computer on the tailnet (electron/main/peers.ts). */
+/** Another computer on the tailnet (src/main/peers.ts). */
 export type PeerUsage = {
   host: string
   os: string
@@ -70,7 +70,7 @@ export type Peer = {
 }
 
 export type MonitorApi = {
-  /** The newest reading (JSON shape in src/types.ts), or null before the first one. */
+  /** The newest reading (JSON shape in src/renderer/types.ts), or null before the first one. */
   snapshot: () => Promise<unknown>
   /** The last cleanup measurement, or null while the first one runs. */
   cleanup: () => Promise<unknown>

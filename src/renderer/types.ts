@@ -1,5 +1,5 @@
 // One reading of this computer, as the native module sends it (native/src/snapshot.rs, camelCase JSON).
-import type { CleanupKind } from '../electron/preload/api'
+import type { CleanupKind } from '../preload/api'
 
 export type Pressure = 'normal' | 'warn' | 'critical'
 
@@ -18,7 +18,7 @@ export type AppUse = {
   /** For a dev server: how long it has been running. */
   runningSecs: number | null
 }
-/** Something worth doing now, chosen by the app (electron/main/suggest.ts). */
+/** Something worth doing now, chosen by the app (src/main/suggest.ts). */
 export type Suggestion =
   | {
       action: 'quit'

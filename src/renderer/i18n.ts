@@ -1,54 +1,19 @@
-// Screen text for the panel. The tray menu in Rust reads the same files in `locales/`.
-import type ko from '../locales/ko.json'
+// 패널과 창의 글. 언어는 시작할 때 한 번 정하고 바꾸지 않는다.
+import type ko from '../../locales/ko.json'
+import { setI18n } from 'react-i18next'
+import i18next, { currentLocale, startI18n, t as translate } from '../shared/i18n'
 
 type Key = keyof typeof ko
-type Table = Record<string, string>
 
-// Every `locales/<code>.json` is bundled; the file name is the locale code (e.g. `zh-Hans`).
-const files = import.meta.glob<Table>('../locales/*.json', { eager: true, import: 'default' })
-const tables: Record<string, Table> = Object.fromEntries(
-  Object.entries(files).map(([path, table]) => [path.replace(/^.*\/(.+)\.json$/, '$1'), table])
-)
-
-/** The bundled locale for a tag like `de-AT` or `zh-Hant-TW`: exact code, then language, else none. */
-function matchLocale(tag: string): string | null {
-  const exact = Object.keys(tables).find((code) => code.toLowerCase() === tag.toLowerCase())
-  if (exact) {
-    return exact
-  }
-  const language = tag.split(/[-_]/)[0].toLowerCase()
-  // Why: Taiwan, Hong Kong and Macau write traditional characters; every other Chinese tag reads simplified.
-  if (language === 'zh') {
-    return /-(hant|tw|hk|mo)\b/i.test(tag.replace(/_/g, '-')) ? 'zh-Hant' : 'zh-Hans'
-  }
-  return language in tables ? language : null
-}
-
-/** The first language in the person's list that has a table, else `en`. Why the whole list: someone with a language
- *  we lack on top and Korean second should read Korean, not English. */
-function pickLocale(tags: readonly string[]): string {
-  for (const tag of tags) {
-    const code = matchLocale(tag)
-    if (code) {
-      return code
-    }
-  }
-  return 'en'
-}
-
-// Why: a debug run can pick the language per window (`?lang=ja`), so one run can capture every language for the homepage.
+// Why: 개발 실행은 창마다 언어를 고를 수 있어(`?lang=ja`), 한 번 실행으로 모든 언어를 찍을 수 있다.
 const debugLang = import.meta.env.DEV ? new URLSearchParams(location.search).get('lang') : null
-export const locale = pickLocale(debugLang ? [debugLang] : navigator.languages)
-const table: Table = tables[locale]
+startI18n(debugLang ? [debugLang] : navigator.languages)
+setI18n(i18next)
+
+export const locale = currentLocale()
 
 document.documentElement.lang = locale
 document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr'
 
-/** Looks up `key` and fills `{{name}}` slots; a key this language lacks reads in English. */
-export function t(key: Key, args: Record<string, string | number> = {}): string {
-  let text = table[key] ?? tables.en[key] ?? key
-  for (const [name, value] of Object.entries(args)) {
-    text = text.replaceAll(`{{${name}}}`, String(value))
-  }
-  return text
-}
+/** 없는 열쇠를 빌드 때 잡으려고 ko.json 의 열쇠로 좁힌다. */
+export const t = translate as (key: Key, args?: Record<string, string | number>) => string

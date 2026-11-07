@@ -1,4 +1,4 @@
-// The parts of a reading the main process reads. The full shape is in src/types.ts, which the panel uses.
+// The parts of a reading the main process reads. The full shape is in src/renderer/types.ts, which the panel uses.
 export type Pressure = 'normal' | 'warn' | 'critical'
 
 export type AppKind = 'app' | 'build' | 'simulator' | 'devServer'
