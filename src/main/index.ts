@@ -28,7 +28,7 @@ import { releaseNoteLines } from './runners/release-notes'
 import { readSettings, writeSettings } from './settings'
 import { noteCpu, noteFrontApp, suggestions, type Suggestion } from './suggest'
 import { createTray, showReading, type Level } from './tray'
-import type { Emptied, QuitReport } from '../preload/api'
+import type { Emptied, QuitReport, SettingsTab } from '../preload/api'
 import { diskPercent, type Snapshot } from './types'
 import { checkNow, startUpdates } from './updates'
 import {
@@ -36,9 +36,7 @@ import {
   askUpdate,
   createPanel,
   placeUnderTray,
-  showAbout,
-  showComputers,
-  showComputersHidden,
+  showSettings,
   hiddenPage,
   updateWindowOpen,
   TRANSLUCENT,
@@ -98,14 +96,14 @@ let sampler: Sampler | null = null
  *  extra readings that would cut CPU averages short and double the history. */
 let latest: Snapshot | null = null
 /** The slow reasons and icon level as held for a minute (trackSlow). Why: the icon held them while the panel badge,
- *  the right-click menu and the phone read the moment's value, so the four disagreed on a Mac near the line. */
+ *  the Linux tray menu and the phone read the moment's value, so the four disagreed on a Mac near the line. */
 let heldNow: { held: Reason[]; level: Level } = { held: [], level: 'fine' }
 
 /** This computer's Tailscale name (m2-pro-1), learned in the background; null without Tailscale. */
 let tailnetName: string | null = null
 
 /** The reading with its slow flags replaced by the held ones, plus the level, for everything that shows them; and the
- *  Tailscale name as the host, the name the All Computers window and the phones use (the system name otherwise). */
+ *  Tailscale name as the host, the name the Computers tab and the phones use (the system name otherwise). */
 function held(snap: Snapshot): Snapshot & { level: Level } {
   if (DEMO) {
     return { ...snap, level: snap.slowMemory || snap.slowCpu ? 'warn' : 'fine' }
@@ -303,7 +301,18 @@ function togglePanel(): void {
 }
 
 function menuState(): MenuState {
-  return { openAtLogin: login.isOn(), autoUpdate: readSettings().autoUpdate }
+  const settings = readSettings()
+  return {
+    openAtLogin: login.isOn(),
+    autoUpdate: settings.autoUpdate,
+    trayIcon: settings.showTrayIcon !== false,
+    canHideIcon: process.platform === 'darwin'
+  }
+}
+
+function openSettings(tab?: SettingsTab): void {
+  hidePanel()
+  showSettings(tab, setFast)
 }
 
 function run(command: Command): void {
@@ -317,9 +326,12 @@ function run(command: Command): void {
     case 'autoUpdate':
       writeSettings({ autoUpdate: !readSettings().autoUpdate })
       break
-    case 'about':
-      hidePanel()
-      showAbout()
+    case 'trayIcon':
+      writeSettings({ showTrayIcon: readSettings().showTrayIcon === false })
+      updateTray()
+      break
+    case 'settings':
+      openSettings()
       break
     case 'updates':
       hidePanel()
@@ -342,7 +354,7 @@ function refreshLinuxMenu(): void {
   if (process.platform !== 'linux' || !tray) {
     return
   }
-  const menu = buildMenu(latest && held(latest), menuState(), run)
+  const menu = buildMenu(latest && held(latest), run)
   const text =
     menu.items.map((item) => item.label).join('\n') +
     JSON.stringify(menuState()) +
@@ -547,7 +559,7 @@ async function computerName(): Promise<string> {
   return net?.self.name ?? latest?.host ?? ''
 }
 
-/** What the phone app shows for this computer: the same numbers as the All Computers window, plus what can be
+/** What the phone app shows for this computer: the same numbers as the Computers tab, plus what can be
  *  emptied by kind and the runners by name, so the phone can offer those commands. */
 function phoneState(): unknown {
   const mine = usage()
@@ -561,7 +573,7 @@ function phoneState(): unknown {
     topCpu: latest.topCpu
       .slice(0, 5)
       .map((a) => ({ name: a.name, cpuPercent: a.cpuPercent, quit: a.quit })),
-    // Why: the All Computers window of another computer offers commands only to a Monitor that takes them (4A).
+    // Why: the Computers tab of another computer offers commands only to a Monitor that takes them (4A).
     hostCommands: true,
     // Why: another computer shows what this panel would suggest; the folder is left out, since no path leaves the computer.
     suggestions: suggestions(latest, latestCleanup).map((s) =>
@@ -600,7 +612,7 @@ const COMPUTER_COMMANDS = new Set(['app.quit', 'cleanup.empty', 'runner.pause', 
 const SIGN_IN_PROBLEMS = ['bad', 'none', 'format', 'exists', 'code', 'many']
 const COMMAND_ANSWER_MS = 20 * 1000
 
-/** Set when the All Computers window is opened to sign in, and taken by that window once it has loaded. */
+/** Set when Settings is opened to sign in, and taken by its Computers tab once it has loaded. */
 let signInWanted = false
 
 function openComputers(signIn = false): void {
@@ -612,7 +624,7 @@ function openComputers(signIn = false): void {
       window.webContents.send('monitor:signIn')
     }
   }
-  showComputers(setFast)
+  openSettings('computers')
 }
 
 function registerIpc(): void {
@@ -753,7 +765,7 @@ function registerIpc(): void {
   )
 }
 
-/** Debug runs only: `MONITOR_OPEN=panel|about|update` opens that window at launch, so it can be captured without
+/** Debug runs only: `MONITOR_OPEN=panel|settings[:tab]|update` opens that window at launch, so it can be captured without
  *  clicking the tray (`update` / `update-progress` show the update question with the notes in RELEASE_NOTES.md, downloaded or still
  *  downloading, and install nothing), and
  *  `MONITOR_THEME=dark|light` forces the look, and `MONITOR_SOLID=1` turns the blur off so the desktop does not show through. The panel opens without focus, so it stays up. */
@@ -762,7 +774,7 @@ function debugHooks(): void {
   if (theme === 'dark' || theme === 'light') {
     nativeTheme.themeSource = theme
   }
-  // `MONITOR_CAPTURE=<folder>` saves the panel and the All Computers window as PNGs without ever showing them, then quits.
+  // `MONITOR_CAPTURE=<folder>` saves the panel and every Settings tab as PNGs without ever showing them, then quits.
   // Why: screenshots for review must not pop windows up on the screen of the person working at this computer.
   const captureTo = process.env.MONITOR_CAPTURE
   if (captureTo) {
@@ -785,8 +797,9 @@ function debugHooks(): void {
   }
   const which = process.env.MONITOR_OPEN
   // Why: the tray icon needs a moment before it reports where it sits.
-  if (which === 'about') {
-    setTimeout(showAbout, 1500)
+  // Why: `settings:general` (or another tab) opens Settings on that tab, `settings` on the first one.
+  if (which?.startsWith('settings')) {
+    setTimeout(() => openSettings((which.split(':')[1] as SettingsTab | undefined) || undefined), 1500)
   }
   if (which === 'panel') {
     setTimeout(showWithoutFocus, 1500)
@@ -868,7 +881,7 @@ type CaptureStep =
   | { wait: number }
   | { shot: string }
 
-/** Presses buttons in a hidden All Computers window, one step at a time (see MONITOR_CAPTURE_STEPS). */
+/** Presses buttons on a hidden Computers page, one step at a time (see MONITOR_CAPTURE_STEPS). */
 async function captureSteps(
   steps: CaptureStep[],
   save: (window: BrowserWindow, name: string) => Promise<void>
@@ -944,7 +957,7 @@ async function captureHidden(folder: string): Promise<void> {
     const [x, y] = [width - 460, 60]
     const spot = new BrowserWindow({ x, y, width: 1, height: 1, frame: false, transparent: true })
     await sleep(400)
-    const menu = buildMenu(latest && held(latest), menuState(), run)
+    const menu = buildMenu(latest && held(latest), run)
     menu.popup({ window: spot, x: 0, y: 0 })
     await sleep(700)
     execFileSync('screencapture', ['-x', `-R${x - 10},${y - 10},440,420`, join(folder, 'menu.png')])
@@ -955,20 +968,28 @@ async function captureHidden(folder: string): Promise<void> {
   if (process.env.MONITOR_CAPTURE_SIGNIN) {
     signInWanted = true
   }
-  // `MONITOR_CAPTURE_STEPS=<json>` presses the All Computers window's buttons on a test computer and captures each step.
+  // `MONITOR_CAPTURE_STEPS=<json>` presses the Computers tab's buttons on a test computer and captures each step.
   const stepsFile = process.env.MONITOR_CAPTURE_STEPS
   if (stepsFile) {
     await captureSteps(JSON.parse(readFileSync(stepsFile, 'utf8')) as CaptureStep[], save)
     app.quit()
     return
   }
-  const open = showComputersHidden()
-  await sleep(4000)
-  await save(open, 'computers')
-  const about = hiddenPage('about', '', 560)
-  await sleep(2500)
-  await save(about, 'about')
-  about.destroy()
+  // Why: every Settings tab is captured, since each holds what used to be its own window or panel line.
+  for (const tab of ['computers', 'general', 'account', 'about']) {
+    const page = hiddenPage('settings', `tab=${tab}`, 720)
+    await sleep(tab === 'computers' ? 4000 : 2500)
+    await save(page, `settings-${tab}`)
+    // Why: turning the menu-bar icon off asks first, and that question is a screen of its own.
+    if (tab === 'general') {
+      await page.webContents.executeJavaScript(
+        `[...document.querySelectorAll('.switch')].at(-1)?.click()`
+      )
+      await sleep(600)
+      await save(page, 'settings-general-hide')
+    }
+    page.destroy()
+  }
   for (const downloading of [false, true]) {
     const prompt = askUpdate(
       { version: '2.6.110701', notes: debugNotes(), downloading, percent: downloading ? 42 : 100 },
@@ -979,6 +1000,42 @@ async function captureHidden(folder: string): Promise<void> {
     prompt.close()
   }
   app.quit()
+}
+
+/** Puts the tray icon up or takes it down, as Settings' "Show in menu bar" says. Left and right click both open the
+ *  panel (shared decision 2026-11-07 2A); Linux trays only open a menu set beforehand, so Linux keeps the menu. */
+function updateTray(): void {
+  // Why: a capture run lasts about a minute and shows nothing, so a second menu-bar icon next to the installed Monitor only confuses.
+  const wanted = readSettings().showTrayIcon !== false && !(DEV && process.env.MONITOR_CAPTURE)
+  if (!wanted) {
+    tray?.destroy()
+    tray = null
+    linuxMenuText = ''
+    return
+  }
+  if (tray) {
+    return
+  }
+  const icon = createTray()
+  tray = icon
+  if (latest) {
+    showReading(icon, latest, held(latest).level)
+  }
+  if (process.platform === 'linux') {
+    refreshLinuxMenu()
+  } else {
+    icon.on('click', togglePanel)
+    icon.on('right-click', togglePanel)
+  }
+}
+
+/** Opening Monitor while it runs shows the panel, or Settings when the icon is hidden and the panel has nowhere to sit. */
+function openedAgain(): void {
+  if (!tray) {
+    openSettings()
+  } else if (panel && !panel.isVisible()) {
+    togglePanel()
+  }
 }
 
 function start(): void {
@@ -996,18 +1053,10 @@ function start(): void {
     hiddenByBlurAt = Date.now()
     hidePanel()
   })
-  // Why: a capture run lasts about a minute and shows nothing, so a second menu-bar icon next to the installed Monitor only confuses.
-  if (!(DEV && process.env.MONITOR_CAPTURE)) {
-    const icon = createTray()
-    tray = icon
-    if (process.platform === 'linux') {
-      refreshLinuxMenu()
-    } else {
-      icon.on('click', togglePanel)
-      icon.on('right-click', () =>
-        icon.popUpContextMenu(buildMenu(latest && held(latest), menuState(), run))
-      )
-    }
+  updateTray()
+  // Why: with the icon hidden nothing else on screen leads to Monitor, so launching it shows Settings (as Split does).
+  if (!tray && !(DEV && process.env.MONITOR_CAPTURE)) {
+    openSettings()
   }
   nativeTheme.on('updated', () => {
     forgetIcons()
@@ -1019,7 +1068,7 @@ function start(): void {
     void askLoop()
     relay.startRelay({ state: phoneState, name: computerName, commands: phoneCommands })
   }
-  // Why: the panel's account line and the All Computers window show whether this computer is on the relay as it
+  // Why: the panel's account line and Settings show whether this computer is on the relay as it
   // changes, and the other computers are asked as soon as it joins rather than up to 30 seconds later.
   relay.onStatus((status) => {
     for (const window of BrowserWindow.getAllWindows()) {
@@ -1039,12 +1088,10 @@ function start(): void {
 if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {
-  app.on('second-instance', () => {
-    if (panel && !panel.isVisible()) {
-      togglePanel()
-    }
-  })
-  // Why: closing the About window must not quit a tray app.
+  app.on('second-instance', openedAgain)
+  // Why: macOS sends this, not second-instance, when Monitor is opened again from Finder or Spotlight.
+  app.on('activate', openedAgain)
+  // Why: closing Settings must not quit a tray app.
   app.on('window-all-closed', () => undefined)
   void app.whenReady().then(start)
 }

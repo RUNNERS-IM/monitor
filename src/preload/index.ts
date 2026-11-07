@@ -1,6 +1,6 @@
 // The page's only door to the main process: `window.monitor`. Types are in ./api.ts, which the page imports.
 import { contextBridge, ipcRenderer } from 'electron'
-import type { AccountState, MonitorApi, UpdateOffer } from './api'
+import type { AccountState, MonitorApi, SettingsTab, UpdateOffer } from './api'
 
 const api: MonitorApi = {
   snapshot: () => ipcRenderer.invoke('monitor:snapshot'),
@@ -15,6 +15,11 @@ const api: MonitorApi = {
   computerCommand: (deviceId, name, args) =>
     ipcRenderer.invoke('monitor:computerCommand', deviceId, name, args),
   openComputers: (signIn) => ipcRenderer.invoke('monitor:openComputers', signIn === true),
+  onSettingsTab: (listener) => {
+    const relay = (_event: Electron.IpcRendererEvent, tab: SettingsTab) => listener(tab)
+    ipcRenderer.on('monitor:settingsTab', relay)
+    return () => ipcRenderer.off('monitor:settingsTab', relay)
+  },
   onShown: (listener) => {
     const relay = () => listener()
     ipcRenderer.on('monitor:shown', relay)

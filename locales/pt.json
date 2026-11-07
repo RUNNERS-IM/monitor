@@ -171,5 +171,18 @@
   "account.signIn": "Entrar",
   "computers.signedOutTitle": "Ver seus outros computadores",
   "computers.signedOutNote": "Entre com a mesma conta RUNNERS em cada Mac e todos com o Monitor aberto aparecem aqui. O app Monitor do celular usa a mesma conta.",
-  "account.online": "Computadores ligados: {{count}}"
+  "account.online": "Computadores ligados: {{count}}",
+  "settings.title": "Ajustes do Monitor",
+  "settings.tabGeneral": "Geral",
+  "general.section": "Comportamento",
+  "general.openAtLoginHint": "O Monitor abre sozinho quando você inicia sessão neste Mac.",
+  "general.autoUpdateHint": "O Monitor procura uma nova versão uma vez por dia e pergunta antes de instalar.",
+  "general.trayIcon": "Mostrar na barra de menus",
+  "general.trayIconHint": "Quando desativado, abra o Monitor pela pasta Aplicativos para voltar a estes ajustes.",
+  "general.hideAsk": "Ocultar o Monitor da barra de menus?",
+  "general.ok": "OK",
+  "general.cancel": "Cancelar",
+  "settings.tabComputers": "Computadores",
+  "settings.tabAbout": "Sobre",
+  "settings.tabAccount": "Conta"
 }

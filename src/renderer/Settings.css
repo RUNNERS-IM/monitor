@@ -1,0 +1,168 @@
+/* The Settings window: frame, toolbar tabs, cards and switches as in Split's Settings (app/src/renderer/settings/settings.css). */
+:root {
+  --accent: var(--rw-accent, #007aff);
+  --label: var(--rw-text);
+  --secondary: var(--rw-text-secondary);
+  --tertiary: rgba(0, 0, 0, 0.26);
+  --card: var(--rw-box-bg);
+  --separator: var(--rw-separator);
+  --control-track: var(--rw-control-bg);
+  --switch-off: rgba(0, 0, 0, 0.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tertiary: rgba(255, 255, 255, 0.25);
+    --switch-off: rgba(255, 255, 255, 0.12);
+  }
+}
+html[data-window='settings'], html[data-window='settings'] body, html[data-window='settings'] #root { height: 100%; margin: 0; }
+html[data-window='settings'] body { background: var(--rw-window-bg); overflow: hidden; word-break: keep-all; }
+.window {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.titlebar {
+  flex: none;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--secondary);
+  -webkit-app-region: drag;
+  user-select: none;
+}
+.toolbar {
+  position: relative;
+  flex: none;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 12px 7px;
+  border-bottom: 0.5px solid var(--separator);
+  -webkit-app-region: drag;
+}
+.toolbar-item {
+  -webkit-app-region: no-drag;
+}
+.toolbar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 64px;
+  padding: 5px 8px 4px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--secondary);
+  font-size: 11px;
+}
+.toolbar-item span {
+  color: var(--label);
+}
+.toolbar-item:active {
+  background: var(--control-track);
+}
+.toolbar-item.selected {
+  background: var(--control-track);
+  color: var(--accent);
+}
+.s-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rw-section-gap);
+}
+.s-section-title {
+  font-size: var(--rw-font-small);
+  font-weight: 600;
+  color: var(--secondary);
+}
+.s-section-hint {
+  padding-right: 8px;
+  font-size: var(--rw-font-small);
+  color: var(--tertiary);
+}
+.s-card {
+  flex: none;
+  border-radius: var(--rw-radius);
+  background: var(--card);
+  box-shadow: 0 0 0 var(--rw-border) var(--separator);
+}
+.s-card-separator {
+  height: var(--rw-border);
+  margin: 0 var(--rw-row-pad-x);
+  background: var(--separator);
+}
+.s-row {
+  --row-padding: var(--rw-row-pad-y);
+  padding: var(--row-padding) var(--rw-row-pad-x);
+}
+.s-row-line {
+  display: flex;
+  align-items: center;
+  gap: var(--rw-row-gap);
+}
+.s-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.s-row-title {
+  font-size: 13px;
+}
+.s-row-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--secondary);
+}
+.s-row-space {
+  flex: 1;
+}
+.s-row-control {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+.switch {
+  position: relative;
+  flex: none;
+  width: 26px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: var(--switch-off);
+  transition: background-color 0.15s;
+}
+.switch.on {
+  background: var(--accent);
+}
+.switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+.switch.on .switch-knob {
+  transform: translateX(10px);
+}
+.s-content { display: flex; flex-direction: column; gap: var(--rw-box-gap); width: 100%; max-width: 600px; margin: 0 auto; padding: var(--rw-pad); box-sizing: border-box; }
+.settings-body { flex: 1; min-height: 0; overflow-y: auto; }
+/* Why: the window buttons sit over the title bar here, not over the Computers title, so its extra top room is not needed. */
+.settings-body .computers { padding-top: 20px; }
+.switch, .toolbar-item { font: inherit; }
+.s-row-line .ra-badge { flex: none; }
+.s-section-hint { margin: 0; }
+/* The question before hiding the menu-bar icon, like Split's alert: app icon, question, hint, Cancel and OK. */
+.s-ask { align-items: center; text-align: center; }
+.s-ask-icon { width: 56px; height: 56px; }
+.s-ask-buttons { display: flex; justify-content: center; gap: 8px; margin-top: 6px; }

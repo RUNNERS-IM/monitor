@@ -3,7 +3,18 @@
 /** What a sign-in call answers: null when it worked, otherwise the sign-in sheet's problem code. */
 export type SignInAnswer = 'bad' | 'none' | 'format' | 'exists' | 'code' | 'many' | 'network' | null
 
-export type MenuCommand = 'usage' | 'login' | 'autoUpdate' | 'about' | 'updates' | 'help' | 'quit'
+export type MenuCommand =
+  | 'usage'
+  | 'login'
+  | 'autoUpdate'
+  | 'trayIcon'
+  | 'settings'
+  | 'updates'
+  | 'help'
+  | 'quit'
+
+/** The Settings window's tabs, in their order: the most used screen first (shared decision 2026-11-07, Monitor 1A). */
+export type SettingsTab = 'computers' | 'general' | 'account' | 'about'
 
 /** The RUNNERS account this computer is signed in with, and whether it is on the relay (for the account's other
  *  computers and the phone app). */
@@ -12,7 +23,13 @@ export type AccountState = {
   status: 'signedOut' | 'connecting' | 'connected' | 'elsewhere'
 }
 
-export type MenuState = { openAtLogin: boolean; autoUpdate: boolean }
+/** `canHideIcon`: only macOS offers to hide the menu-bar icon, since its hint and question speak of the Mac. */
+export type MenuState = {
+  openAtLogin: boolean
+  autoUpdate: boolean
+  trayIcon: boolean
+  canHideIcon: boolean
+}
 
 export type CleanupKind =
   | 'cache'
@@ -109,7 +126,7 @@ export type MonitorApi = {
   resumeRunner: (name: string) => Promise<void>
   /** The other computers on the tailnet, slow ones first; empty when Tailscale is off. */
   peers: () => Promise<Peer[]>
-  /** This computer in the same shape, for the first card of the All Computers window. */
+  /** This computer in the same shape, for the first card of the Computers tab. */
   selfUsage: () => Promise<PeerUsage | null>
   /** Sends a command to another computer (`deviceId`) or to this one (null) and resolves to its answer. */
   computerCommand: (
@@ -117,9 +134,10 @@ export type MonitorApi = {
     name: string,
     args: Record<string, unknown>
   ) => Promise<unknown>
-  /** Opens the All Computers window (and closes the panel). */
-  /** Opens the All Computers window; `signIn` opens it with the sign-in sheet up. */
+  /** Opens Settings on the Computers tab (and closes the panel); `signIn` opens it with the sign-in sheet up. */
   openComputers: (signIn?: boolean) => Promise<void>
+  /** Calls back when the open Settings window is asked to show another tab. */
+  onSettingsTab: (listener: (tab: SettingsTab) => void) => () => void
   /** Calls back each time the panel is about to show; returns a function that stops it. */
   onShown: (listener: () => void) => () => void
   /** The panel was hidden; it stops asking for readings until it is shown again. */
@@ -161,9 +179,9 @@ export type MonitorApi = {
   sendCode: (purpose: 'signup' | 'reset', email: string) => Promise<SignInAnswer>
   /** Sets a new password with the mailed number and signs in with it. */
   resetPassword: (email: string, code: string, password: string) => Promise<SignInAnswer>
-  /** True once when the All Computers window was opened to sign in (the panel's account line while signed out). */
+  /** True once when Settings was opened to sign in (the panel's account line while signed out). */
   takeSignIn: () => Promise<boolean>
-  /** Calls back when the open All Computers window is asked to show the sign-in sheet. */
+  /** Calls back when the open Settings window is asked to show the sign-in sheet. */
   onSignIn: (listener: () => void) => () => void
   signOut: () => Promise<void>
   /** Joins the relay again after another connection with this computer's id took its place. */

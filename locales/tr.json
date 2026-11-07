@@ -171,5 +171,18 @@
   "account.signIn": "Giriş yap",
   "computers.signedOutTitle": "Diğer bilgisayarlarını gör",
   "computers.signedOutNote": "Her Mac'te aynı RUNNERS hesabıyla giriş yap; Monitor'ün açık olduğu her Mac burada görünür. Telefondaki Monitor uygulaması da aynı hesabı kullanır.",
-  "account.online": "Açık bilgisayar: {{count}}"
+  "account.online": "Açık bilgisayar: {{count}}",
+  "settings.title": "Monitor Ayarları",
+  "settings.tabGeneral": "Genel",
+  "general.section": "Davranış",
+  "general.openAtLoginHint": "Bu Mac'te oturum açtığınızda Monitor kendiliğinden başlar.",
+  "general.autoUpdateHint": "Monitor günde bir kez yeni sürüm arar ve yüklemeden önce size sorar.",
+  "general.trayIcon": "Menü çubuğunda göster",
+  "general.trayIconHint": "Kapalıyken bu ayarlara dönmek için Monitor'ü Uygulamalar klasöründen açın.",
+  "general.hideAsk": "Monitor menü çubuğundan gizlensin mi?",
+  "general.ok": "Tamam",
+  "general.cancel": "Vazgeç",
+  "settings.tabComputers": "Bilgisayarlar",
+  "settings.tabAbout": "Hakkında",
+  "settings.tabAccount": "Hesap"
 }

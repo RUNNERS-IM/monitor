@@ -171,5 +171,18 @@
   "account.signIn": "Masuk",
   "computers.signedOutTitle": "Lihat komputer Anda yang lain",
   "computers.signedOutNote": "Masuk dengan akun RUNNERS yang sama di setiap Mac, dan setiap Mac yang menjalankan Monitor akan muncul di sini. Aplikasi Monitor di ponsel memakai akun yang sama.",
-  "account.online": "Komputer menyala: {{count}}"
+  "account.online": "Komputer menyala: {{count}}",
+  "settings.title": "Pengaturan Monitor",
+  "settings.tabGeneral": "Umum",
+  "general.section": "Perilaku",
+  "general.openAtLoginHint": "Monitor mulai sendiri saat Anda masuk ke Mac ini.",
+  "general.autoUpdateHint": "Monitor mencari versi baru sekali sehari dan bertanya sebelum menginstalnya.",
+  "general.trayIcon": "Tampilkan di bar menu",
+  "general.trayIconHint": "Jika nonaktif, buka Monitor dari folder Aplikasi untuk kembali ke pengaturan ini.",
+  "general.hideAsk": "Sembunyikan Monitor dari bar menu?",
+  "general.ok": "OK",
+  "general.cancel": "Batalkan",
+  "settings.tabComputers": "Komputer",
+  "settings.tabAbout": "Tentang",
+  "settings.tabAccount": "Akun"
 }

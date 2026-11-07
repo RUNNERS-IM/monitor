@@ -11,6 +11,7 @@ import type {
   PeerSuggestion,
   PeerUsage,
   QuitReport,
+  SettingsTab,
   UpdateOffer
 } from '../preload/api'
 import type { Cleanup, Snapshot } from './types'
@@ -34,13 +35,15 @@ export type {
   PeerSuggestion,
   PeerUsage,
   QuitReport,
+  SettingsTab,
   UpdateOffer
 }
 
-/** Which window this page is: the tray panel, the About window or the update question. */
-export const page: 'panel' | 'about' | 'update' | 'computers' =
-  location.hash === '#about'
-    ? 'about'
+/** Which window this page is: the tray panel, Settings or the update question. `computers` is the Computers tab on
+ *  its own, for the homepage pictures and the capture runs. */
+export const page: 'panel' | 'settings' | 'update' | 'computers' =
+  location.hash === '#settings'
+    ? 'settings'
     : location.hash === '#update'
       ? 'update'
       : location.hash === '#computers'
@@ -62,6 +65,7 @@ export const computerCommand = (
   args: Record<string, unknown>
 ) => api().computerCommand(deviceId, name, args)
 export const openComputers = (signIn?: boolean) => api().openComputers(signIn)
+export const onSettingsTab = (listener: (tab: SettingsTab) => void) => api().onSettingsTab(listener)
 export const onShown = (listener: () => void) => api().onShown(listener)
 export const onHidden = (listener: () => void) => api().onHidden(listener)
 export const fitHeight = (height: number) => api().fitHeight(height)

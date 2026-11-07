@@ -6,15 +6,12 @@ import {
   ChevronDown,
   ChevronRight,
   CircleHelp,
-  Download,
   Cpu,
   HardDrive,
-  Info,
   MemoryStick,
   Network,
-  Power,
   Recycle,
-  RefreshCw,
+  Settings as SettingsIcon,
   SquareTerminal,
   SquareX,
   Workflow,
@@ -23,9 +20,9 @@ import {
 import { cleanError, formatDuration, formatGb } from './format'
 import { locale, t } from './i18n'
 import * as native from './native'
-import type { AccountState, CleanupKind, MenuCommand, MenuState, Peer, QuitReport } from './native'
+import type { AccountState, CleanupKind, MenuCommand, Peer, QuitReport } from './native'
 import { RunnersMark } from './runners-account/runners-account'
-import { MenuHead, MenuSwitch } from './runners-account/runners-menu'
+import { MenuHead } from './runners-account/runners-menu'
 import './runners-account/runners-account.css'
 import type { AppUse, Cleanup, Pressure, QuitKind, Snapshot, Suggestion } from './types'
 import './runners-account/runners-menu.css'
@@ -202,7 +199,7 @@ function SummaryRow({
   )
 }
 
-/** The panel's top line: the RUNNERS account. Signed out, it opens the All Computers window with the sign-in sheet;
+/** The panel's top line: the RUNNERS account. Signed out, it opens Settings' Computers tab with the sign-in sheet;
  *  signed in, it shows the email with the badge and how the connection stands, and opens the same window
  *  (shared decision 2026-11-05 "네 앱 계정 · 연결 통일" 2A: one way in, the same look in the four apps). */
 function AccountRow() {
@@ -633,36 +630,34 @@ function Breakdown({ parts, total, label }: { parts: Part[]; total: number; labe
   )
 }
 
-/** The menu commands under the readings, the same lines as the right-click menu. */
+const SETTINGS_KEY = navigator.userAgent.includes('Macintosh') ? '⌘,' : 'Ctrl+,'
+const run = (name: MenuCommand) => void native.command(name)
+
+/** The shared bottom lines (shared decision 2026-11-07 2A): Settings… ⌘, · Help · Quit. The on/off switches and the
+ *  update check moved to Settings › General. */
 function Commands() {
-  const [state, setState] = useState<MenuState | null>(null)
   useEffect(() => {
-    void native.menuState().then(setState)
-    // Why: the right-click menu can change the same settings while the panel stays loaded.
-    const again = () => void native.menuState().then(setState)
-    window.addEventListener('focus', again)
-    return () => window.removeEventListener('focus', again)
+    // Why: ⌘, opens Settings from the panel as from any other window.
+    const key = (event: KeyboardEvent) => {
+      if (event.key === ',' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault()
+        run('settings')
+      }
+    }
+    window.addEventListener('keydown', key)
+    return () => window.removeEventListener('keydown', key)
   }, [])
-  const run = (name: MenuCommand) => void native.command(name).then(setState)
-  const line = (name: MenuCommand, icon: LucideIcon, label: string) => (
+  const line = (name: MenuCommand, icon: LucideIcon, label: string, trailing?: string) => (
     <button type="button" className="rm-item" onClick={() => run(name)}>
       <Icon icon={icon} />
       <span className="rm-label">{label}</span>
+      {trailing && <span className="rm-trailing">{trailing}</span>}
     </button>
-  )
-  // Why: on/off lines are the icon for what they do and a switch at the right, like System Settings
-  // (shared decision 2026-11-02 "[PROGRAM] 켬 끔 토글" 1B; icons from the shared table: power, download).
-  const toggle = (name: MenuCommand, icon: LucideIcon, label: string, on: boolean) => (
-    <MenuSwitch icon={<Icon icon={icon} />} label={label} checked={on} onChange={() => run(name)} />
   )
 
   return (
     <>
-      {toggle('login', Power, t('menu.openAtLogin'), !!state?.openAtLogin)}
-      {toggle('autoUpdate', Download, t('menu.autoUpdate'), !!state?.autoUpdate)}
-      <div className="rm-separator" />
-      {line('about', Info, t('menu.about'))}
-      {line('updates', RefreshCw, t('menu.checkUpdates'))}
+      {line('settings', SettingsIcon, t('menu.settings'), SETTINGS_KEY)}
       {line('help', CircleHelp, t('menu.help'))}
       <div className="rm-separator" />
       {line('quit', SquareX, t('menu.quit'))}

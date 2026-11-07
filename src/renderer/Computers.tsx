@@ -1,4 +1,4 @@
-// The All Computers window: this computer and every other computer signed in to the same RUNNERS account, as cards.
+// Settings' Computers tab: this computer and every other computer signed in to the same RUNNERS account, as cards.
 // A card shows what the panel's summary rows show; choosing one shows below what can be done on it: what its panel
 // suggests, quitting its apps, emptying its folders and pausing its runners, with the same relay commands the phones
 // send (decision 2026-11-07 "[MONITOR] 개발 - 다른 컴퓨터 정리" 1A 2A 3B 4A 5A; it replaced 2026-11-02's look-only window).
@@ -18,12 +18,8 @@ import type {
   PeerUsage,
   QuitReport
 } from './native'
-import {
-  AccountButton,
-  RunnersMark,
-  SignInSheet,
-  type SignMode
-} from './runners-account/runners-account'
+import { AccountButton, RunnersMark } from './runners-account/runners-account'
+import { SignIn } from './SignIn'
 import './runners-account/runners-window.css'
 import './runners-account/runners-account.css'
 import './Computers.css'
@@ -47,14 +43,6 @@ const clock = (ms: number) =>
 const slowOf = (u: PeerUsage | null) => !!u && (u.slowMemory || u.slowCpu)
 /** Why: the panel colours memory by macOS's pressure level, and a Mac uses most of its memory on purpose, so this
  *  window does the same; otherwise one Mac looked fine in the panel and slow here. */
-/** 메인이 돌려준 로그인 창 오류 코드를 로그인 창이 읽는 Error 로 다시 던진다. */
-const rethrow = (problem: string | null) => {
-  if (problem) {
-    throw new Error(problem)
-  }
-}
-const sendCode = async (purpose: 'signup' | 'reset', email: string) =>
-  rethrow(await native.sendCode(purpose, email))
 const memoryTone = (u: PeerUsage) =>
   u.memoryPressure === 'critical' ? 'full' : u.memoryPressure === 'warn' ? 'high' : 'ok'
 
@@ -468,7 +456,7 @@ export default function Computers() {
   useEffect(() => {
     void native.account().then(setState)
     const stop = native.onAccount(setState)
-    // Why: the panel's account line opens this window to sign in, so the sheet comes up at once.
+    // Why: the panel's account line opens Settings here to sign in, so the sheet comes up at once.
     void native.takeSignIn().then((wanted) => wanted && setSigningIn(true))
     const stopSignIn = native.onSignIn(() => {
       void native.takeSignIn()
@@ -522,17 +510,7 @@ export default function Computers() {
     window.addEventListener('keydown', close)
     return () => window.removeEventListener('keydown', close)
   }, [signingIn])
-  const signIn = useCallback(
-    async (mode: SignMode, email: string, password: string, code?: string) => {
-      rethrow(await native.signIn(mode, email, password, code))
-      setState(await native.account())
-    },
-    []
-  )
-  const resetPassword = useCallback(async (email: string, code: string, password: string) => {
-    rethrow(await native.resetPassword(email, code, password))
-    setState(await native.account())
-  }, [])
+  const signedIn = useCallback(() => void native.account().then(setState), [])
   const closeSignIn = useCallback(() => setSigningIn(false), [])
   const go = useCallback(({ card, action }: { card: Card; action: Action }) => {
     const id = `${card.deviceId}:${action.key}`
@@ -627,15 +605,7 @@ export default function Computers() {
           onGo={() => go(asking)}
         />
       )}
-      {signingIn && (
-        <SignInSheet
-          lang={locale}
-          signIn={signIn}
-          sendCode={sendCode}
-          resetPassword={resetPassword}
-          onClose={closeSignIn}
-        />
-      )}
+      {signingIn && <SignIn onSignedIn={signedIn} onClose={closeSignIn} />}
     </main>
   )
 }

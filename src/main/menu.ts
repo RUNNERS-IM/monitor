@@ -1,5 +1,5 @@
-// The right-click tray menu, in the order shared by Split, Prompt and Monitor: the readout and status lines, the
-// app's own lines, about / updates / settings / help, quit. The left-click panel holds the same commands.
+// The tray menu on Linux, whose trays only open a menu set beforehand (macOS and Windows open the panel on either
+// click): the readout and status lines, the panel, settings / updates / help, quit.
 // Icons are the Lucide PNGs from scripts/menu-icons.sh (resources/menu/).
 import { app, Menu, MenuItem, nativeImage, nativeTheme } from 'electron'
 import { readFileSync } from 'node:fs'
@@ -60,7 +60,6 @@ function status(snap: Snapshot & { level?: 'fine' | 'warn' | 'bad' }): {
 
 export function buildMenu(
   snap: Snapshot | null,
-  state: MenuState,
   run: (command: Command) => void
 ): Menu {
   const percent = (value: number) => `${Math.round(value)}%`
@@ -83,36 +82,16 @@ export function buildMenu(
       registerAccelerator: false,
       click: () => run(id)
     })
-  const toggle = (id: Command, key: string, iconName: string, checked: boolean) =>
-    new MenuItem({
-      id,
-      label: t(key),
-      icon: icon(iconName),
-      type: 'checkbox',
-      checked,
-      click: () => run(id)
-    })
   const separator = () => new MenuItem({ type: 'separator' })
   return Menu.buildFromTemplate([
     { label: readout, icon: icon('chart-column'), enabled: false },
     { label: t(level.key, { name: snap?.host ?? '' }), icon: icon(level.dot), enabled: false },
     separator(),
     line('usage', 'menu.showUsage', 'chart-column'),
-    // Why: on/off lines keep the system check mark (shared decision 2A) and an icon like every other line;
-    // macOS draws the check in its own column to the left of the icon, so all labels line up.
-    toggle('login', 'menu.openAtLogin', 'power', state.openAtLogin),
-    toggle('autoUpdate', 'menu.autoUpdate', 'download', state.autoUpdate),
     separator(),
-    line('about', 'menu.about', 'info'),
+    // Why: the on/off lines live in Settings › General (shared decision 2026-11-07 2A).
+    line('settings', 'menu.settings', 'settings', 'CmdOrCtrl+,'),
     line('updates', 'menu.checkUpdates', 'refresh-cw'),
-    // Why: there is no settings screen yet, so it stays visible but disabled to keep the shared order.
-    {
-      label: t('menu.settings'),
-      icon: icon('settings'),
-      enabled: false,
-      accelerator: 'CmdOrCtrl+,',
-      registerAccelerator: false
-    },
     line('help', 'menu.help', 'circle-help'),
     separator(),
     line('quit', 'menu.quit', 'square-x', 'CmdOrCtrl+Q')

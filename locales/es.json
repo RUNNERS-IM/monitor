@@ -171,5 +171,18 @@
   "account.signIn": "Iniciar sesión",
   "computers.signedOutTitle": "Ver tus otros ordenadores",
   "computers.signedOutNote": "Inicia sesión con la misma cuenta RUNNERS en cada Mac y aquí aparecerá cada uno que tenga Monitor abierto. La app Monitor del móvil usa la misma cuenta.",
-  "account.online": "Ordenadores encendidos: {{count}}"
+  "account.online": "Ordenadores encendidos: {{count}}",
+  "settings.title": "Ajustes de Monitor",
+  "settings.tabGeneral": "General",
+  "general.section": "Comportamiento",
+  "general.openAtLoginHint": "Monitor se abre solo cuando inicias sesión en este Mac.",
+  "general.autoUpdateHint": "Monitor busca una nueva versión una vez al día y te pregunta antes de instalarla.",
+  "general.trayIcon": "Mostrar en la barra de menús",
+  "general.trayIconHint": "Si lo desactivas, abre Monitor desde la carpeta Aplicaciones para volver a estos ajustes.",
+  "general.hideAsk": "¿Ocultar Monitor de la barra de menús?",
+  "general.ok": "Aceptar",
+  "general.cancel": "Cancelar",
+  "settings.tabComputers": "Ordenadores",
+  "settings.tabAbout": "Acerca de",
+  "settings.tabAccount": "Cuenta"
 }

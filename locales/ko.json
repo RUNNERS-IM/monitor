@@ -171,5 +171,18 @@
   "account.signIn": "로그인",
   "computers.signedOutTitle": "내 다른 컴퓨터 보기",
   "computers.signedOutNote": "맥마다 같은 RUNNERS 계정으로 로그인하면 Monitor가 켜진 맥이 모두 여기 보입니다. 휴대폰 Monitor 앱도 같은 계정을 씁니다.",
-  "account.online": "켜진 컴퓨터 {{count}}대"
+  "account.online": "켜진 컴퓨터 {{count}}대",
+  "settings.title": "Monitor 설정",
+  "settings.tabGeneral": "일반",
+  "general.section": "동작",
+  "general.openAtLoginHint": "맥에 로그인하면 Monitor가 자동으로 실행됩니다.",
+  "general.autoUpdateHint": "하루에 한 번 새 버전을 확인하고, 설치 전에 묻습니다.",
+  "general.trayIcon": "메뉴 막대에 아이콘 표시",
+  "general.trayIconHint": "끄면 응용 프로그램 폴더에서 Monitor를 다시 열어야 설정을 열 수 있습니다.",
+  "general.hideAsk": "메뉴 막대에서 Monitor를 숨길까요?",
+  "general.ok": "확인",
+  "general.cancel": "취소",
+  "settings.tabComputers": "컴퓨터",
+  "settings.tabAbout": "정보",
+  "settings.tabAccount": "계정"
 }

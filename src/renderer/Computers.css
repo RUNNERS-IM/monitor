@@ -1,4 +1,4 @@
-/* All Computers window: the shared window values (runners-window.css, design standard A). Cards are the standard
+/* The Computers tab (and its own page for screenshots): the shared window values (runners-window.css, design standard A). Cards are the standard
    boxes; the chosen one gets the accent ring. See-through over the macOS blur, solid where the OS has none (Linux). */
 :root[data-window='computers'] body {
   margin: 0;

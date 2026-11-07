@@ -171,5 +171,18 @@
   "account.signIn": "ลงชื่อเข้าใช้",
   "computers.signedOutTitle": "ดูคอมพิวเตอร์เครื่องอื่นของคุณ",
   "computers.signedOutNote": "ลงชื่อเข้าใช้บัญชี RUNNERS เดียวกันบน Mac ทุกเครื่อง แล้ว Mac ที่เปิด Monitor อยู่จะแสดงที่นี่ทั้งหมด แอป Monitor บนมือถือก็ใช้บัญชีเดียวกัน",
-  "account.online": "คอมพิวเตอร์ที่เปิดอยู่ {{count}} เครื่อง"
+  "account.online": "คอมพิวเตอร์ที่เปิดอยู่ {{count}} เครื่อง",
+  "settings.title": "การตั้งค่า Monitor",
+  "settings.tabGeneral": "ทั่วไป",
+  "general.section": "การทำงาน",
+  "general.openAtLoginHint": "Monitor จะเริ่มทำงานเองเมื่อคุณเข้าสู่ระบบ Mac เครื่องนี้",
+  "general.autoUpdateHint": "Monitor จะตรวจหาเวอร์ชันใหม่วันละครั้ง และถามก่อนติดตั้ง",
+  "general.trayIcon": "แสดงในแถบเมนู",
+  "general.trayIconHint": "เมื่อปิดไว้ ให้เปิด Monitor จากโฟลเดอร์แอปพลิเคชันเพื่อกลับมาที่การตั้งค่านี้",
+  "general.hideAsk": "ซ่อน Monitor จากแถบเมนูหรือไม่",
+  "general.ok": "ตกลง",
+  "general.cancel": "ยกเลิก",
+  "settings.tabComputers": "คอมพิวเตอร์",
+  "settings.tabAbout": "เกี่ยวกับ",
+  "settings.tabAccount": "บัญชี"
 }

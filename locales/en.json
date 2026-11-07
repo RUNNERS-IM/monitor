@@ -171,5 +171,18 @@
   "account.signIn": "Sign In",
   "computers.signedOutTitle": "See your other computers",
   "computers.signedOutNote": "Sign in with the same RUNNERS account on each Mac, and every one running Monitor shows here. The Monitor phone app uses the same account.",
-  "account.online": "Computers on: {{count}}"
+  "account.online": "Computers on: {{count}}",
+  "settings.title": "Monitor Settings",
+  "settings.tabGeneral": "General",
+  "general.section": "Behavior",
+  "general.openAtLoginHint": "Monitor starts by itself when you log in to this Mac.",
+  "general.autoUpdateHint": "Monitor looks for a new version once a day and asks before installing it.",
+  "general.trayIcon": "Show in menu bar",
+  "general.trayIconHint": "When off, open Monitor from the Applications folder to get back to these settings.",
+  "general.hideAsk": "Hide Monitor from the menu bar?",
+  "general.ok": "OK",
+  "general.cancel": "Cancel",
+  "settings.tabComputers": "Computers",
+  "settings.tabAbout": "About",
+  "settings.tabAccount": "Account"
 }

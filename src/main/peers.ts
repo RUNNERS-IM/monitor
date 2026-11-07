@@ -1,11 +1,11 @@
 // The account's other computers: every Monitor signed in to the same RUNNERS account, found and asked through the
 // system server's relay instead of the Tailscale network (shared decision 2026-11-05 "네 앱 계정 · 연결 통일" 1A, which
-// replaced 2026-11-02's Tailscale-only way). The All Computers window also quits apps, empties folders and pauses
+// replaced 2026-11-02's Tailscale-only way). The Computers tab in Settings also quits apps, empties folders and pauses
 // runners on them with the phones' commands, after asking in its own window (decision 2026-11-07 1A, 3B).
 // Commands for numbers come back at once; the others first hear 「받음」 and then wait for the result (kit relay-core).
 import * as relay from './relay'
 
-/** How often the other computers are asked: slowly with nothing open, quickly while the All Computers window shows. */
+/** How often the other computers are asked: slowly with nothing open, quickly while Settings (with its Computers tab) is open. */
 const SLOW_MS = 30 * 1000
 const FAST_MS = 5 * 1000
 const ASK_TIMEOUT_MS = 4000
@@ -116,7 +116,7 @@ export async function askLoop(): Promise<void> {
   }
 }
 
-/** Asks quickly while the All Computers window is open; turning it on also asks right away. */
+/** Asks quickly while Settings is open; turning it on also asks right away. */
 export function setFast(on: boolean): void {
   const was = fast
   fast = on

@@ -1,4 +1,4 @@
-// Words shared by the panel and the All Computers window: sizes, lengths of time and failure reasons.
+// Words shared by the panel and the Computers tab: sizes, lengths of time and failure reasons.
 import { t } from './i18n'
 
 export function formatGb(bytes: number): string {
