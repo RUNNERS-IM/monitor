@@ -65,7 +65,7 @@
   "summary.background": "В фоне {{count}}",
   "summary.runnersIdle": "Раннеров ожидает: {{count}}",
   "summary.runnersBusy": "Раннеров в сборке: {{count}}",
-  "summary.runnersMixed": "Раннеры {{count}} ({{busy}} сборка · {{idle}} ждут)",
+  "summary.runnersMixed": "Раннеры {{count}} ({{busy}} в сборке · {{idle}} в ожидании)",
   "summary.runnersOff": "Раннеры выключены: {{count}}",
   "status.slowMemory": "Медленно · память",
   "status.slowCpu": "Медленно · CPU",

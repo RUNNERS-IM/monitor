@@ -265,7 +265,11 @@ function OthersRow({ peers }: { peers: Peer[] }) {
         ? t('computers.allFine')
         : slow.length === 1
           ? t('computers.slowOne', { name: slow[0] })
-          : t('computers.slowMany', { name: slow[0], more: slow.length - 1 })
+          : t('computers.slowMany', {
+              name: slow[0],
+              more: slow.length - 1,
+              count: slow.length - 1
+            })
   return (
     <button
       type="button"
