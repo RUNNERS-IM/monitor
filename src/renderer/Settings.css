@@ -156,6 +156,9 @@ html[data-window='settings'] body { background: var(--rw-window-bg); overflow: h
 }
 .s-content { display: flex; flex-direction: column; gap: var(--rw-box-gap); width: 100%; max-width: 600px; margin: 0 auto; padding: var(--rw-pad); box-sizing: border-box; }
 .settings-body { flex: 1; min-height: 0; overflow-y: auto; }
+/* Why: 오른쪽→왼쪽 페이지에서 Chromium 은 macOS 의 얇은 막대 대신 늘 보이는 굵은 스크롤 막대를 왼쪽에 그린다. 스크롤 칸만 왼쪽→오른쪽으로 두고 안의 내용은 되돌린다. */
+:root[dir='rtl'] .settings-body { direction: ltr; }
+:root[dir='rtl'] .settings-body > * { direction: rtl; }
 /* Why: the window buttons sit over the title bar here, not over the Computers title, so its extra top room is not needed. */
 .settings-body .computers { padding-top: 20px; }
 .switch, .toolbar-item { font: inherit; }

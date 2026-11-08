@@ -368,3 +368,7 @@ body,
 .account-row .account-mark .ra-mark {
   margin-bottom: 0;
 }
+
+/* Why: 설정 본문과 같은 까닭으로 스크롤 칸만 왼쪽→오른쪽으로 둔다. 점과 스크롤 막대가 같은 쪽이 되므로 점 쪽 여백을 넓게 둔다. */
+:root[dir='rtl'] .update-list { direction: ltr; padding: 0 30px 0 14px; }
+:root[dir='rtl'] .update-list > * { direction: rtl; }
