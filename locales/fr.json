@@ -170,12 +170,12 @@
   "account.signInLine": "Se connecter avec un compte RUNNERS",
   "account.signIn": "Se connecter",
   "computers.signedOutTitle": "Voir vos autres ordinateurs",
-  "computers.signedOutNote": "Connectez chaque Mac au même compte RUNNERS : chacun où Monitor tourne apparaît ici. L’app Monitor du téléphone utilise le même compte.",
+  "computers.signedOutNote": "Connectez chaque ordinateur au même compte RUNNERS : chacun où Monitor tourne apparaît ici. L’app Monitor du téléphone utilise le même compte.",
   "account.online": "Ordinateurs allumés : {{count}}",
   "settings.title": "Réglages de Monitor",
   "settings.tabGeneral": "Général",
   "general.section": "Comportement",
-  "general.openAtLoginHint": "Monitor démarre automatiquement lorsque vous vous connectez à ce Mac.",
+  "general.openAtLoginHint": "Monitor démarre automatiquement lorsque vous vous connectez à cet ordinateur.",
   "general.autoUpdateHint": "Monitor recherche une nouvelle version une fois par jour et vous demande avant de l’installer.",
   "general.trayIcon": "Afficher dans la barre des menus",
   "general.trayIconHint": "Si cette option est désactivée, ouvrez Monitor depuis le dossier Applications pour revenir à ces réglages.",
@@ -184,5 +184,7 @@
   "general.cancel": "Annuler",
   "settings.tabComputers": "Ordinateurs",
   "settings.tabAbout": "À propos",
+  "settings.signedOut": "Non connecté",
+  "settings.signedOutHint": "Connectez-vous pour voir cet ordinateur depuis vos autres ordinateurs et l’app du téléphone.",
   "settings.tabAccount": "Compte"
 }

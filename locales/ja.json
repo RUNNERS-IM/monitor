@@ -170,12 +170,12 @@
   "account.signInLine": "RUNNERS アカウントでサインイン",
   "account.signIn": "サインイン",
   "computers.signedOutTitle": "ほかのコンピュータを見る",
-  "computers.signedOutNote": "各 Mac で同じ RUNNERS アカウントにサインインすると、Monitor が動いている Mac がすべてここに表示されます。スマホの Monitor アプリも同じアカウントを使います。",
+  "computers.signedOutNote": "各コンピュータで同じ RUNNERS アカウントにサインインすると、Monitor が動いているコンピュータがすべてここに表示されます。スマホの Monitor アプリも同じアカウントを使います。",
   "account.online": "オンのコンピュータ {{count}} 台",
   "settings.title": "Monitorの設定",
   "settings.tabGeneral": "一般",
   "general.section": "動作",
-  "general.openAtLoginHint": "このMacにログインすると、Monitorが自動的に起動します。",
+  "general.openAtLoginHint": "このコンピュータにログインすると、Monitorが自動的に起動します。",
   "general.autoUpdateHint": "Monitorは1日に1回新しいバージョンを確認し、インストールする前に確認します。",
   "general.trayIcon": "メニューバーに表示",
   "general.trayIconHint": "オフのときは、アプリケーションフォルダからMonitorを開くとこの設定に戻れます。",
@@ -184,5 +184,7 @@
   "general.cancel": "キャンセル",
   "settings.tabComputers": "コンピュータ",
   "settings.tabAbout": "情報",
+  "settings.signedOut": "サインインしていません",
+  "settings.signedOutHint": "サインインすると、ほかのコンピュータやスマホアプリからこのコンピュータを確認できます。",
   "settings.tabAccount": "アカウント"
 }

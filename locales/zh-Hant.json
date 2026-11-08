@@ -170,12 +170,12 @@
   "account.signInLine": "使用 RUNNERS 帳號登入",
   "account.signIn": "登入",
   "computers.signedOutTitle": "查看你的其他電腦",
-  "computers.signedOutNote": "在每台 Mac 上登入同一個 RUNNERS 帳號，執行 Monitor 的 Mac 都會顯示在這裡。手機版 Monitor 也使用同一個帳號。",
+  "computers.signedOutNote": "在每台電腦上登入同一個 RUNNERS 帳號，執行 Monitor 的電腦都會顯示在這裡。手機版 Monitor 也使用同一個帳號。",
   "account.online": "已開機的電腦：{{count}} 台",
   "settings.title": "Monitor 設定",
   "settings.tabGeneral": "一般",
   "general.section": "行為",
-  "general.openAtLoginHint": "登入這台 Mac 時，Monitor 會自動啟動。",
+  "general.openAtLoginHint": "登入這台電腦時，Monitor 會自動啟動。",
   "general.autoUpdateHint": "Monitor 每天檢查一次新版本，並在安裝前詢問你。",
   "general.trayIcon": "在選單列中顯示",
   "general.trayIconHint": "關閉時，從「應用程式」檔案夾打開 Monitor 即可回到這些設定。",
@@ -184,5 +184,7 @@
   "general.cancel": "取消",
   "settings.tabComputers": "電腦",
   "settings.tabAbout": "關於",
+  "settings.signedOut": "未登入",
+  "settings.signedOutHint": "登入後，可在你的其他電腦和手機應用程式上查看這台電腦。",
   "settings.tabAccount": "帳號"
 }

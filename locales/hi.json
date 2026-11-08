@@ -170,12 +170,12 @@
   "account.signInLine": "RUNNERS खाते से साइन इन करें",
   "account.signIn": "साइन इन",
   "computers.signedOutTitle": "अपने दूसरे कंप्यूटर देखें",
-  "computers.signedOutNote": "हर Mac पर एक ही RUNNERS खाते से साइन इन करें, तो Monitor चलाने वाला हर Mac यहाँ दिखेगा। फ़ोन का Monitor ऐप भी यही खाता इस्तेमाल करता है।",
+  "computers.signedOutNote": "हर कंप्यूटर पर एक ही RUNNERS खाते से साइन इन करें, तो Monitor चलाने वाला हर कंप्यूटर यहाँ दिखेगा। फ़ोन का Monitor ऐप भी यही खाता इस्तेमाल करता है।",
   "account.online": "चालू कंप्यूटर: {{count}}",
   "settings.title": "Monitor सेटिंग्ज़",
   "settings.tabGeneral": "सामान्य",
   "general.section": "व्यवहार",
-  "general.openAtLoginHint": "जब आप इस Mac में लॉग इन करते हैं, तो Monitor अपने आप शुरू हो जाता है।",
+  "general.openAtLoginHint": "जब आप इस कंप्यूटर में लॉग इन करते हैं, तो Monitor अपने आप शुरू हो जाता है।",
   "general.autoUpdateHint": "Monitor दिन में एक बार नए संस्करण की खोज करता है और इंस्टॉल करने से पहले पूछता है।",
   "general.trayIcon": "मेनू बार में दिखाएँ",
   "general.trayIconHint": "बंद होने पर, इन सेटिंग्ज़ पर वापस आने के लिए ऐप्लिकेशन फ़ोल्डर से Monitor खोलें।",
@@ -184,5 +184,7 @@
   "general.cancel": "रद्द करें",
   "settings.tabComputers": "कंप्यूटर",
   "settings.tabAbout": "परिचय",
+  "settings.signedOut": "साइन इन नहीं है",
+  "settings.signedOutHint": "साइन इन करें, ताकि यह कंप्यूटर आपके दूसरे कंप्यूटरों और फ़ोन ऐप में दिखे।",
   "settings.tabAccount": "खाता"
 }

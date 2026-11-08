@@ -170,12 +170,12 @@
   "account.signInLine": "Войти с аккаунтом RUNNERS",
   "account.signIn": "Войти",
   "computers.signedOutTitle": "Ваши другие компьютеры",
-  "computers.signedOutNote": "Войдите на каждом Mac в один и тот же аккаунт RUNNERS — и здесь появится каждый, где работает Monitor. Приложение Monitor для телефона использует тот же аккаунт.",
+  "computers.signedOutNote": "Войдите на каждом компьютере в один и тот же аккаунт RUNNERS — и здесь появится каждый, где работает Monitor. Приложение Monitor для телефона использует тот же аккаунт.",
   "account.online": "Включено компьютеров: {{count}}",
   "settings.title": "Настройки Monitor",
   "settings.tabGeneral": "Основные",
   "general.section": "Поведение",
-  "general.openAtLoginHint": "Monitor запускается сам, когда Вы входите в систему на этом Mac.",
+  "general.openAtLoginHint": "Monitor запускается сам, когда Вы входите в систему на этом компьютере.",
   "general.autoUpdateHint": "Monitor раз в день ищет новую версию и спрашивает перед установкой.",
   "general.trayIcon": "Показывать в строке меню",
   "general.trayIconHint": "Если выключено, откройте Monitor из папки «Программы», чтобы вернуться к этим настройкам.",
@@ -184,5 +184,7 @@
   "general.cancel": "Отменить",
   "settings.tabComputers": "Компьютеры",
   "settings.tabAbout": "О программе",
+  "settings.signedOut": "Вход не выполнен",
+  "settings.signedOutHint": "Войдите, чтобы видеть этот компьютер с других Ваших компьютеров и в приложении для телефона.",
   "settings.tabAccount": "Аккаунт"
 }

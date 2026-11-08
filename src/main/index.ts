@@ -878,21 +878,48 @@ type CaptureStep =
   | { cancel: true }
   | { type: [selector: string, text: string] }
   | { press: string }
+  | { key: string }
+  | { size: [width: number, height: number] }
+  | { click: string }
+  | { open: 'panel' | SettingsTab }
   | { wait: number }
   | { shot: string }
 
-/** Presses buttons on a hidden Computers page, one step at a time (see MONITOR_CAPTURE_STEPS). */
+/** Presses buttons on a hidden page, one step at a time (see MONITOR_CAPTURE_STEPS). It starts on the Computers page;
+ *  `open` swaps to the panel or a Settings tab. */
 async function captureSteps(
   steps: CaptureStep[],
   save: (window: BrowserWindow, name: string) => Promise<void>
 ): Promise<void> {
   setFast(true)
   await sleep(6000)
-  const page = hiddenPage('computers', '', 900)
+  let page = hiddenPage('computers', '', 900)
   await sleep(3500)
   const run = (code: string) => page.webContents.executeJavaScript(code) as Promise<unknown>
   for (const step of steps) {
-    if ('card' in step) {
+    if (page.isDestroyed() && !('open' in step)) {
+      console.log('window closed, skipping', JSON.stringify(step))
+      continue
+    }
+    if ('open' in step) {
+      if (!page.isDestroyed()) {
+        page.destroy()
+      }
+      page =
+        step.open === 'panel'
+          ? hiddenPage('panel', '', 720)
+          : hiddenPage('settings', `tab=${step.open}`, 720)
+      await sleep(3000)
+    } else if ('size' in step) {
+      page.setContentSize(...step.size)
+      await sleep(500)
+    } else if ('key' in step) {
+      await run(
+        `document.dispatchEvent(new KeyboardEvent('keydown',{key:${JSON.stringify(step.key)},bubbles:true}))`
+      )
+    } else if ('click' in step) {
+      await run(`document.querySelector(${JSON.stringify(step.click)})?.click()`)
+    } else if ('card' in step) {
       await run(
         `[...document.querySelectorAll('.c-card')].find(c=>c.querySelector('.c-name').textContent.startsWith(${JSON.stringify(step.card)}))?.click()`
       )
@@ -929,7 +956,9 @@ async function captureSteps(
     }
     await sleep(400)
   }
-  page.destroy()
+  if (!page.isDestroyed()) {
+    page.destroy()
+  }
 }
 
 async function captureHidden(folder: string): Promise<void> {

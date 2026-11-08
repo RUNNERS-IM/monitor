@@ -170,12 +170,12 @@
   "account.signInLine": "سجّل الدخول بحساب RUNNERS",
   "account.signIn": "تسجيل الدخول",
   "computers.signedOutTitle": "اعرض أجهزتك الأخرى",
-  "computers.signedOutNote": "سجّل الدخول بحساب RUNNERS نفسه على كل جهاز Mac، وسيظهر هنا كل جهاز يعمل عليه Monitor. يستخدم تطبيق Monitor على الهاتف الحساب نفسه.",
+  "computers.signedOutNote": "سجّل الدخول بحساب RUNNERS نفسه على كل جهاز كمبيوتر، وسيظهر هنا كل جهاز يعمل عليه Monitor. يستخدم تطبيق Monitor على الهاتف الحساب نفسه.",
   "account.online": "الأجهزة العاملة: {{count}}",
   "settings.title": "إعدادات Monitor",
   "settings.tabGeneral": "عام",
   "general.section": "السلوك",
-  "general.openAtLoginHint": "يبدأ Monitor تلقائيًا عند تسجيل الدخول إلى هذا الـ Mac.",
+  "general.openAtLoginHint": "يبدأ Monitor تلقائيًا عند تسجيل الدخول إلى هذا الكمبيوتر.",
   "general.autoUpdateHint": "يبحث Monitor عن إصدار جديد مرة يوميًا ويسألك قبل تثبيته.",
   "general.trayIcon": "الإظهار في شريط القائمة",
   "general.trayIconHint": "عند إيقافه، افتح Monitor من مجلد التطبيقات للعودة إلى هذه الإعدادات.",
@@ -184,5 +184,7 @@
   "general.cancel": "إلغاء",
   "settings.tabComputers": "الحواسيب",
   "settings.tabAbout": "حول",
+  "settings.signedOut": "لم تسجّل الدخول",
+  "settings.signedOutHint": "سجّل الدخول لترى هذا الكمبيوتر من أجهزتك الأخرى ومن تطبيق الهاتف.",
   "settings.tabAccount": "الحساب"
 }

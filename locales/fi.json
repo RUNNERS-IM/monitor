@@ -170,12 +170,12 @@
   "account.signInLine": "Kirjaudu RUNNERS-tilillä",
   "account.signIn": "Kirjaudu",
   "computers.signedOutTitle": "Näytä muut tietokoneesi",
-  "computers.signedOutNote": "Kirjaudu jokaisella Macilla samalla RUNNERS-tilillä, niin jokainen Monitoria käyttävä Mac näkyy tässä. Puhelimen Monitor-sovellus käyttää samaa tiliä.",
+  "computers.signedOutNote": "Kirjaudu jokaisella tietokoneella samalla RUNNERS-tilillä, niin jokainen Monitoria käyttävä tietokone näkyy tässä. Puhelimen Monitor-sovellus käyttää samaa tiliä.",
   "account.online": "Päällä olevat tietokoneet: {{count}}",
   "settings.title": "Monitorin asetukset",
   "settings.tabGeneral": "Yleiset",
   "general.section": "Toiminta",
-  "general.openAtLoginHint": "Monitor käynnistyy itsestään, kun kirjaudut tähän Maciin.",
+  "general.openAtLoginHint": "Monitor käynnistyy itsestään, kun kirjaudut tähän tietokoneeseen.",
   "general.autoUpdateHint": "Monitor etsii uutta versiota kerran päivässä ja kysyy ennen asentamista.",
   "general.trayIcon": "Näytä valikkorivillä",
   "general.trayIconHint": "Kun tämä on pois päältä, avaa Monitor Ohjelmat-kansiosta palataksesi näihin asetuksiin.",
@@ -184,5 +184,7 @@
   "general.cancel": "Peruuta",
   "settings.tabComputers": "Tietokoneet",
   "settings.tabAbout": "Tietoja",
+  "settings.signedOut": "Et ole kirjautunut",
+  "settings.signedOutHint": "Kirjaudu, niin näet tämän tietokoneen muilta tietokoneiltasi ja puhelinsovelluksesta.",
   "settings.tabAccount": "Tili"
 }

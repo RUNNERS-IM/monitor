@@ -406,7 +406,7 @@ function Detail({
           <Line label={t('panel.memory')} value={`${gb(u.memoryUsed)} / ${gb(u.memoryTotal)}`} />
           <Line
             label={t('panel.disk')}
-            value={`${gb(u.diskTotal - u.diskUsed)} · ${t('computers.free')}`}
+            value={`${gb(u.diskTotal - u.diskUsed)} ${t('computers.free')}`}
           />
           <Line
             label={t('panel.work')}

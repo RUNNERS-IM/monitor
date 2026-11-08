@@ -3,7 +3,6 @@
   --accent: var(--rw-accent, #007aff);
   --label: var(--rw-text);
   --secondary: var(--rw-text-secondary);
-  --tertiary: rgba(0, 0, 0, 0.26);
   --card: var(--rw-box-bg);
   --separator: var(--rw-separator);
   --control-track: var(--rw-control-bg);
@@ -11,7 +10,6 @@
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --tertiary: rgba(255, 255, 255, 0.25);
     --switch-off: rgba(255, 255, 255, 0.12);
   }
 }
@@ -75,6 +73,7 @@ html[data-window='settings'] body { background: var(--rw-window-bg); overflow: h
   gap: var(--rw-section-gap);
 }
 .s-section-title {
+  margin: 0;
   font-size: var(--rw-font-small);
   font-weight: 600;
   color: var(--secondary);
@@ -82,7 +81,7 @@ html[data-window='settings'] body { background: var(--rw-window-bg); overflow: h
 .s-section-hint {
   padding-right: 8px;
   font-size: var(--rw-font-small);
-  color: var(--tertiary);
+  color: var(--secondary);
 }
 .s-card {
   flex: none;

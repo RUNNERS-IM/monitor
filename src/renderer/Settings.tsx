@@ -3,7 +3,7 @@
 // (shared decision 2026-11-07, Monitor 1A). The panel's account line and ⌘, open it; `?tab=` picks the first tab.
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Info, Laptop, Settings as SettingsIcon, UserRound, type LucideIcon } from 'lucide-react'
+import { CircleUser, Info, Laptop, Settings as SettingsIcon, type LucideIcon } from 'lucide-react'
 import Computers from './Computers'
 import { locale, t } from './i18n'
 import * as native from './native'
@@ -19,7 +19,7 @@ import './Settings.css'
 const TABS: { id: SettingsTab; label: Parameters<typeof t>[0]; Icon: LucideIcon }[] = [
   { id: 'computers', label: 'settings.tabComputers', Icon: Laptop },
   { id: 'general', label: 'settings.tabGeneral', Icon: SettingsIcon },
-  { id: 'account', label: 'settings.tabAccount', Icon: UserRound },
+  { id: 'account', label: 'settings.tabAccount', Icon: CircleUser },
   { id: 'about', label: 'settings.tabAbout', Icon: Info }
 ]
 const mac = navigator.userAgent.includes('Macintosh')
@@ -88,6 +88,20 @@ function General() {
     void native.menuState().then(setState)
     void native.version().then(setVersion)
   }, [])
+  useEffect(() => {
+    // Why: Escape takes back the question first, then closes the window, as on the Computers and About tabs.
+    const close = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (asking) {
+          setAsking(false)
+        } else {
+          native.closeWindow()
+        }
+      }
+    }
+    window.addEventListener('keydown', close)
+    return () => window.removeEventListener('keydown', close)
+  }, [asking])
   const run = (name: MenuCommand) => void native.command(name).then(setState)
   return (
     <main className="s-content">
@@ -143,6 +157,16 @@ function Account() {
     void native.account().then(setState)
     return native.onAccount(setState)
   }, [])
+  useEffect(() => {
+    // Why: while the sign-in sheet is up it takes Escape itself.
+    const close = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !signingIn) {
+        native.closeWindow()
+      }
+    }
+    window.addEventListener('keydown', close)
+    return () => window.removeEventListener('keydown', close)
+  }, [signingIn])
   const signedIn = useCallback(() => void native.account().then(setState), [])
   const closeSignIn = useCallback(() => setSigningIn(false), [])
   const email = state?.email
@@ -180,7 +204,7 @@ function Account() {
             </div>
           ) : (
             state && (
-              <Row title={t('computers.signedOutTitle')} hint={t('computers.signedOutNote')}>
+              <Row title={t('settings.signedOut')} hint={t('settings.signedOutHint')}>
                 <button type="button" className="rw-button default" onClick={() => setSigningIn(true)}>
                   {t('account.signIn')}
                 </button>

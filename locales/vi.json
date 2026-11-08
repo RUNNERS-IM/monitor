@@ -170,12 +170,12 @@
   "account.signInLine": "Đăng nhập bằng tài khoản RUNNERS",
   "account.signIn": "Đăng nhập",
   "computers.signedOutTitle": "Xem các máy tính khác của bạn",
-  "computers.signedOutNote": "Đăng nhập cùng một tài khoản RUNNERS trên mỗi máy Mac, mọi máy đang chạy Monitor sẽ hiện ở đây. Ứng dụng Monitor trên điện thoại dùng cùng tài khoản.",
+  "computers.signedOutNote": "Đăng nhập cùng một tài khoản RUNNERS trên mỗi máy tính, mọi máy đang chạy Monitor sẽ hiện ở đây. Ứng dụng Monitor trên điện thoại dùng cùng tài khoản.",
   "account.online": "Máy đang bật: {{count}}",
   "settings.title": "Cài đặt Monitor",
   "settings.tabGeneral": "Cài đặt chung",
   "general.section": "Hoạt động",
-  "general.openAtLoginHint": "Monitor tự khởi động khi bạn đăng nhập vào máy Mac này.",
+  "general.openAtLoginHint": "Monitor tự khởi động khi bạn đăng nhập vào máy tính này.",
   "general.autoUpdateHint": "Monitor tìm phiên bản mới mỗi ngày một lần và hỏi trước khi cài đặt.",
   "general.trayIcon": "Hiển thị trên thanh menu",
   "general.trayIconHint": "Khi tắt, hãy mở Monitor từ thư mục Ứng dụng để quay lại các cài đặt này.",
@@ -184,5 +184,7 @@
   "general.cancel": "Hủy",
   "settings.tabComputers": "Máy tính",
   "settings.tabAbout": "Giới thiệu",
+  "settings.signedOut": "Chưa đăng nhập",
+  "settings.signedOutHint": "Đăng nhập để xem máy tính này từ các máy tính khác của bạn và ứng dụng điện thoại.",
   "settings.tabAccount": "Tài khoản"
 }

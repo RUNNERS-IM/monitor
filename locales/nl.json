@@ -170,12 +170,12 @@
   "account.signInLine": "Inloggen met je RUNNERS-account",
   "account.signIn": "Inloggen",
   "computers.signedOutTitle": "Je andere computers bekijken",
-  "computers.signedOutNote": "Log op elke Mac in met hetzelfde RUNNERS-account, dan verschijnt hier elke Mac waarop Monitor draait. De Monitor-app voor je telefoon gebruikt hetzelfde account.",
+  "computers.signedOutNote": "Log op elke computer in met hetzelfde RUNNERS-account, dan verschijnt hier elke computer waarop Monitor draait. De Monitor-app voor uw telefoon gebruikt hetzelfde account.",
   "account.online": "Computers aan: {{count}}",
   "settings.title": "Monitor-instellingen",
   "settings.tabGeneral": "Algemeen",
   "general.section": "Gedrag",
-  "general.openAtLoginHint": "Monitor start vanzelf wanneer u inlogt op deze Mac.",
+  "general.openAtLoginHint": "Monitor start vanzelf wanneer u inlogt op deze computer.",
   "general.autoUpdateHint": "Monitor zoekt één keer per dag naar een nieuwe versie en vraagt het eerst voordat die wordt geïnstalleerd.",
   "general.trayIcon": "Toon in menubalk",
   "general.trayIconHint": "Als dit uit staat, opent u Monitor vanuit de map Programma's om terug te gaan naar deze instellingen.",
@@ -184,5 +184,7 @@
   "general.cancel": "Annuleer",
   "settings.tabComputers": "Computers",
   "settings.tabAbout": "Over",
+  "settings.signedOut": "Niet ingelogd",
+  "settings.signedOutHint": "Log in om deze computer te zien vanaf uw andere computers en de telefoon-app.",
   "settings.tabAccount": "Account"
 }
