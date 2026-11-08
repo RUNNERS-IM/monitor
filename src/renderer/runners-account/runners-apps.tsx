@@ -1,6 +1,6 @@
 // 「RUNNERS의 다른 앱」 · 「RUNNERS의 서비스」 카드. 모든 앱이 같은 모양이다.
 import type { RunnersAppGroup } from './runners-apps-data'
-import { pickText } from './runners-apps-data'
+import { pickName, pickText } from './runners-apps-data'
 import './runners-apps.css'
 
 export type RunnersAppsProps = {
@@ -39,11 +39,11 @@ export function RunnersApps({ groups, locale, getLabel, onOpen }: RunnersAppsPro
                   ) : (
                     // 그림이 없어도 구멍이 나지 않게 첫 글자를 그린다.
                     <span className="runners-apps-icon runners-apps-letter" aria-hidden>
-                      {item.name.slice(0, 1)}
+                      {pickName(item, locale).slice(0, 1)}
                     </span>
                   )}
                   <div className="runners-apps-text">
-                    <div className="runners-apps-name">{item.name}</div>
+                    <div className="runners-apps-name">{pickName(item, locale)}</div>
                     <div className="runners-apps-desc">{pickText(item.desc, locale)}</div>
                   </div>
                   {/* 받을 곳이 없는 줄에는 죽은 단추를 두지 않는다. */}
@@ -51,7 +51,7 @@ export function RunnersApps({ groups, locale, getLabel, onOpen }: RunnersAppsPro
                     <button
                       type="button"
                       className="runners-apps-get"
-                      aria-label={`${getLabel} ${item.name}`}
+                      aria-label={`${getLabel} ${pickName(item, locale)}`}
                       onClick={() => onOpen(item.url)}
                     >
                       {getLabel}

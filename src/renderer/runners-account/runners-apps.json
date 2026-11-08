@@ -55,6 +55,7 @@
         {
           "id": "sense",
           "name": "센스",
+          "nameEn": "Sense",
           "icon": "sense.png",
           "desc": {
             "ko": "선물·맛집·데이트 코스를 AI가 추천하는 기념일 플래너",
@@ -66,6 +67,7 @@
         {
           "id": "pudding",
           "name": "푸딩",
+          "nameEn": "Pudding",
           "icon": "pudding.png",
           "desc": {
             "ko": "체크리스트·예산·청첩장·하객을 한곳에서, AI 결혼 플래너",

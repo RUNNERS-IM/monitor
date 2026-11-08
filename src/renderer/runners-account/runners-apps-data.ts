@@ -13,6 +13,8 @@ export type RunnersText = { ko?: string; en?: string; ar?: string }
 export type RunnersAppItem = {
   id: string
   name: string
+  /** 한국어 이름을 쓰는 서비스의 영문 이름. 한국어가 아닌 화면에서 쓴다. */
+  nameEn?: string
   /** 아이콘 주소. 없으면 카드가 첫 글자를 대신 그린다. */
   iconUrl: string
   desc: RunnersText
@@ -50,12 +52,18 @@ export function loadRunnersAppGroups(selfId: string): RunnersAppGroup[] {
         .map((item) => ({
           id: item.id,
           name: item.name,
+          nameEn: (item as { nameEn?: string }).nameEn,
           iconUrl: ICONS[item.icon] ?? '',
           desc: item.desc,
           url: isSafeUrl(item.url.trim()) ? item.url.trim() : ''
         }))
     }))
     .filter((group) => group.items.length > 0)
+}
+
+/** 한국어 화면은 name, 다른 화면은 영문 이름이 있으면 그것을 쓴다. */
+export function pickName(item: RunnersAppItem, locale: string): string {
+  return locale === 'ko' ? item.name : (item.nameEn ?? item.name)
 }
 
 /** 한국어 · 아랍어 화면은 그 말, 나머지는 영어. */
