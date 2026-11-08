@@ -176,6 +176,13 @@ export function createAccount(options: AccountOptions) {
     return (isWrapped ? wrapped.data : parsed) as T
   }
 
+  // 갱신 답을 기다리는 사이 로그아웃했거나 다른 계정으로 들어왔으면 그 답은 앞 로그인의 것이다. 저장하면 앞 로그인이 되살아나므로
+  // 버리고, 지금 상태를 알린다.
+  const afterAccountChange = (): AccountRefreshResult => {
+    const now = load()
+    return now ? { ok: true, token: now.tokens.accessToken } : { ok: false, reason: 'signedOut' }
+  }
+
   return {
     /** 로그인한 이메일. 없으면 null. */
     current: () => load()?.email ?? null,
@@ -242,9 +249,19 @@ export function createAccount(options: AccountOptions) {
           const tokens = await post<AccountTokens>('/api/mobile/auth/refresh', {
             refreshToken: was.tokens.refreshToken
           })
+          if (load() !== was) {
+            // 아무도 쓰지 않을 새 토큰이라 서버에서도 끝낸다.
+            void post('/api/mobile/auth/logout', { refreshToken: tokens.refreshToken }).catch(
+              () => undefined
+            )
+            return afterAccountChange()
+          }
           store({ ...was, tokens })
           return { ok: true, token: tokens.accessToken }
         } catch (error) {
+          if (load() !== was) {
+            return afterAccountChange()
+          }
           if (error instanceof AccountApiError && error.status === 401) {
             store(null)
             return { ok: false, reason: 'rejected' }
