@@ -20,17 +20,21 @@ export type RunnersAboutProps = {
   t: RunnersT
   version: () => Promise<string>
   openExternal: (url: string) => void
-  closeWindow: () => void
-  fitHeight: (height: number) => void
+  /** 창으로 띄울 때만 쓴다. 설정 탭 안(embedded)에서는 넘기지 않아도 된다. */
+  closeWindow?: () => void
+  /** 창으로 띄울 때만 쓴다. 설정 탭 안(embedded)에서는 넘기지 않아도 된다. */
+  fitHeight?: (height: number) => void
   /** THIRD_PARTY_NOTICES.md 의 글자. 600 KB 나 되어 누를 때만 읽는다. */
   loadNotices: () => Promise<string>
   /** 개발 실행에서 고지 창을 연 모습을 찍을 때. */
   startWithNotices?: boolean
+  /** 설정 창의 정보 탭처럼 다른 창 안에 넣을 때. 창 윗여백을 빼고 창 닫기 · 높이 맞추기를 하지 않는다. */
+  embedded?: boolean
 }
 
 export function RunnersAbout(props: RunnersAboutProps) {
   const { appId, appName, appIcon, website, github, locale, t, openExternal, closeWindow } = props
-  const { version: readVersion, fitHeight, loadNotices, startWithNotices } = props
+  const { version: readVersion, fitHeight, loadNotices, startWithNotices, embedded } = props
   const [version, setVersion] = useState('')
   const [notices, setNotices] = useState<string | null>(null)
   const root = useRef<HTMLElement>(null)
@@ -51,7 +55,7 @@ export function RunnersAbout(props: RunnersAboutProps) {
       if (document.querySelector('.notices')) {
         setNotices(null)
       } else {
-        closeWindow()
+        closeWindow?.()
       }
     }
     window.addEventListener('keydown', closeOnEscape)
@@ -61,7 +65,7 @@ export function RunnersAbout(props: RunnersAboutProps) {
   // 설명이 언어에 따라 한두 줄이 되므로, 카드가 잘리거나 빈 곳이 남지 않게 창 높이를 내용에 맞춘다.
   useEffect(() => {
     const node = root.current
-    if (!node) {
+    if (!node || embedded || !fitHeight) {
       return
     }
     const observer = new ResizeObserver(() =>
@@ -69,10 +73,10 @@ export function RunnersAbout(props: RunnersAboutProps) {
     )
     observer.observe(node)
     return () => observer.disconnect()
-  }, [fitHeight])
+  }, [fitHeight, embedded])
 
   return (
-    <main className="about" ref={root}>
+    <main className={embedded ? 'about about-embedded' : 'about'} ref={root}>
       <header className="about-header">
         <img className="about-icon" src={appIcon} alt="" draggable={false} />
         <h1 className="about-name">{appName}</h1>

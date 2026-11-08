@@ -5,7 +5,8 @@
       "id": "apps",
       "title": {
         "ko": "RUNNERS의 다른 앱",
-        "en": "More apps from RUNNERS"
+        "en": "More apps from RUNNERS",
+        "ar": "المزيد من تطبيقات RUNNERS"
       },
       "items": [
         {
@@ -14,7 +15,8 @@
           "icon": "split.png",
           "desc": {
             "ko": "단축키 한 번으로 창을 반반·3분할·모서리로 정리",
-            "en": "Snap windows to halves, thirds and corners with one shortcut"
+            "en": "Snap windows to halves, thirds and corners with one shortcut",
+            "ar": "رتّب النوافذ إلى نصفين أو أثلاث أو زوايا باختصار واحد"
           },
           "url": "https://runners.im/split"
         },
@@ -24,7 +26,8 @@
           "icon": "prompt.png",
           "desc": {
             "ko": "여러 Claude 세션을 프로젝트별로 묶어 한 창에서 돌리는 터미널",
-            "en": "Run many Claude sessions in one window, grouped by project"
+            "en": "Run many Claude sessions in one window, grouped by project",
+            "ar": "شغّل جلسات Claude متعددة في نافذة واحدة مجمّعة حسب المشروع"
           },
           "url": "https://github.com/RUNNERS-IM/prompt/releases/latest"
         },
@@ -34,7 +37,8 @@
           "icon": "monitor.png",
           "desc": {
             "ko": "메뉴 막대에서 CPU · 메모리 · 디스크와 느려진 이유를 봅니다",
-            "en": "See CPU, memory, disk and why your Mac is slow from the menu bar"
+            "en": "See CPU, memory, disk and why your Mac is slow from the menu bar",
+            "ar": "اعرف المعالج والذاكرة والقرص وسبب بطء جهاز Mac من شريط القوائم"
           },
           "url": "https://github.com/RUNNERS-IM/monitor/releases/latest"
         }
@@ -44,7 +48,8 @@
       "id": "services",
       "title": {
         "ko": "RUNNERS의 서비스",
-        "en": "Services from RUNNERS"
+        "en": "Services from RUNNERS",
+        "ar": "خدمات RUNNERS"
       },
       "items": [
         {
@@ -53,7 +58,8 @@
           "icon": "sense.png",
           "desc": {
             "ko": "선물·맛집·데이트 코스를 AI가 추천하는 기념일 플래너",
-            "en": "AI planner for gifts, restaurants and date ideas"
+            "en": "AI planner for gifts, restaurants and date ideas",
+            "ar": "مخطط بالذكاء الاصطناعي للهدايا والمطاعم وأفكار المواعيد"
           },
           "url": "https://sense.im"
         },
@@ -63,7 +69,8 @@
           "icon": "pudding.png",
           "desc": {
             "ko": "체크리스트·예산·청첩장·하객을 한곳에서, AI 결혼 플래너",
-            "en": "All-in-one AI wedding planner: checklist, budget, invitations, guests"
+            "en": "All-in-one AI wedding planner: checklist, budget, invitations, guests",
+            "ar": "مخطط زفاف شامل بالذكاء الاصطناعي: المهام والميزانية والدعوات والضيوف"
           },
           "url": "https://pudding.im"
         }

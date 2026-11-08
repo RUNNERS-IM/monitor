@@ -7,8 +7,8 @@ import sense from './assets/runners-apps/sense.png'
 import split from './assets/runners-apps/split.png'
 import source from './runners-apps.json'
 
-/** 목록에는 한국어와 영어만 있다. 다른 화면 언어는 영어를 읽는다. */
-export type RunnersText = { ko?: string; en?: string }
+/** 목록에는 한국어 · 영어 · 아랍어가 있다. 다른 화면 언어는 영어를 읽는다. */
+export type RunnersText = { ko?: string; en?: string; ar?: string }
 
 export type RunnersAppItem = {
   id: string
@@ -58,7 +58,8 @@ export function loadRunnersAppGroups(selfId: string): RunnersAppGroup[] {
     .filter((group) => group.items.length > 0)
 }
 
-/** 한국어 화면은 한국어, 나머지는 영어. */
+/** 한국어 · 아랍어 화면은 그 말, 나머지는 영어. */
 export function pickText(text: RunnersText, locale: string): string {
-  return (locale === 'ko' ? text.ko : text.en) || text.en || text.ko || ''
+  const own = locale === 'ko' ? text.ko : locale === 'ar' ? text.ar : text.en
+  return own || text.en || text.ko || ''
 }

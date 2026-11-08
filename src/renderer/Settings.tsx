@@ -26,8 +26,6 @@ const mac = navigator.userAgent.includes('Macintosh')
 const open = (url: string) => void native.openExternal(url)
 // Why: 고지는 600 KB 나 되어 누를 때만 읽는다.
 const loadNotices = () => import('../../THIRD_PARTY_NOTICES.md?raw').then((file) => file.default)
-// Why: the About tab sits in a window of its own size, so the kit part's fitting is not wanted here.
-const keepHeight = () => undefined
 
 function Switch({ label, on, onChange }: { label: string; on: boolean; onChange: () => void }) {
   return (
@@ -235,7 +233,7 @@ function About() {
         version={native.version}
         openExternal={open}
         closeWindow={native.closeWindow}
-        fitHeight={keepHeight}
+        embedded
         loadNotices={loadNotices}
       />
     </div>

@@ -83,7 +83,7 @@ html[data-translucent='false'] body {
   background: none;
   color: inherit;
   font: inherit;
-  text-align: left;
+  text-align: start;
   width: calc(100% - 2 * (var(--rm-inset) - 8px));
   box-sizing: border-box;
 }

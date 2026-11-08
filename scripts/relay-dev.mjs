@@ -13,7 +13,7 @@ import { WebSocketServer } from 'ws'
 
 const PORT = Number(process.argv[2] ?? process.env.PORT ?? 8787)
 const expired = new Set()
-const PROJECTS = ['SPLIT', 'MONITOR', 'REMOTE', 'PROMPT']
+const PROJECTS = ['SPLIT', 'MONITOR', 'REMOTE', 'PROMPT', 'DRAW']
 /** token -> { account, project } */
 const tokens = new Map()
 /** account|project -> Map<deviceId, { ws, deviceId, name, role }> */

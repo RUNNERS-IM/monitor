@@ -27,6 +27,11 @@
   padding: calc(var(--rw-pad) + 12px) var(--rw-pad) var(--rw-pad);
 }
 
+/* Why: inside a Settings tab there are no traffic lights over the content. */
+.about-embedded {
+  padding-top: var(--rw-pad);
+}
+
 .about-header {
   display: flex;
   flex-direction: column;

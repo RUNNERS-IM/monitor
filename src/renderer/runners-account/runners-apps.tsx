@@ -5,7 +5,7 @@ import './runners-apps.css'
 
 export type RunnersAppsProps = {
   groups: RunnersAppGroup[]
-  /** 화면 언어 코드. ko 말고는 영어를 읽는다. */
+  /** 화면 언어 코드. ko · ar 말고는 영어를 읽는다. */
   locale: string
   /** 「받기」 단추의 말. */
   getLabel: string
