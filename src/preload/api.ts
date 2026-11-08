@@ -181,6 +181,9 @@ export type MonitorApi = {
   takeSignIn: () => Promise<boolean>
   /** Calls back when the open Settings window is asked to show the sign-in sheet. */
   onSignIn: (listener: () => void) => () => void
+  /** 사용 통계를 아직 묻지 않았는가(ask)와 동의했는가(granted). */
+  usageConsent: () => Promise<{ ask: boolean; granted: boolean }>
+  setUsageConsent: (granted: boolean) => Promise<void>
   signOut: () => Promise<void>
   /** Joins the relay again after another connection with this computer's id took its place. */
   reconnect: () => Promise<void>

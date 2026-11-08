@@ -10,11 +10,15 @@ import * as native from './native'
 import type { AccountState, MenuCommand, MenuState, SettingsTab } from './native'
 import appIcon from './assets/app-icon.png'
 import { RunnersAbout, type RunnersT } from './runners-account/runners-about'
+import panda from './runners-account/assets/panda/face.webp'
 import { accountText } from './runners-account/runners-account'
+import { UsageConsentSheet, usageText } from './runners-account/runners-usage'
 import { SignIn } from './SignIn'
 import './runners-account/runners-window.css'
 import './runners-account/runners-account.css'
 import './Settings.css'
+
+type UsageConsent = Awaited<ReturnType<typeof native.usageConsent>>
 
 const TABS: { id: SettingsTab; label: Parameters<typeof t>[0]; Icon: LucideIcon }[] = [
   { id: 'computers', label: 'settings.tabComputers', Icon: Laptop },
@@ -78,7 +82,13 @@ function HideAsk({ onCancel, onHide }: { onCancel: () => void; onHide: () => voi
   )
 }
 
-function General() {
+function General({
+  usage,
+  onUsage
+}: {
+  usage: UsageConsent | null
+  onUsage: (granted: boolean) => void
+}) {
   const [state, setState] = useState<MenuState | null>(null)
   const [asking, setAsking] = useState(false)
   const [version, setVersion] = useState('')
@@ -125,6 +135,14 @@ function General() {
               </Row>
             </>
           )}
+          <div className="s-card-separator" />
+          <Row title={usageText(locale, 'rowTitle')} hint={usageText(locale, 'rowHint')}>
+            <Switch
+              label={usageText(locale, 'rowTitle')}
+              on={!!usage?.granted}
+              onChange={() => onUsage(!usage?.granted)}
+            />
+          </Row>
           <div className="s-card-separator" />
           {/* Why: the panel's bottom lines are only Settings, Help and Quit now, so the update check lives here,
               next to the version it would replace. */}
@@ -177,7 +195,7 @@ function Account() {
             <div className="s-row">
               <div className="s-row-line">
                 <span className="ra-badge ra-large" aria-hidden>
-                  {(email.match(/[\p{L}\p{N}]/u)?.[0] ?? '?').toUpperCase()}
+                  <img src={panda} alt="" draggable={false} />
                 </span>
                 <div className="s-row-text">
                   <span className="s-row-title">{email}</span>
@@ -244,6 +262,14 @@ export default function Settings() {
   const first = new URLSearchParams(location.search).get('tab')
   const [tab, setTab] = useState<SettingsTab>(TABS.find((x) => x.id === first)?.id ?? TABS[0].id)
   useEffect(() => native.onSettingsTab(setTab), [])
+  const [usage, setUsage] = useState<UsageConsent | null>(null)
+  useEffect(() => {
+    void native.usageConsent().then(setUsage)
+  }, [])
+  const chooseUsage = useCallback((granted: boolean) => {
+    void native.setUsageConsent(granted)
+    setUsage({ ask: false, granted })
+  }, [])
   return (
     <div className="window">
       {mac && <header className="titlebar">{t('settings.title')}</header>}
@@ -264,10 +290,11 @@ export default function Settings() {
       </nav>
       <div className="settings-body">
         {tab === 'computers' && <Computers />}
-        {tab === 'general' && <General />}
+        {tab === 'general' && <General usage={usage} onUsage={chooseUsage} />}
         {tab === 'account' && <Account />}
         {tab === 'about' && <About />}
       </div>
+      {usage?.ask && <UsageConsentSheet lang={locale} app="Monitor" onChoose={chooseUsage} />}
     </div>
   )
 }

@@ -61,6 +61,8 @@ const api: MonitorApi = {
     ipcRenderer.on('monitor:signIn', relay)
     return () => ipcRenderer.off('monitor:signIn', relay)
   },
+  usageConsent: () => ipcRenderer.invoke('monitor:usageConsent'),
+  setUsageConsent: (granted) => ipcRenderer.invoke('monitor:setUsageConsent', granted),
   signOut: () => ipcRenderer.invoke('monitor:signOut'),
   reconnect: () => ipcRenderer.invoke('monitor:reconnect')
 }

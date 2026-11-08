@@ -23,6 +23,7 @@ import * as native from './native'
 import type { AccountState, CleanupKind, MenuCommand, Peer, QuitReport } from './native'
 import { RunnersMark } from './runners-account/runners-account'
 import { MenuHead } from './runners-account/runners-menu'
+import panda from './runners-account/assets/panda/face.webp'
 import './runners-account/runners-account.css'
 import type { AppUse, Cleanup, Pressure, QuitKind, Snapshot, Suggestion } from './types'
 import './runners-account/runners-menu.css'
@@ -239,7 +240,7 @@ function AccountRow() {
       onClick={() => void native.openComputers()}
     >
       <span className="ra-badge account-badge" aria-hidden>
-        {(state.email.match(/[\p{L}\p{N}]/u)?.[0] ?? '?').toUpperCase()}
+        <img src={panda} alt="" draggable={false} />
       </span>
       <span className="rm-label">{state.email}</span>
       <span className="rm-trailing">
