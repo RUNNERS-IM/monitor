@@ -97,7 +97,7 @@ export function RunnersAbout(props: RunnersAboutProps) {
         onOpen={openExternal}
       />
       <footer className="about-credit">
-        {t('about.license')} ·{' '}
+        <span dir="auto">{t('about.license')}</span> ·{' '}
         <button
           type="button"
           className="about-notices-link"
@@ -139,7 +139,8 @@ function NoticesSheet(props: {
         <h2 id="notices-title" className="notices-title">
           {title}
         </h2>
-        <div className="notices-body">
+        {/* Why: 고지 본문은 영어 원문이라 아랍어 화면에서도 왼쪽에서 오른쪽으로 읽어야 문장 부호가 뒤집히지 않는다. */}
+        <div className="notices-body" dir="ltr">
           {blocks.map((block) => {
             const [first, ...rest] = block.split('\n')
             return (
