@@ -42,6 +42,8 @@ export type UsageStatsOptions = {
   filePath: string
   /** 로그인한 계정의 토큰. 로그아웃 상태면 null */
   token: () => string | null | Promise<string | null>
+  /** 서버가 어느 앱의 요청인지 알아보게 보내는 이름. 예: Monitor/2.6.110701. 없으면 Node 기본값 node 가 나간다. */
+  userAgent?: string
   /** 시험할 때 바꿔 끼운다. */
   endpoint?: string | null
   fetch?: typeof fetch
@@ -88,11 +90,13 @@ export function createUsageStats(options: UsageStatsOptions) {
     lastSave = now().getTime()
   }
 
+  const agent: Record<string, string> = options.userAgent ? { 'User-Agent': options.userAgent } : {}
+
   const removeFromServer = async (url: string, token: string): Promise<boolean> => {
     try {
       const response = await request(url, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}`, ...agent },
         signal: AbortSignal.timeout(TIMEOUT_MS)
       })
       // 404 는 받는 곳이 아직 없다는 뜻이고, 그러면 서버에 지울 기록도 없다.
@@ -106,7 +110,11 @@ export function createUsageStats(options: UsageStatsOptions) {
     try {
       const response = await request(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          ...agent
+        },
         body: JSON.stringify(usagePayload(day, options.version, deviceId ?? '', days[day])),
         signal: AbortSignal.timeout(TIMEOUT_MS)
       })

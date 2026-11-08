@@ -155,6 +155,11 @@
   cursor: pointer;
 }
 
+/* 아랍어 화면은 나가는 쪽이 왼쪽이라 로그아웃 화살표를 뒤집는다. */
+[dir='rtl'] .ra-menu-item .ra-out {
+  transform: scaleX(-1);
+}
+
 .ra-menu-item:hover {
   background: var(--ra-accent);
   color: var(--ra-on-accent);

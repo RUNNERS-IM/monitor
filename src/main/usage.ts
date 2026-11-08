@@ -12,6 +12,7 @@ let made: UsageStats | null = null
 function stats(): UsageStats {
   made ??= createUsageStats({
     version: app.getVersion(),
+    userAgent: `Monitor/${app.getVersion()}`,
     filePath: join(app.getPath('userData'), 'usage-stats.json'),
     // Why: 켜 둔 지 오래된 앱의 액세스 토큰은 만료돼 있다. 보낼 것이 있을 때만 불리므로 그때 새로 받는다.
     token: async () => {

@@ -1,12 +1,12 @@
-# runners-app-kit v0.1.20 89d0831. Do not edit these files here; change runners-app-kit and copy again.
-dd4a8e9dfa72313b324767885c82f8a97d940b613e86db642c30348126930632  account.ts
+# runners-app-kit v0.1.22 eddcd99. Do not edit these files here; change runners-app-kit and copy again.
+707e04428fc3f607d90dd5b33bf4da9bb58ff430d06cc188a89edd097b7de3e7  account.ts
 124a59beaa0b82fd0983c4b655d8e4e0151583d1e3e5904f6f87ba4c7e91ecdd  updates.ts
 65313803725917f1daaaebfd899babad591b6dd365536b984fe09495e3601ab8  update-window.ts
 a41851a0e896963d924d9892a08c2b6c3a2e0b9d12b94986ecc27eb4c6f0e88b  release-notes.ts
-02834f4ee71258e5fe17446462aedcbdae930d70c031eae41f979721022a0c33  login-item.ts
+8027811c0b1fc93219fac59675e0399cd796f73696d338c608033c52b187a78f  login-item.ts
 be11194255bbee7bead180270d7aff99e291d130322a2d8ef49b2bb56ccf2be4  settings-file.ts
 66f03784875fbb5634df7ad00bddc1fa15070553519e215f868e31aaef6ac43b  native-loader.ts
-ddd12239570e02555f175ef77e71a1b633696f7471dcd4ae1af3fb906cd87c6c  usage-stats.ts
+c8150e80bc2f3080eca61caa37dba59b15e0e7760d3ae423798fa36158ab7475  usage-stats.ts
 c388af8a93233036e9fc59bdd902f8a34de8b6c73d1536379df676491854e04e  relay-core.ts
 20ab7fad91ed4b55bf26a4b575797e3bcc2b869a94438c66952f5426366da806  locale.ts
 a5181c7bdcac658c9d414b6d343b37e528407165f151d1257844eb93b73312cf  check.mjs

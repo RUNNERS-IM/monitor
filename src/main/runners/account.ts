@@ -21,6 +21,13 @@ export type AccountOptions = {
   filePath: string
   apiUrl: string
   safeStorage: AccountSafeStorage
+  /**
+   * 설치한 판인가(app.isPackaged). 거짓이면 키체인을 쓰지 않는다. 서명이 다른 개발 실행이 키체인 허락 창을 띄우지 않게 한다.
+   * 없으면 설치한 판으로 친다.
+   */
+  isPackaged?: boolean
+  /** 서버가 어느 앱의 요청인지 알아보게 보내는 이름. 예: Monitor/2.6.110701. 없으면 Node 기본값 node 가 나간다. */
+  userAgent?: string
   /** 시험할 때 바꿔 끼운다. */
   fetch?: typeof fetch
 }
@@ -76,17 +83,53 @@ export function createAccount(options: AccountOptions) {
   let refreshing: Promise<AccountRefreshResult> | null = null
   const listeners = new Set<() => void>()
 
-  // 토큰은 이 사람으로 로그인하는 열쇠라, 운영체제 키체인을 쓸 수 있으면 암호화해 둔다.
+  // 토큰은 이 사람으로 로그인하는 열쇠라 키체인으로 암호화해서만 파일에 둔다. 개인정보 처리방침의
+  // 「토큰은 시스템 키체인으로 암호화합니다」와 맞춘다. 암호화할 수 없으면(키링 없는 Linux, 개발 실행) 메모리에만 두고,
+  // 다시 켜면 로그인 화면이 뜬다.
+  const canEncrypt = () => options.isPackaged !== false && safeStorage.isEncryptionAvailable()
+
+  const plainSaved = (bytes: Buffer): Saved | null => {
+    try {
+      return JSON.parse(bytes.toString('utf8')) as Saved
+    } catch {
+      return null
+    }
+  }
+
+  const write = (next: Saved) => {
+    mkdirSync(dirname(filePath), { recursive: true })
+    // 쓰다가 앱이 꺼져도 앞 로그인이 살아 있게 임시 파일을 먼저 쓰고 바꾼다.
+    const temp = `${filePath}.tmp`
+    writeFileSync(temp, safeStorage.encryptString(JSON.stringify(next)), { mode: 0o600 })
+    renameSync(temp, filePath)
+  }
+
   const load = (): Saved | null => {
     if (saved !== undefined) {
       return saved
     }
+    saved = null
+    let bytes: Buffer
     try {
-      const bytes = readFileSync(filePath)
-      const text = safeStorage.isEncryptionAvailable()
-        ? safeStorage.decryptString(bytes)
-        : bytes.toString('utf8')
-      saved = JSON.parse(text) as Saved
+      bytes = readFileSync(filePath)
+    } catch {
+      return saved
+    }
+    // 옛 판은 암호화할 수 없을 때 평문으로 썼다. 평문 토큰은 남기지 않는다.
+    const plain = plainSaved(bytes)
+    if (!canEncrypt()) {
+      if (plain) {
+        rmSync(filePath, { force: true })
+      }
+      return saved
+    }
+    if (plain) {
+      saved = plain
+      write(plain)
+      return saved
+    }
+    try {
+      saved = JSON.parse(safeStorage.decryptString(bytes)) as Saved
     } catch {
       saved = null
     }
@@ -95,15 +138,10 @@ export function createAccount(options: AccountOptions) {
 
   const store = (next: Saved | null) => {
     saved = next
-    if (next) {
-      const text = JSON.stringify(next)
-      const bytes = safeStorage.isEncryptionAvailable() ? safeStorage.encryptString(text) : text
-      mkdirSync(dirname(filePath), { recursive: true })
-      // 쓰다가 앱이 꺼져도 앞 로그인이 살아 있게 임시 파일을 먼저 쓰고 바꾼다.
-      const temp = `${filePath}.tmp`
-      writeFileSync(temp, bytes, { mode: 0o600 })
-      renameSync(temp, filePath)
+    if (next && canEncrypt()) {
+      write(next)
     } else {
+      // 메모리에만 둘 때도 앞 로그인 파일은 지운다. 남기면 키체인이 돌아왔을 때 앞 계정이 살아난다.
       rmSync(filePath, { force: true })
     }
     for (const listener of listeners) {
@@ -114,7 +152,10 @@ export function createAccount(options: AccountOptions) {
   const post = async <T>(path: string, body: unknown): Promise<T> => {
     const res = await request(`${apiUrl}${path}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options.userAgent ? { 'User-Agent': options.userAgent } : {})
+      },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(TIMEOUT_MS)
     })
