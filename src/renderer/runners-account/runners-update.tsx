@@ -103,6 +103,8 @@ export function RunnersUpdate(props: RunnersUpdateProps) {
     return () => observer.disconnect()
   }, [notes])
 
+  // 새 소식은 한국어 아니면 영어다. 아랍어 화면에서 영어 줄의 마침표가 줄 맨 앞으로 가지 않게 방향을 정해 준다.
+  const koreanNotes = notes?.some((line) => /[가-힣]/.test(line)) ?? false
   const percent = Math.max(0, Math.min(100, Math.floor(offer?.percent ?? 0)))
   return (
     <main className="update" ref={root}>
@@ -112,7 +114,13 @@ export function RunnersUpdate(props: RunnersUpdateProps) {
       {notes && (
         <section className="update-notes">
           <h2 className="update-notes-title">{t('update.notes')}</h2>
-          <ul ref={list} className={`update-list${more ? ' more' : ''}`} onScroll={measure}>
+          <ul
+            ref={list}
+            className={`update-list${more ? ' more' : ''}`}
+            lang={koreanNotes ? 'ko' : 'en'}
+            dir={koreanNotes ? undefined : 'ltr'}
+            onScroll={measure}
+          >
             {notes.map((line) => (
               <li key={line}>{line}</li>
             ))}

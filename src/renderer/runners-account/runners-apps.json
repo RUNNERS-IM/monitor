@@ -31,7 +31,7 @@
           "name": "Split",
           "icon": "split.png",
           "desc": {
-            "ko": "단축키 한 번으로 창을 반반·3분할·모서리로 정리",
+            "ko": "단축키 한 번으로 창을 반반 · 3분할 · 모서리로 정리",
             "en": "Snap windows to halves, thirds and corners with one shortcut",
             "ar": "رتّب النوافذ إلى نصفين أو أثلاث أو زوايا باختصار واحد",
             "de": "Fenster per Kurzbefehl auf Hälften, Drittel und Ecken verteilen",
@@ -199,7 +199,7 @@
           "nameEn": "Sense",
           "icon": "sense.png",
           "desc": {
-            "ko": "선물·맛집·데이트 코스를 AI가 추천하는 기념일 플래너",
+            "ko": "선물 · 맛집 · 데이트 코스를 AI가 추천하는 기념일 플래너",
             "en": "AI planner for gifts, restaurants and date ideas",
             "ar": "مخطط بالذكاء الاصطناعي للهدايا والمطاعم وأفكار المواعيد",
             "de": "KI-Planer für Geschenke, Restaurants und Date-Ideen",
@@ -228,7 +228,7 @@
           "nameEn": "Pudding",
           "icon": "pudding.png",
           "desc": {
-            "ko": "체크리스트·예산·청첩장·하객을 한곳에서, AI 결혼 플래너",
+            "ko": "체크리스트 · 예산 · 청첩장 · 하객을 한곳에서, AI 결혼 플래너",
             "en": "All-in-one AI wedding planner: checklist, budget, invitations, guests",
             "ar": "مخطط زفاف شامل بالذكاء الاصطناعي: المهام والميزانية والدعوات والضيوف",
             "de": "KI-Hochzeitsplaner für alles: Checkliste, Budget, Einladungen, Gäste",
