@@ -1,14 +1,16 @@
 // About 창의 「RUNNERS의 다른 앱」 · 「RUNNERS의 서비스」 목록. 인터넷 없이도 보이게 앱 안에 묶는다.
 // runners-apps.json 과 assets/runners-apps/ 는 이 저장소가 원본이다. 앱 쪽 복사본을 고치지 않는다.
+import draw from './assets/runners-apps/draw.png'
 import monitor from './assets/runners-apps/monitor.png'
 import prompt from './assets/runners-apps/prompt.png'
 import pudding from './assets/runners-apps/pudding.png'
+import remote from './assets/runners-apps/remote.png'
 import sense from './assets/runners-apps/sense.png'
 import split from './assets/runners-apps/split.png'
 import source from './runners-apps.json'
 
-/** 목록에는 한국어 · 영어 · 아랍어가 있다. 다른 화면 언어는 영어를 읽는다. */
-export type RunnersText = { ko?: string; en?: string; ar?: string }
+/** 화면 언어 코드별 글. 그 언어 글이 없으면 영어를 읽는다. */
+export type RunnersText = Record<string, string | undefined>
 
 export type RunnersAppItem = {
   id: string
@@ -25,9 +27,11 @@ export type RunnersAppItem = {
 export type RunnersAppGroup = { id: string; title: RunnersText; items: RunnersAppItem[] }
 
 const ICONS: Record<string, string> = {
+  'draw.png': draw,
   'monitor.png': monitor,
   'prompt.png': prompt,
   'pudding.png': pudding,
+  'remote.png': remote,
   'sense.png': sense,
   'split.png': split
 }
@@ -66,8 +70,7 @@ export function pickName(item: RunnersAppItem, locale: string): string {
   return locale === 'ko' ? item.name : (item.nameEn ?? item.name)
 }
 
-/** 한국어 · 아랍어 화면은 그 말, 나머지는 영어. */
+/** 화면 언어의 글이 있으면 그 글, 없으면 영어. */
 export function pickText(text: RunnersText, locale: string): string {
-  const own = locale === 'ko' ? text.ko : locale === 'ar' ? text.ar : text.en
-  return own || text.en || text.ko || ''
+  return text[locale] || text.en || text.ko || ''
 }

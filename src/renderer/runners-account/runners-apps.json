@@ -6,7 +6,24 @@
       "title": {
         "ko": "RUNNERS의 다른 앱",
         "en": "More apps from RUNNERS",
-        "ar": "المزيد من تطبيقات RUNNERS"
+        "ar": "المزيد من تطبيقات RUNNERS",
+        "de": "Weitere Apps von RUNNERS",
+        "es": "Más apps de RUNNERS",
+        "fi": "Lisää RUNNERSin sovelluksia",
+        "fr": "Autres apps de RUNNERS",
+        "hi": "RUNNERS के और ऐप",
+        "id": "Aplikasi lain dari RUNNERS",
+        "it": "Altre app di RUNNERS",
+        "ja": "RUNNERS のほかのアプリ",
+        "nl": "Meer apps van RUNNERS",
+        "pl": "Więcej aplikacji RUNNERS",
+        "pt": "Mais apps da RUNNERS",
+        "ru": "Другие приложения RUNNERS",
+        "th": "แอปอื่นจาก RUNNERS",
+        "tr": "RUNNERS'tan diğer uygulamalar",
+        "vi": "Ứng dụng khác của RUNNERS",
+        "zh-Hans": "RUNNERS 的更多应用",
+        "zh-Hant": "RUNNERS 的更多 App"
       },
       "items": [
         {
@@ -16,7 +33,24 @@
           "desc": {
             "ko": "단축키 한 번으로 창을 반반·3분할·모서리로 정리",
             "en": "Snap windows to halves, thirds and corners with one shortcut",
-            "ar": "رتّب النوافذ إلى نصفين أو أثلاث أو زوايا باختصار واحد"
+            "ar": "رتّب النوافذ إلى نصفين أو أثلاث أو زوايا باختصار واحد",
+            "de": "Fenster per Kurzbefehl auf Hälften, Drittel und Ecken verteilen",
+            "es": "Coloca ventanas en mitades, tercios y esquinas con un atajo",
+            "fi": "Järjestä ikkunat puolikkaiksi, kolmanneksiksi ja kulmiin yhdellä pikanäppäimellä",
+            "fr": "Placez vos fenêtres en moitiés, tiers et coins d'un seul raccourci",
+            "hi": "एक शॉर्टकट से विंडो को आधे, तिहाई और कोनों में लगाएँ",
+            "id": "Atur jendela menjadi setengah, sepertiga, dan sudut dengan satu pintasan",
+            "it": "Disponi le finestre a metà, in terzi e negli angoli con una scorciatoia",
+            "ja": "ショートカット一つでウィンドウを半分・3分割・四隅に整列",
+            "nl": "Zet vensters met één sneltoets op helften, derden en hoeken",
+            "pl": "Układaj okna w połówki, trzecie części i rogi jednym skrótem",
+            "pt": "Organize janelas em metades, terços e cantos com um atalho",
+            "ru": "Раскладывайте окна по половинам, третям и углам одним сочетанием клавиш",
+            "th": "จัดหน้าต่างเป็นครึ่ง สามส่วน และมุมจอด้วยปุ่มลัดเดียว",
+            "tr": "Pencereleri tek kısayolla yarım, üçte bir ve köşelere yerleştirin",
+            "vi": "Xếp cửa sổ thành nửa, một phần ba và góc màn hình bằng một phím tắt",
+            "zh-Hans": "一个快捷键将窗口排列为二分、三分或四角",
+            "zh-Hant": "一個快速鍵將視窗排列為二分、三分或四角"
           },
           "url": "https://runners.im/split"
         },
@@ -27,7 +61,24 @@
           "desc": {
             "ko": "여러 Claude 세션을 프로젝트별로 묶어 한 창에서 돌리는 터미널",
             "en": "Run many Claude sessions in one window, grouped by project",
-            "ar": "شغّل جلسات Claude متعددة في نافذة واحدة مجمّعة حسب المشروع"
+            "ar": "شغّل جلسات Claude متعددة في نافذة واحدة مجمّعة حسب المشروع",
+            "de": "Viele Claude-Sitzungen nach Projekt gruppiert in einem Fenster",
+            "es": "Ejecuta muchas sesiones de Claude en una ventana, agrupadas por proyecto",
+            "fi": "Aja monta Claude-istuntoa yhdessä ikkunassa projekteittain ryhmiteltynä",
+            "fr": "Lancez plusieurs sessions Claude dans une fenêtre, groupées par projet",
+            "hi": "कई Claude सत्र एक ही विंडो में, प्रोजेक्ट के अनुसार समूह बनाकर चलाएँ",
+            "id": "Jalankan banyak sesi Claude dalam satu jendela, dikelompokkan per proyek",
+            "it": "Esegui più sessioni di Claude in una finestra, raggruppate per progetto",
+            "ja": "複数の Claude セッションをプロジェクトごとに一つのウィンドウで実行",
+            "nl": "Draai meerdere Claude-sessies in één venster, gegroepeerd per project",
+            "pl": "Uruchamiaj wiele sesji Claude w jednym oknie, pogrupowanych według projektów",
+            "pt": "Execute várias sessões do Claude em uma janela, agrupadas por projeto",
+            "ru": "Запускайте много сессий Claude в одном окне с группировкой по проектам",
+            "th": "รัน Claude หลายเซสชันในหน้าต่างเดียว จัดกลุ่มตามโปรเจกต์",
+            "tr": "Birçok Claude oturumunu projeye göre gruplayıp tek pencerede çalıştırın",
+            "vi": "Chạy nhiều phiên Claude trong một cửa sổ, nhóm theo dự án",
+            "zh-Hans": "在一个窗口中按项目分组运行多个 Claude 会话",
+            "zh-Hant": "在一個視窗中依專案分組執行多個 Claude 工作階段"
           },
           "url": "https://github.com/RUNNERS-IM/prompt/releases/latest"
         },
@@ -38,9 +89,82 @@
           "desc": {
             "ko": "메뉴 막대에서 CPU · 메모리 · 디스크와 느려진 이유를 봅니다",
             "en": "See CPU, memory, disk and why your Mac is slow from the menu bar",
-            "ar": "اعرف المعالج والذاكرة والقرص وسبب بطء جهاز Mac من شريط القوائم"
+            "ar": "اعرف المعالج والذاكرة والقرص وسبب بطء جهاز Mac من شريط القوائم",
+            "de": "In der Menüleiste: CPU, Speicher, Festplatte und warum der Mac langsam ist",
+            "es": "Consulta CPU, memoria, disco y por qué va lento tu Mac desde la barra de menús",
+            "fi": "Näe valikkoriviltä suoritin, muisti, levy ja miksi Mac on hidas",
+            "fr": "Processeur, mémoire, disque et causes de lenteur dans la barre des menus",
+            "hi": "मेन्यू बार से CPU, मेमोरी, डिस्क और Mac के धीमा होने का कारण देखें",
+            "id": "Lihat CPU, memori, disk, dan penyebab Mac lambat dari bilah menu",
+            "it": "Controlla CPU, memoria, disco e perché il Mac è lento dalla barra dei menu",
+            "ja": "メニューバーで CPU・メモリ・ディスクと Mac が遅い原因を確認",
+            "nl": "Bekijk vanuit de menubalk CPU, geheugen, schijf en waarom je Mac traag is",
+            "pl": "Sprawdzaj z paska menu procesor, pamięć, dysk i powód spowolnienia Maca",
+            "pt": "Veja CPU, memória, disco e por que o Mac está lento na barra de menus",
+            "ru": "Процессор, память, диск и причина медленной работы Mac в строке меню",
+            "th": "ดู CPU หน่วยความจำ ดิสก์ และสาเหตุที่ Mac ช้าจากแถบเมนู",
+            "tr": "CPU, bellek, disk ve Mac'inizin neden yavaşladığını menü çubuğundan görün",
+            "vi": "Xem CPU, bộ nhớ, ổ đĩa và lý do Mac chậm ngay trên thanh menu",
+            "zh-Hans": "在菜单栏查看 CPU、内存、磁盘以及 Mac 变慢的原因",
+            "zh-Hant": "在選單列查看 CPU、記憶體、磁碟以及 Mac 變慢的原因"
           },
           "url": "https://github.com/RUNNERS-IM/monitor/releases/latest"
+        },
+        {
+          "id": "remote",
+          "name": "Remote",
+          "icon": "remote.png",
+          "desc": {
+            "ko": "다른 컴퓨터 화면을 보고 바로 조작",
+            "en": "See and click the screens of other computers",
+            "ar": "شاهد شاشات أجهزة الكمبيوتر الأخرى وتحكّم بها",
+            "de": "Bildschirme anderer Computer sehen und bedienen",
+            "es": "Ve y controla las pantallas de otros ordenadores",
+            "fi": "Näe ja hallitse muiden tietokoneiden näyttöjä",
+            "fr": "Voyez et contrôlez l'écran d'autres ordinateurs",
+            "hi": "दूसरे कंप्यूटरों की स्क्रीन देखें और चलाएँ",
+            "id": "Lihat dan kendalikan layar komputer lain",
+            "it": "Vedi e controlla gli schermi di altri computer",
+            "ja": "他のコンピュータの画面を見て操作",
+            "nl": "Bekijk en bedien de schermen van andere computers",
+            "pl": "Oglądaj i obsługuj ekrany innych komputerów",
+            "pt": "Veja e controle as telas de outros computadores",
+            "ru": "Просмотр экранов других компьютеров и управление ими",
+            "th": "ดูและควบคุมหน้าจอคอมพิวเตอร์เครื่องอื่น",
+            "tr": "Diğer bilgisayarların ekranlarını görün ve kontrol edin",
+            "vi": "Xem và điều khiển màn hình của máy tính khác",
+            "zh-Hans": "查看并操作其他电脑的屏幕",
+            "zh-Hant": "檢視並操作其他電腦的螢幕"
+          },
+          "url": "https://runners.im/remote"
+        },
+        {
+          "id": "draw",
+          "name": "Draw",
+          "icon": "draw.png",
+          "desc": {
+            "ko": "발표할 때 화면 위에 바로 그리기",
+            "en": "Draw on your screen while you present",
+            "ar": "ارسم على شاشتك أثناء العرض",
+            "de": "Beim Präsentieren direkt auf den Bildschirm zeichnen",
+            "es": "Dibuja sobre la pantalla mientras presentas",
+            "fi": "Piirrä näytölle esityksen aikana",
+            "fr": "Dessinez sur l'écran pendant vos présentations",
+            "hi": "प्रस्तुति देते समय स्क्रीन पर ही चित्र बनाएँ",
+            "id": "Menggambar di layar saat presentasi",
+            "it": "Disegna sullo schermo mentre presenti",
+            "ja": "発表中に画面へ直接描き込む",
+            "nl": "Teken op je scherm terwijl je presenteert",
+            "pl": "Rysuj na ekranie podczas prezentacji",
+            "pt": "Desenhe na tela enquanto apresenta",
+            "ru": "Рисуйте прямо на экране во время презентации",
+            "th": "วาดบนหน้าจอได้ทันทีขณะนำเสนอ",
+            "tr": "Sunum yaparken ekranın üzerine çizin",
+            "vi": "Vẽ ngay trên màn hình khi thuyết trình",
+            "zh-Hans": "演示时直接在屏幕上绘画",
+            "zh-Hant": "簡報時直接在螢幕上繪圖"
+          },
+          "url": "https://runners.im/draw"
         }
       ]
     },
@@ -49,7 +173,24 @@
       "title": {
         "ko": "RUNNERS의 서비스",
         "en": "Services from RUNNERS",
-        "ar": "خدمات RUNNERS"
+        "ar": "خدمات RUNNERS",
+        "de": "Dienste von RUNNERS",
+        "es": "Servicios de RUNNERS",
+        "fi": "RUNNERSin palvelut",
+        "fr": "Services de RUNNERS",
+        "hi": "RUNNERS की सेवाएँ",
+        "id": "Layanan dari RUNNERS",
+        "it": "Servizi di RUNNERS",
+        "ja": "RUNNERS のサービス",
+        "nl": "Diensten van RUNNERS",
+        "pl": "Usługi RUNNERS",
+        "pt": "Serviços da RUNNERS",
+        "ru": "Сервисы RUNNERS",
+        "th": "บริการจาก RUNNERS",
+        "tr": "RUNNERS hizmetleri",
+        "vi": "Dịch vụ của RUNNERS",
+        "zh-Hans": "RUNNERS 的服务",
+        "zh-Hant": "RUNNERS 的服務"
       },
       "items": [
         {
@@ -60,7 +201,24 @@
           "desc": {
             "ko": "선물·맛집·데이트 코스를 AI가 추천하는 기념일 플래너",
             "en": "AI planner for gifts, restaurants and date ideas",
-            "ar": "مخطط بالذكاء الاصطناعي للهدايا والمطاعم وأفكار المواعيد"
+            "ar": "مخطط بالذكاء الاصطناعي للهدايا والمطاعم وأفكار المواعيد",
+            "de": "KI-Planer für Geschenke, Restaurants und Date-Ideen",
+            "es": "Planificador con IA de regalos, restaurantes e ideas para citas",
+            "fi": "Tekoälysuunnittelija lahjoihin, ravintoloihin ja treffi-ideoihin",
+            "fr": "Planificateur IA pour les cadeaux, les restaurants et les idées de sorties",
+            "hi": "उपहार, रेस्तराँ और डेट के आइडिया के लिए AI प्लानर",
+            "id": "Perencana AI untuk hadiah, restoran, dan ide kencan",
+            "it": "Pianificatore IA per regali, ristoranti e idee per appuntamenti",
+            "ja": "プレゼント・レストラン・デートプランを AI が提案するプランナー",
+            "nl": "AI-planner voor cadeaus, restaurants en date-ideeën",
+            "pl": "Planer AI do prezentów, restauracji i pomysłów na randki",
+            "pt": "Planejador com IA para presentes, restaurantes e ideias de encontros",
+            "ru": "ИИ-планировщик подарков, ресторанов и идей для свиданий",
+            "th": "ผู้ช่วย AI วางแผนของขวัญ ร้านอาหาร และไอเดียเดต",
+            "tr": "Hediye, restoran ve buluşma fikirleri için yapay zekâ planlayıcısı",
+            "vi": "Trợ lý AI lên kế hoạch quà tặng, nhà hàng và ý tưởng hẹn hò",
+            "zh-Hans": "AI 帮你规划礼物、餐厅和约会安排",
+            "zh-Hant": "AI 幫你規劃禮物、餐廳和約會行程"
           },
           "url": "https://sense.im"
         },
@@ -72,7 +230,24 @@
           "desc": {
             "ko": "체크리스트·예산·청첩장·하객을 한곳에서, AI 결혼 플래너",
             "en": "All-in-one AI wedding planner: checklist, budget, invitations, guests",
-            "ar": "مخطط زفاف شامل بالذكاء الاصطناعي: المهام والميزانية والدعوات والضيوف"
+            "ar": "مخطط زفاف شامل بالذكاء الاصطناعي: المهام والميزانية والدعوات والضيوف",
+            "de": "KI-Hochzeitsplaner für alles: Checkliste, Budget, Einladungen, Gäste",
+            "es": "Planificador de bodas con IA: lista de tareas, presupuesto, invitaciones e invitados",
+            "fi": "Kaikki yhdessä -hääsuunnittelija tekoälyllä: tehtävälista, budjetti, kutsut, vieraat",
+            "fr": "Planificateur de mariage IA tout-en-un : liste, budget, invitations, invités",
+            "hi": "ऑल-इन-वन AI शादी प्लानर: चेकलिस्ट, बजट, निमंत्रण, मेहमान",
+            "id": "Perencana pernikahan AI serba ada: daftar tugas, anggaran, undangan, tamu",
+            "it": "Pianificatore di matrimoni IA: checklist, budget, inviti, ospiti",
+            "ja": "チェックリスト・予算・招待状・ゲストをまとめて管理する AI ウェディングプランナー",
+            "nl": "Alles-in-één AI-trouwplanner: checklist, budget, uitnodigingen, gasten",
+            "pl": "Planer ślubny AI: lista zadań, budżet, zaproszenia, goście",
+            "pt": "Planejador de casamento com IA: checklist, orçamento, convites e convidados",
+            "ru": "ИИ-планировщик свадьбы: список дел, бюджет, приглашения, гости",
+            "th": "ผู้ช่วย AI วางแผนงานแต่งครบวงจร: เช็กลิสต์ งบประมาณ การ์ดเชิญ แขก",
+            "tr": "Hepsi bir arada yapay zekâ düğün planlayıcısı: liste, bütçe, davetiyeler, misafirler",
+            "vi": "Trợ lý AI lo trọn đám cưới: danh sách việc, ngân sách, thiệp mời, khách mời",
+            "zh-Hans": "一站式 AI 婚礼规划：清单、预算、请柬、宾客",
+            "zh-Hant": "一站式 AI 婚禮規劃：清單、預算、喜帖、賓客"
           },
           "url": "https://pudding.im"
         }

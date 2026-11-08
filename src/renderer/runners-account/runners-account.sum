@@ -1,4 +1,4 @@
-# runners-app-kit v0.1.13 7f2f6c3. Do not edit these files here; change runners-app-kit and copy again.
+# runners-app-kit v0.1.15 74d26f1. Do not edit these files here; change runners-app-kit and copy again.
 2f42b0bf0b2a86801d54fe8ca4ebbd0d0e4b4f6814e76ac049a4fdc2a7d7d3eb  runners-account.tsx
 6703cc8b719e047f06a67360868c0f045fe7ae1e4846751ca95beaaa18afa491  runners-account-text.ts
 342937adf537ad32f1515ccb2beda5134d28b9966c63ba9bba2682c0fa747619  runners-account.css
@@ -11,11 +11,13 @@ f7779ea6ed3b337af39a74ab65782cb320fe7317ebaa9d68e5fa53c224bb8083  runners-window
 6be43047778afc6095a96df0b911e010635c2863beabc4a328f7712ff74e4bc1  runners-update.css
 cc20f8b3c83209da3d382a2cbcdad5cee0d4d10898dd450787b6363ebf9d747c  runners-apps.tsx
 c3bce166616fc0ce9986866fe6d746b71625ebb2eeea56e47459ee66d5ec50c2  runners-apps.css
-bfae85df5bcc2af023eeddd4bc5e41cab594af0c983a6acf7ff4f991694f61f2  runners-apps-data.ts
-3eb79d51453c9799e750c50658ddfa517641159bb1730f92cbd2fa8ecfdf4c56  runners-apps.json
+3dce97b062dcd2c2e751cd8fb76ce50db5cb6d844f3e48430baba8017c3138c8  runners-apps-data.ts
+44246206605f82a034548a6d3216d539d70393287dee3775f6b7a025f1f8548e  runners-apps.json
+22e68f9b0d0a799d228c5324dd5f8bf6a74e53bee059a7c8435d2c7055222d39  assets/runners-apps/draw.png
 1aad56459215494cf75a9a5c438a9c1cb1b25ea4d7fed81f110fba03de39667f  assets/runners-apps/monitor.png
 f282cbf925f08e894608798556aaaca1ecf414d5db0d8795bff5f51fe6962845  assets/runners-apps/prompt.png
 7bcc589e2485ba0a379b53eb873da88a3bc12bfcfc92bb803e8bdb51fe023a77  assets/runners-apps/pudding.png
+8d5fbd7c850cbc83a5e6195ff561d5d8808abe466cba22964906bfc00bf81eb9  assets/runners-apps/remote.png
 3b8dcdcb31babdb6c42377131e51efb64dd7e985b069b4c3a0e210ce38792851  assets/runners-apps/sense.png
 923e837831588a86340b034f5254549e26f71170204c4b9350b813c485900264  assets/runners-apps/split.png
 a5181c7bdcac658c9d414b6d343b37e528407165f151d1257844eb93b73312cf  check.mjs
