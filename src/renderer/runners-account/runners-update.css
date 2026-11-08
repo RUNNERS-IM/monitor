@@ -76,6 +76,21 @@
   margin-top: 4px;
 }
 
+/* Why: in right-to-left pages Chromium draws a wide, always-visible scroll bar on the left instead of the thin macOS one.
+   The scrolling box stays left-to-right, which keeps the thin bar. English notes carry dir="ltr" and stay left-to-right inside. */
+:root[dir='rtl'] .update-list {
+  direction: ltr;
+}
+
+:root[dir='rtl'] .update-list:not([dir='ltr']) > * {
+  direction: rtl;
+}
+
+/* Why: the bullets and the scroll bar are on the same side here, so the bullets get the wider padding and clear the bar. */
+:root[dir='rtl'] .update-list:not([dir='ltr']) {
+  padding: 0 30px 0 14px;
+}
+
 .update-buttons {
   display: flex;
   align-self: stretch;
