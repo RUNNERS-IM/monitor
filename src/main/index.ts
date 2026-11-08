@@ -10,7 +10,6 @@ import {
   Notification,
   screen,
   shell,
-  systemPreferences,
   type Tray
 } from 'electron'
 import { execFileSync } from 'node:child_process'
@@ -517,14 +516,6 @@ async function emptyKind(kind: string): Promise<Emptied> {
   return done
 }
 
-function accentColor(): string | null {
-  if (process.platform !== 'darwin' && process.platform !== 'win32') {
-    return null
-  }
-  const color = systemPreferences.getAccentColor()
-  return color ? `#${color.slice(0, 6)}` : null
-}
-
 /** What this computer tells the account's other Monitors: names and numbers only. */
 function usage(from: Snapshot | null = latest): Usage | null {
   if (!from) {
@@ -691,7 +682,6 @@ function registerIpc(): void {
   )
   ipcMain.handle('monitor:translucent', () => TRANSLUCENT)
   ipcMain.handle('monitor:version', () => app.getVersion())
-  ipcMain.handle('monitor:accentColor', () => accentColor())
   ipcMain.handle('monitor:menuState', () => menuState())
   ipcMain.handle('monitor:command', (_event, command: Command) => {
     run(command)

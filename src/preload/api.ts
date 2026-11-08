@@ -150,8 +150,6 @@ export type MonitorApi = {
   version: () => Promise<string>
   /** Opens an https link in the default browser. */
   openExternal: (url: string) => Promise<void>
-  /** The system accent colour as #rrggbb, or null where the OS has none. */
-  accentColor: () => Promise<string | null>
   menuState: () => Promise<MenuState>
   /** Runs a menu line; resolves to the menu state after it. */
   command: (command: MenuCommand) => Promise<MenuState>

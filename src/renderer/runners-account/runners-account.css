@@ -1,3 +1,5 @@
+@import './runners-font.css';
+
 /*
  * The RUNNERS sign-in sheet and account badge (runners-account.tsx), the same in all four desktop apps. Copied
  * unchanged with the rest of this folder. Every name starts with `ra-` so it cannot clash with an app's own classes.
@@ -10,7 +12,8 @@
   --ra-line: var(--rw-separator, rgba(0, 0, 0, 0.12));
   --ra-field: #ffffff;
   --ra-track: rgba(0, 0, 0, 0.08);
-  --ra-accent: var(--rw-accent, #007aff);
+  --ra-accent: var(--rw-primary, #0a0a0a);
+  --ra-on-accent: var(--rw-on-primary, #ffffff);
   --ra-surface: #ffffff;
   --ra-bad: #ff3b30;
   --ra-mark-bg: #000000;
@@ -24,7 +27,8 @@
     --ra-line: var(--rw-separator, rgba(255, 255, 255, 0.14));
     --ra-field: rgba(255, 255, 255, 0.05);
     --ra-track: rgba(255, 255, 255, 0.12);
-    --ra-accent: var(--rw-accent, #0a84ff);
+    --ra-accent: var(--rw-primary, #ffffff);
+    --ra-on-accent: var(--rw-on-primary, #0a0a0a);
     --ra-surface: #2c2c2e;
     --ra-bad: #ff453a;
     --ra-mark-bg: #ffffff;
@@ -61,7 +65,7 @@
   display: inline-grid;
   place-items: center;
   background: var(--ra-accent);
-  color: #ffffff;
+  color: var(--ra-on-accent);
   font: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -148,7 +152,7 @@
 
 .ra-menu-item:hover {
   background: var(--ra-accent);
-  color: #ffffff;
+  color: var(--ra-on-accent);
 }
 
 /* The sheet over the window. */
@@ -213,7 +217,7 @@
   border: 0;
   border-radius: 6px;
   background: var(--ra-accent);
-  color: #ffffff;
+  color: var(--ra-on-accent);
   font: inherit;
   font-weight: 600;
   cursor: default;

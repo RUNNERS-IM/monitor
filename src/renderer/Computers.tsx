@@ -143,6 +143,10 @@ type Action = {
   quitKind?: 'app' | 'process'
 }
 
+/** 앱을 끄거나 폴더를 비우는 일만 빨간 단추로 묻는다. 러너 멈춤 · 재개는 다시 되돌릴 수 있다. */
+const isDangerous = (action: Action): boolean =>
+  action.command === 'app.quit' || action.command === 'cleanup.empty'
+
 const quitAction = (name: string, kind: 'app' | 'process', remote: boolean): Action => ({
   key: `quit:${name}`,
   command: 'app.quit',
@@ -288,7 +292,11 @@ function ConfirmSheet({
           <button type="button" className="rw-button c-confirm-cancel" autoFocus onClick={onCancel}>
             {t('empty.cancel')}
           </button>
-          <button type="button" className="rw-button default c-confirm-go" onClick={onGo}>
+          <button
+            type="button"
+            className={`rw-button c-confirm-go ${isDangerous(action) ? 'danger' : 'default'}`}
+            onClick={onGo}
+          >
             {action.label}
           </button>
         </div>

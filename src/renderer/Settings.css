@@ -1,6 +1,6 @@
 /* The Settings window: frame, toolbar tabs, cards and switches as in Split's Settings (app/src/renderer/settings/settings.css). */
 :root {
-  --accent: var(--rw-accent, #007aff);
+  --accent: var(--rw-primary);
   --label: var(--rw-text);
   --secondary: var(--rw-text-secondary);
   --card: var(--rw-box-bg);
@@ -153,6 +153,7 @@ html[data-window='settings'] body { background: var(--rw-window-bg); overflow: h
 }
 .switch.on .switch-knob {
   transform: translateX(10px);
+  background: var(--rw-on-primary);
 }
 .s-content { display: flex; flex-direction: column; gap: var(--rw-box-gap); width: 100%; max-width: 600px; margin: 0 auto; padding: var(--rw-pad); box-sizing: border-box; }
 .settings-body { flex: 1; min-height: 0; overflow-y: auto; }

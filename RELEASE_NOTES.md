@@ -8,6 +8,7 @@
 - 보안 고침이 들어간 Electron 43.8.6 으로 올렸습니다.
 - 계정 · 연결 · 업데이트 · 정보 화면을 RUNNERS 앱 공통 부품으로 바꿨습니다.
 - 인터넷이 끊겼다 돌아올 때 다시 연결하는 동작이 다른 RUNNERS 앱과 같아졌습니다.
+- 화면을 RUNNERS 공통 디자인으로 바꿨습니다. 검정과 흰색을 쓰고 글꼴은 Pretendard 이며, 빨강은 지우거나 끄는 단추에만 씁니다. 설정 · 업데이트 창의 바탕도 흰색 또는 검정 단색입니다.
 - 맨 앞 앱을 읽는 코드를 더 안전한 방식으로 바꿨습니다.
 
 ## English
@@ -20,4 +21,5 @@
 - Moved to Electron 43.8.6, which carries security fixes.
 - Account, connection, updates and About now use the parts shared by RUNNERS apps.
 - Reconnecting after the internet comes back now works the same as in other RUNNERS apps.
+- The look now follows the RUNNERS design: black and white, the Pretendard font, and red only on buttons that delete or quit something. Settings and the update window have a plain white or black background.
 - The code that reads the app in front is now written in a safer way.

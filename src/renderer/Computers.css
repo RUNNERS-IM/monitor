@@ -1,11 +1,8 @@
 /* The Computers tab (and its own page for screenshots): the shared window values (runners-window.css, design standard A). Cards are the standard
-   boxes; the chosen one gets the accent ring. See-through over the macOS blur, solid where the OS has none (Linux). */
+   boxes; the chosen one gets the primary ring. */
 :root[data-window='computers'] body {
   margin: 0;
   background: var(--rw-window-bg);
-}
-:root[data-window='computers'][data-translucent='true'] body {
-  background: transparent;
 }
 .computers {
   box-sizing: border-box;
@@ -66,7 +63,7 @@
   cursor: pointer;
 }
 .c-card.chosen {
-  box-shadow: 0 0 0 2px var(--rw-accent);
+  box-shadow: 0 0 0 2px var(--rw-primary);
 }
 .c-card.off .c-name {
   color: var(--rw-text-secondary);
@@ -179,8 +176,8 @@
   padding: 1px 8px;
   border: none;
   border-radius: 5px;
-  background: var(--rw-accent);
-  color: #fff;
+  background: var(--rw-primary);
+  color: var(--rw-on-primary);
   font: inherit;
   font-size: var(--rw-font-small);
   font-weight: 600;
@@ -226,8 +223,8 @@
   align-self: flex-start;
   padding: 1px 8px;
   border-radius: 999px;
-  background: var(--rw-accent);
-  color: #fff;
+  background: var(--rw-primary);
+  color: var(--rw-on-primary);
   font-size: var(--rw-font-small);
   font-weight: 600;
 }

@@ -1,7 +1,7 @@
-/* RUNNERS app cards. Every size and colour comes from runners-window.css (design standard A), so the cards match
-   the boxes of the other windows and follow dark and light mode and the OS accent colour. */
+/* RUNNERS app cards. Every size and colour comes from runners-window.css, so the cards match
+   the boxes of the other windows and follow dark and light mode. */
 .runners-apps {
-  --runners-apps-accent: var(--rw-accent);
+  --runners-apps-accent: var(--rw-primary);
   display: flex;
   flex-direction: column;
   gap: var(--rw-box-gap);
@@ -57,6 +57,8 @@
   height: 32px;
   border-radius: 7px;
   object-fit: contain;
+  /* Why: the white app icons would disappear into the light box without a thin edge. */
+  box-shadow: 0 0 0 var(--rw-border) var(--rw-separator);
 }
 
 .runners-apps-letter {

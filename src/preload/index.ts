@@ -34,7 +34,6 @@ const api: MonitorApi = {
   fitHeight: (height) => ipcRenderer.send('monitor:fitHeight', height),
   version: () => ipcRenderer.invoke('monitor:version'),
   openExternal: (url) => ipcRenderer.invoke('monitor:openExternal', url),
-  accentColor: () => ipcRenderer.invoke('monitor:accentColor'),
   menuState: () => ipcRenderer.invoke('monitor:menuState'),
   command: (command) => ipcRenderer.invoke('monitor:command', command),
   closeWindow: () => ipcRenderer.send('monitor:closeWindow'),

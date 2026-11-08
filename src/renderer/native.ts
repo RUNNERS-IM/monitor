@@ -91,21 +91,12 @@ export const onSignIn = (listener: () => void) => api().onSignIn(listener)
 export const signOut = () => api().signOut()
 export const reconnect = () => api().reconnect()
 
-/** Marks the page see-through where the OS blurs behind the window, and takes the system accent colour. */
+/** 운영체제가 창 뒤를 흐리게 그리는 곳에서 메뉴 막대 패널만 투명하게 둔다. */
 export function applyWindowLook(): void {
   void api()
     .translucent()
     .then((on) => {
-      document.documentElement.dataset.translucent = String(on)
-    })
-  void api()
-    .accentColor()
-    .then((color) => {
-      if (!color) {
-        return
-      }
-      // Why: the menu look (runners-menu.css) and the window look (runners-window.css) both follow the OS accent.
-      document.documentElement.style.setProperty('--rm-accent', color)
-      document.documentElement.style.setProperty('--rw-accent', color)
+      // Why: 설정 · 업데이트 창은 디자인 시스템의 단색 바탕을 쓰므로 kit 의 투명 규칙이 걸리면 안 된다.
+      document.documentElement.dataset.translucent = String(on && page === 'panel')
     })
 }

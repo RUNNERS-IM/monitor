@@ -1,12 +1,16 @@
 /* Shared by every window. Colours and sizes come from runners-account/runners-menu.css (panel, copied from runners-app-kit/desktop) and runners-window.css (About, update). */
 :root {
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui,
-    sans-serif;
+  font-family: var(--rw-font-family);
   /* Why: Korean otherwise breaks inside a word ("나아집 / 니다"); keep-all breaks at spaces and pretty avoids a lonely last word. */
   word-break: keep-all;
   overflow-wrap: anywhere;
   text-wrap: pretty;
+}
+
+/* Why: 브라우저는 단추 · 입력칸에 페이지 글꼴을 물려주지 않고 시스템 글꼴을 쓴다. */
+button,
+input {
+  font-family: inherit;
 }
 
 html,
@@ -203,9 +207,9 @@ body,
   padding: 1px 8px;
   border: none;
   border-radius: 5px;
-  /* Why: blue text on a pale blue fill was hard to read over the blur, so buttons are filled with white text. */
-  background: var(--rm-accent);
-  color: #fff;
+  /* Why: 흐린 바탕 위에서 읽히도록 채운 단추로 둔다. 어두운 화면에서는 바탕이 흰색이라 글자도 함께 뒤집힌다. */
+  background: var(--rm-primary);
+  color: var(--rm-on-primary);
   font: inherit;
   font-size: var(--rm-font-small);
   font-weight: 600;

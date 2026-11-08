@@ -1,0 +1,7 @@
+/* RUNNERS 글꼴. 앱 안에 묶어 인터넷 없이도 같은 글자로 보인다. 라이선스는 scripts/pretendard-license.txt 에 있다. */
+@font-face {
+  font-family: 'Pretendard';
+  src: url('./assets/fonts/PretendardVariable.woff2') format('woff2-variations');
+  font-weight: 45 920;
+  font-display: block;
+}

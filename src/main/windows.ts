@@ -40,6 +40,11 @@ function blur(): Electron.BrowserWindowConstructorOptions {
   return { backgroundColor: nativeTheme.shouldUseDarkColors ? '#2a2a2a' : '#ececec' }
 }
 
+/** 설정 · 업데이트 창의 바탕색. runners-window.css 의 --rw-window-bg 와 같은 값이라 페이지가 그려지기 전에도 색이 튀지 않는다. */
+function solidWindow(): string {
+  return nativeTheme.shouldUseDarkColors ? '#0a0a0a' : '#ffffff'
+}
+
 export function createPanel(): BrowserWindow {
   const panel = new BrowserWindow({
     width: PANEL_WIDTH,
@@ -119,9 +124,7 @@ export function hiddenPage(
         ? nativeTheme.shouldUseDarkColors
           ? '#2a2a2a'
           : '#ececec'
-        : nativeTheme.shouldUseDarkColors
-          ? '#1e1e1e'
-          : '#ececec',
+        : solidWindow(),
     webPreferences: { preload, sandbox: true, contextIsolation: true, backgroundThrottling: false }
   })
   const url = process.env.ELECTRON_RENDERER_URL
@@ -157,7 +160,7 @@ export function showSettings(tab: SettingsTab | undefined, onOpen: (open: boolea
     ...(process.platform === 'darwin'
       ? { titleBarStyle: 'hidden' as const, trafficLightPosition: { x: 12, y: 10 } }
       : {}),
-    backgroundColor: nativeTheme.shouldUseDarkColors ? '#1e1e1e' : '#ececec',
+    backgroundColor: solidWindow(),
     autoHideMenuBar: true,
     webPreferences: { preload, sandbox: true, contextIsolation: true }
   })
@@ -199,7 +202,7 @@ const updateWindow = createUpdateWindow({
       roundedCorners: true,
       alwaysOnTop: true,
       title: 'Monitor',
-      ...blur(),
+      backgroundColor: solidWindow(),
       webPreferences: { preload, sandbox: true, contextIsolation: true }
     })
     window.on('page-title-updated', (event) => event.preventDefault())
