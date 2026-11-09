@@ -24,7 +24,6 @@ import { askLoop, askNow, demoPeers, peerList, setFast, topApps, type Usage } fr
 import * as relay from './relay'
 import { tailnet } from './tailnet'
 import { releaseNoteLines } from './runners/release-notes'
-import * as usageStats from './usage'
 import { readSettings, writeSettings } from './settings'
 import { noteCpu, noteFrontApp, suggestions, type Suggestion } from './suggest'
 import { createTray, showReading, type Level } from './tray'
@@ -290,7 +289,6 @@ function togglePanel(): void {
   panel.setFocusable(true)
   placeUnderTray(panel, tray)
   shownAt = Date.now()
-  usageStats.count('panel.open')
   // Why: the panel opens with every row folded (shared decision 2026-11-02 "[MONITOR] 패널 나누기" 1A), so it never
   // reaches the bottom of the screen on its own; the page keeps its state between opens, so it is told to fold.
   panel.webContents.send('monitor:shown')
@@ -313,7 +311,6 @@ function menuState(): MenuState {
 
 function openSettings(tab?: SettingsTab): void {
   hidePanel()
-  usageStats.count('settings.open')
   showSettings(tab, setFast)
 }
 
@@ -637,19 +634,15 @@ function registerIpc(): void {
     measureNow?.()
   })
   ipcMain.handle('monitor:quitApp', (_event, name: string) => {
-    usageStats.count('app.quit')
     return quitApp(String(name))
   })
   ipcMain.handle('monitor:emptyCleanup', (_event, kind: string) => {
-    usageStats.count('cleanup.empty')
     return emptyCleanup(String(kind))
   })
   ipcMain.handle('monitor:pauseRunner', async (_event, name: string) => {
-    usageStats.count('runner.pause')
     await pauseRunner(String(name))
   })
   ipcMain.handle('monitor:resumeRunner', (_event, name: string) => {
-    usageStats.count('runner.resume')
     return resumeRunner(String(name))
   })
   // Why: demo names follow the page's language (`?lang=` in screenshot runs), not the app's.
@@ -672,7 +665,6 @@ function registerIpc(): void {
       if (process.env.MONITOR_CAPTURE && !String(deviceId).startsWith('fake-')) {
         throw new Error('capture runs act only on test computers')
       }
-      usageStats.count(command)
       const given = (args ?? {}) as Record<string, unknown>
       const result =
         deviceId === null
@@ -696,13 +688,6 @@ function registerIpc(): void {
   )
   ipcMain.handle('monitor:translucent', () => TRANSLUCENT)
   ipcMain.handle('monitor:version', () => app.getVersion())
-  ipcMain.handle('monitor:usageConsent', () => ({
-    ask: usageStats.shouldAsk(),
-    granted: usageStats.granted()
-  }))
-  ipcMain.handle('monitor:setUsageConsent', (_event, granted: unknown) =>
-    usageStats.setConsent(granted === true)
-  )
   ipcMain.handle('monitor:menuState', () => menuState())
   ipcMain.handle('monitor:command', (_event, command: Command) => {
     run(command)
@@ -1095,8 +1080,7 @@ function start(): void {
   })
   updateTray()
   // Why: with the icon hidden nothing else on screen leads to Monitor, so launching it shows Settings (as Split does).
-  // Why: 사용 통계를 아직 묻지 않았으면 동의 창이 뜨는 설정을 연다. 패널은 너무 좁고 초점을 잃으면 닫힌다.
-  if ((!tray || usageStats.shouldAsk()) && !(DEV && process.env.MONITOR_CAPTURE)) {
+  if (!tray && !(DEV && process.env.MONITOR_CAPTURE)) {
     openSettings()
   }
   nativeTheme.on('updated', () => {
@@ -1119,7 +1103,6 @@ function start(): void {
       askNow()
     }
   })
-  usageStats.startUsage()
   startUpdates()
   if (DEV) {
     debugHooks()
@@ -1130,7 +1113,6 @@ function start(): void {
 if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {
-  app.on('before-quit', usageStats.save)
   app.on('second-instance', openedAgain)
   // Why: macOS sends this, not second-instance, when Monitor is opened again from Finder or Spotlight.
   app.on('activate', openedAgain)
