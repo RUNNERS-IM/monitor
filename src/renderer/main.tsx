@@ -10,7 +10,13 @@ import { applyWindowLook, page } from './native'
 document.documentElement.dataset.window = page
 applyWindowLook()
 const Page =
-  page === 'settings' ? Settings : page === 'update' ? Update : page === 'computers' ? Computers : App
+  page === 'settings'
+    ? Settings
+    : page === 'update'
+      ? Update
+      : page === 'computers'
+        ? Computers
+        : App
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

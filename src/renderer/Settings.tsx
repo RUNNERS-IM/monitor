@@ -43,7 +43,15 @@ function Switch({ label, on, onChange }: { label: string; on: boolean; onChange:
   )
 }
 
-function Row({ title, hint, children }: { title: string; hint?: string; children?: React.ReactNode }) {
+function Row({
+  title,
+  hint,
+  children
+}: {
+  title: string
+  hint?: string
+  children?: React.ReactNode
+}) {
   return (
     <div className="s-row">
       <div className="s-row-line">
@@ -61,7 +69,10 @@ function Row({ title, hint, children }: { title: string; hint?: string; children
 /** Split's question before the icon goes: hiding it leaves only the Applications folder as a way back. */
 function HideAsk({ onCancel, onHide }: { onCancel: () => void; onHide: () => void }) {
   return (
-    <div className="ra-cover" onMouseDown={(event) => event.target === event.currentTarget && onCancel()}>
+    <div
+      className="ra-cover"
+      onMouseDown={(event) => event.target === event.currentTarget && onCancel()}
+    >
       <div className="ra-sheet s-ask" role="alertdialog" aria-label={t('general.hideAsk')}>
         <img className="s-ask-icon" src={appIcon} alt="" draggable={false} />
         <div className="ra-title">{t('general.hideAsk')}</div>
@@ -108,11 +119,19 @@ function General() {
         <h2 className="s-section-title">{t('general.section')}</h2>
         <div className="s-card">
           <Row title={t('menu.openAtLogin')} hint={t('general.openAtLoginHint')}>
-            <Switch label={t('menu.openAtLogin')} on={!!state?.openAtLogin} onChange={() => run('login')} />
+            <Switch
+              label={t('menu.openAtLogin')}
+              on={!!state?.openAtLogin}
+              onChange={() => run('login')}
+            />
           </Row>
           <div className="s-card-separator" />
           <Row title={t('menu.autoUpdate')} hint={t('general.autoUpdateHint')}>
-            <Switch label={t('menu.autoUpdate')} on={!!state?.autoUpdate} onChange={() => run('autoUpdate')} />
+            <Switch
+              label={t('menu.autoUpdate')}
+              on={!!state?.autoUpdate}
+              onChange={() => run('autoUpdate')}
+            />
           </Row>
           {state?.canHideIcon && (
             <>
@@ -183,12 +202,18 @@ function Account() {
                 <div className="s-row-text">
                   <span className="s-row-title">{email}</span>
                   <span className="s-row-hint">
-                    {t(`account.status.${state.status === 'signedOut' ? 'connecting' : state.status}`)}
+                    {t(
+                      `account.status.${state.status === 'signedOut' ? 'connecting' : state.status}`
+                    )}
                   </span>
                 </div>
                 <div className="s-row-space" />
                 {state.status === 'elsewhere' && (
-                  <button type="button" className="rw-button" onClick={() => void native.reconnect()}>
+                  <button
+                    type="button"
+                    className="rw-button"
+                    onClick={() => void native.reconnect()}
+                  >
                     {t('account.reconnect')}
                   </button>
                 )}
@@ -204,14 +229,20 @@ function Account() {
           ) : (
             state && (
               <Row title={t('settings.signedOut')} hint={t('settings.signedOutHint')}>
-                <button type="button" className="rw-button default" onClick={() => setSigningIn(true)}>
+                <button
+                  type="button"
+                  className="rw-button default"
+                  onClick={() => setSigningIn(true)}
+                >
                   {t('account.signIn')}
                 </button>
               </Row>
             )
           )}
         </div>
-        {state?.status === 'elsewhere' && <p className="s-section-hint">{t('account.elsewhereNote')}</p>}
+        {state?.status === 'elsewhere' && (
+          <p className="s-section-hint">{t('account.elsewhereNote')}</p>
+        )}
         <p className="s-section-hint">{accountText(locale, 'sheetIntro')}</p>
       </section>
       {signingIn && <SignIn onSignedIn={signedIn} onClose={closeSignIn} />}

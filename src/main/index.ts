@@ -795,7 +795,10 @@ function debugHooks(): void {
   // Why: the tray icon needs a moment before it reports where it sits.
   // Why: `settings:general` (or another tab) opens Settings on that tab, `settings` on the first one.
   if (which?.startsWith('settings')) {
-    setTimeout(() => openSettings((which.split(':')[1] as SettingsTab | undefined) || undefined), 1500)
+    setTimeout(
+      () => openSettings((which.split(':')[1] as SettingsTab | undefined) || undefined),
+      1500
+    )
   }
   if (which === 'panel') {
     setTimeout(showWithoutFocus, 1500)

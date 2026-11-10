@@ -58,10 +58,7 @@ function status(snap: Snapshot & { level?: 'fine' | 'warn' | 'bad' }): {
   return { key: 'menu.status.warn', dot: 'dot-yellow' }
 }
 
-export function buildMenu(
-  snap: Snapshot | null,
-  run: (command: Command) => void
-): Menu {
+export function buildMenu(snap: Snapshot | null, run: (command: Command) => void): Menu {
   const percent = (value: number) => `${Math.round(value)}%`
   const dash = '–'
   // Why: the tray picture is three bars without labels, so the first line names them with their values.

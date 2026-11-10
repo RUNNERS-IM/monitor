@@ -120,11 +120,7 @@ export function hiddenPage(
     show: false,
     frame: page === 'computers',
     backgroundColor:
-      page === 'panel'
-        ? nativeTheme.shouldUseDarkColors
-          ? '#2a2a2a'
-          : '#ececec'
-        : solidWindow(),
+      page === 'panel' ? (nativeTheme.shouldUseDarkColors ? '#2a2a2a' : '#ececec') : solidWindow(),
     webPreferences: { preload, sandbox: true, contextIsolation: true, backgroundThrottling: false }
   })
   const url = process.env.ELECTRON_RENDERER_URL
