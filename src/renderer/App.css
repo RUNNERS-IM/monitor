@@ -26,6 +26,15 @@ body,
 :root[data-window='panel'] {
   color: var(--rm-text);
   font-size: var(--rm-font);
+  /* Why: 작은 회색 글자는 0.5 면 고른 줄 바탕에서 대비가 4.5 아래라 kit 다음 판(design/kit-next 6468972)과 같이 진하게 한다.
+     kit 사본 runners-menu.css 는 원본과 같아야 하므로 여기서 덮고, kit 를 그 판으로 올리면 밝은 · 어두운 두 값을 지운다. */
+  --rm-text-secondary: rgba(0, 0, 0, 0.6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-window='panel'] {
+    --rm-text-secondary: rgba(255, 255, 255, 0.55);
+  }
 }
 
 .panel {
