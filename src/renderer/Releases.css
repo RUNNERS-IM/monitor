@@ -1,0 +1,65 @@
+.rel {
+  padding: 18px 20px;
+  overflow-y: auto;
+  font-size: 12px;
+  color: var(--label);
+}
+.rel-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.rel-head b {
+  font-size: 13px;
+}
+.rel-head span,
+.rel-note,
+.rel-mute {
+  color: var(--secondary);
+}
+.rel-card {
+  overflow: hidden;
+}
+.rel table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.rel th,
+.rel td {
+  padding: 8px 10px;
+  border-top: var(--rw-border) solid var(--separator);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+.rel thead th {
+  border-top: none;
+  font-size: 11px;
+  color: var(--secondary);
+}
+.rel th:first-child {
+  width: 128px;
+}
+.rel-sum th,
+.rel-sum td {
+  font-weight: 600;
+}
+.rel-sub {
+  font-size: 11px;
+  line-height: 1.35;
+}
+.rel-warn {
+  color: #c2410c;
+  font-weight: 600;
+}
+.rel-note {
+  margin: 10px 2px 0;
+}
+@media (prefers-color-scheme: dark) {
+  .rel-warn {
+    color: #fb923c;
+  }
+}

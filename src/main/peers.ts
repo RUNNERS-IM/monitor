@@ -42,6 +42,8 @@ export type Usage = {
   runners?: { name: string; busy: boolean; off: boolean; pausedUntil: number | null }[]
   /** What that computer's own panel suggests now, without folder paths. */
   suggestions?: unknown[]
+  /** 앱 이름 → 깔린 판. 옛 Monitor 와 Mac 이 아닌 컴퓨터는 보내지 않는다. */
+  appVersions?: Record<string, string | null>
 }
 
 /** One other computer as the panel and the window show it. */
@@ -148,6 +150,17 @@ export function topApps<T extends { name: string; memory: number }>(
 }
 
 /** Debug runs only: made-up computers for the homepage screenshots, with no real names or numbers. */
+/** 데모 화면의 깔린 판. */
+export function demoAppVersions(prompt = '2.6.110801'): Record<string, string | null> {
+  return {
+    Split: '2.6.110801',
+    Prompt: prompt,
+    Monitor: '2.6.110603',
+    Remote: '2.6.110704',
+    Draw: null
+  }
+}
+
 export function demoPeers(korean: boolean): Peer[] {
   const gb = 1024 ** 3
   const make = (

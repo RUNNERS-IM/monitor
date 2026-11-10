@@ -58,6 +58,7 @@ export const emptyCleanup = (kind: CleanupKind) => api().emptyCleanup(kind)
 export const pauseRunner = (name: string) => api().pauseRunner(name)
 export const resumeRunner = (name: string) => api().resumeRunner(name)
 export const peers = () => api().peers()
+export const releases = () => api().releases()
 export const selfUsage = () => api().selfUsage()
 export const computerCommand = (
   deviceId: string | null,

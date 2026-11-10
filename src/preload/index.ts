@@ -11,6 +11,7 @@ const api: MonitorApi = {
   pauseRunner: (name) => ipcRenderer.invoke('monitor:pauseRunner', name),
   resumeRunner: (name) => ipcRenderer.invoke('monitor:resumeRunner', name),
   peers: () => ipcRenderer.invoke('monitor:peers'),
+  releases: () => ipcRenderer.invoke('monitor:releases'),
   selfUsage: () => ipcRenderer.invoke('monitor:selfUsage'),
   computerCommand: (deviceId, name, args) =>
     ipcRenderer.invoke('monitor:computerCommand', deviceId, name, args),

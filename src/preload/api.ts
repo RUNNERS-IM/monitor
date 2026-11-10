@@ -14,7 +14,29 @@ export type MenuCommand =
   | 'quit'
 
 /** The Settings window's tabs, in their order: the most used screen first (shared decision 2026-11-07, Monitor 1A). */
-export type SettingsTab = 'computers' | 'general' | 'account' | 'about'
+export type SettingsTab = 'computers' | 'releases' | 'general' | 'account' | 'about'
+
+/** 그 앱의 마지막 출시 빌드. 기록이 없으면 null. */
+export type ReleaseBuild = {
+  result: 'success' | 'failure' | 'cancelled' | 'running'
+  at: number
+} | null
+
+export type ReleaseApp = {
+  name: string
+  /** 최신 판. 아직 출시하지 않았으면 null. */
+  latest: string | null
+  /** false 면 GitHub 에 닿지 못해 최신 판을 모른다. */
+  checked: boolean
+  /** 직원 계정에만 있다. */
+  build?: ReleaseBuild
+}
+
+export type ReleaseStatus = {
+  apps: ReleaseApp[]
+  /** 맨 앞이 이 컴퓨터다. versions 가 null 이면 그 컴퓨터의 깔린 판을 모른다. */
+  computers: { name: string; self: boolean; versions: Record<string, string | null> | null }[]
+}
 
 /** The RUNNERS account this computer is signed in with, and whether it is on the relay (for the account's other
  *  computers and the phone app). */
@@ -126,6 +148,7 @@ export type MonitorApi = {
   resumeRunner: (name: string) => Promise<void>
   /** The other computers on the tailnet, slow ones first; empty when Tailscale is off. */
   peers: () => Promise<Peer[]>
+  releases: () => Promise<ReleaseStatus>
   /** This computer in the same shape, for the first card of the Computers tab. */
   selfUsage: () => Promise<PeerUsage | null>
   /** Sends a command to another computer (`deviceId`) or to this one (null) and resolves to its answer. */

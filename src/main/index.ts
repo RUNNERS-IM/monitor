@@ -20,7 +20,17 @@ import { currentLocale, t } from './i18n'
 import * as login from './login'
 import { buildMenu, forgetIcons, type Command, type MenuState } from './menu'
 import { native, type Sampler } from './native'
-import { askLoop, askNow, demoPeers, peerList, setFast, topApps, type Usage } from './peers'
+import {
+  askLoop,
+  askNow,
+  demoAppVersions,
+  demoPeers,
+  peerList,
+  setFast,
+  topApps,
+  type Usage
+} from './peers'
+import { installedApps, releaseStatus, startInstalledApps } from './releases'
 import * as relay from './relay'
 import { tailnet } from './tailnet'
 import { releaseNoteLines } from './runners/release-notes'
@@ -74,6 +84,7 @@ const DEV = !app.isPackaged
 const DEMO = DEV && !!process.env.MONITOR_DEMO
 const DEMO_OS = 'macOS 26.5 Tahoe'
 const DEMO_VERSION = '2.6.1102'
+const DEMO_APPS = demoAppVersions()
 // Why: a debug run keeps its own data folder, so it runs next to the installed Monitor (which holds the
 // single-instance lock on the shared folder) and never signs it in or out.
 if (DEV) {
@@ -540,7 +551,8 @@ function usage(from: Snapshot | null = latest): Usage | null {
     claudeSessions: snap.claudeSessions?.length ?? 0,
     runnersBusy: running.filter((r) => r.busy).length,
     runnersIdle: running.filter((r) => !r.busy).length,
-    cleanable: latestCleanup?.total ?? null
+    cleanable: latestCleanup?.total ?? null,
+    appVersions: (DEMO ? DEMO_APPS : installedApps()) ?? undefined
   }
 }
 
@@ -653,6 +665,31 @@ function registerIpc(): void {
         )
       : peerList()
   )
+  ipcMain.handle('monitor:releases', async (event) => {
+    const others = DEMO
+      ? demoPeers(
+          (new URL(event.sender.getURL()).searchParams.get('lang') ?? currentLocale()) === 'ko'
+        )
+      : peerList()
+    return releaseStatus(
+      // Why: 빌드 성공 · 취소는 개발 소식이라 직원에게만 보인다. 사이트의 허용 목록을 Monitor 가 읽을 수 없어 메일 주소로 가른다.
+      DEMO || /@runners\.im$/i.test(account.current() ?? ''),
+      [
+        {
+          name: await computerName(),
+          self: true,
+          versions: DEMO ? DEMO_APPS : installedApps()
+        },
+        ...others.map((peer, index) => ({
+          name: peer.name,
+          self: false,
+          versions: DEMO
+            ? demoAppVersions(index === 1 ? '2.6.110703' : undefined)
+            : (peer.usage?.appVersions ?? null)
+        }))
+      ]
+    )
+  })
   // Why: the window's buttons send what a phone sends: to the computer chosen, or to this one's own commands (null).
   ipcMain.handle(
     'monitor:computerCommand',
@@ -1106,6 +1143,7 @@ function start(): void {
       askNow()
     }
   })
+  startInstalledApps()
   startUpdates()
   if (DEV) {
     debugHooks()

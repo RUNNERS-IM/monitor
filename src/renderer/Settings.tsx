@@ -3,8 +3,16 @@
 // (shared decision 2026-11-07, Monitor 1A). The panel's account line and ⌘, open it; `?tab=` picks the first tab.
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CircleUser, Info, Laptop, Settings as SettingsIcon, type LucideIcon } from 'lucide-react'
+import {
+  CircleUser,
+  Info,
+  Laptop,
+  PackageCheck,
+  Settings as SettingsIcon,
+  type LucideIcon
+} from 'lucide-react'
 import Computers from './Computers'
+import Releases from './Releases'
 import { locale, t } from './i18n'
 import * as native from './native'
 import type { AccountState, MenuCommand, MenuState, SettingsTab } from './native'
@@ -19,6 +27,7 @@ import './Settings.css'
 
 const TABS: { id: SettingsTab; label: Parameters<typeof t>[0]; Icon: LucideIcon }[] = [
   { id: 'computers', label: 'settings.tabComputers', Icon: Laptop },
+  { id: 'releases', label: 'settings.tabReleases', Icon: PackageCheck },
   { id: 'general', label: 'settings.tabGeneral', Icon: SettingsIcon },
   { id: 'account', label: 'settings.tabAccount', Icon: CircleUser },
   { id: 'about', label: 'settings.tabAbout', Icon: Info }
@@ -296,6 +305,7 @@ export default function Settings() {
       </nav>
       <div className="settings-body">
         {tab === 'computers' && <Computers />}
+        {tab === 'releases' && <Releases />}
         {tab === 'general' && <General />}
         {tab === 'account' && <Account />}
         {tab === 'about' && <About />}
