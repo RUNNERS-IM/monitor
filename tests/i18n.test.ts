@@ -24,7 +24,7 @@ test('자리표시를 채우고, 값 속 기호를 바꾸지 않으며, 없는 �
 
 test('count 를 넘겨도 복수형 열쇠 없이 그 글을 읽는다', () => {
   startI18n(['ko'])
-  expect(t('summary.claude', { count: 3 })).toBe('Claude 세션 3')
+  expect(t('summary.claude', { count: 3 })).toBe('AI 세션 3')
   startI18n(['en'])
   expect(t('summary.claude', { count: 1 })).toContain('1')
 })
