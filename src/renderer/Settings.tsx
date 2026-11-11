@@ -8,7 +8,7 @@ import Computers from './Computers'
 import { locale, t } from './i18n'
 import * as native from './native'
 import type { AccountState, MenuCommand, MenuState, SettingsTab } from './native'
-import appIcon from './assets/app-icon.png'
+import { useAppIcon } from './app-icon'
 import { RunnersAbout, type RunnersT } from './runners-account/runners-about'
 import panda from './runners-account/assets/panda/face.webp'
 import { accountText } from './runners-account/runners-account'
@@ -68,6 +68,7 @@ function Row({
 
 /** Split's question before the icon goes: hiding it leaves only the Applications folder as a way back. */
 function HideAsk({ onCancel, onHide }: { onCancel: () => void; onHide: () => void }) {
+  const appIcon = useAppIcon()
   return (
     <div
       className="ra-cover"
@@ -252,6 +253,7 @@ function Account() {
 
 function About() {
   const { t: translate } = useTranslation()
+  const appIcon = useAppIcon()
   return (
     <div className="settings-about">
       <RunnersAbout
