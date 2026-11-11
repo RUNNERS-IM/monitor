@@ -17,7 +17,7 @@
     "format:check": "oxfmt --check",
     "native": "napi build --manifest-path native/Cargo.toml --package-json-path native/package.json --platform --release --output-dir native --no-js",
     "check:locales": "node scripts/check-locales.mjs",
-    "check:account": "node src/renderer/runners-account/check.mjs --kit 0.1.28 && node src/main/runners/check.mjs --kit 0.1.28 && node scripts/check.mjs --kit 0.1.28",
+    "check:account": "node src/renderer/runners-account/check.mjs --kit 0.1.30 && node src/main/runners/check.mjs --kit 0.1.30 && node scripts/check.mjs --kit 0.1.30",
     "notices": "node scripts/third-party-notices.mjs Monitor",
     "dist": "pnpm build && electron-builder --config electron-builder.config.cjs"
   },
