@@ -16,6 +16,8 @@ export type Settings = {
   /** Runners paused from the panel or a phone, by name, with the Unix time (seconds) they come back.
    *  Why: a restart of Monitor inside the hour would otherwise show the runner as gone instead of paused. */
   pausedRunners?: Record<string, number>
+  /** Whether the menu-bar icon shows (Settings › General). Missing means shown. */
+  showTrayIcon?: boolean
   /** This computer's id on the relay (src/main/relay.ts), made once so phones keep seeing the same computer. */
   deviceId?: string
 }

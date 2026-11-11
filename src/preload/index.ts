@@ -1,6 +1,6 @@
 // The page's only door to the main process: `window.monitor`. Types are in ./api.ts, which the page imports.
 import { contextBridge, ipcRenderer } from 'electron'
-import type { AccountState, MonitorApi, UpdateOffer } from './api'
+import type { AccountState, MonitorApi, SettingsTab, UpdateOffer } from './api'
 
 const api: MonitorApi = {
   snapshot: () => ipcRenderer.invoke('monitor:snapshot'),
@@ -12,7 +12,14 @@ const api: MonitorApi = {
   resumeRunner: (name) => ipcRenderer.invoke('monitor:resumeRunner', name),
   peers: () => ipcRenderer.invoke('monitor:peers'),
   selfUsage: () => ipcRenderer.invoke('monitor:selfUsage'),
+  computerCommand: (deviceId, name, args) =>
+    ipcRenderer.invoke('monitor:computerCommand', deviceId, name, args),
   openComputers: (signIn) => ipcRenderer.invoke('monitor:openComputers', signIn === true),
+  onSettingsTab: (listener) => {
+    const relay = (_event: Electron.IpcRendererEvent, tab: SettingsTab) => listener(tab)
+    ipcRenderer.on('monitor:settingsTab', relay)
+    return () => ipcRenderer.off('monitor:settingsTab', relay)
+  },
   onShown: (listener) => {
     const relay = () => listener()
     ipcRenderer.on('monitor:shown', relay)
@@ -27,7 +34,6 @@ const api: MonitorApi = {
   fitHeight: (height) => ipcRenderer.send('monitor:fitHeight', height),
   version: () => ipcRenderer.invoke('monitor:version'),
   openExternal: (url) => ipcRenderer.invoke('monitor:openExternal', url),
-  accentColor: () => ipcRenderer.invoke('monitor:accentColor'),
   menuState: () => ipcRenderer.invoke('monitor:menuState'),
   command: (command) => ipcRenderer.invoke('monitor:command', command),
   closeWindow: () => ipcRenderer.send('monitor:closeWindow'),
@@ -44,7 +50,11 @@ const api: MonitorApi = {
     ipcRenderer.on('monitor:account', relay)
     return () => ipcRenderer.off('monitor:account', relay)
   },
-  signIn: (mode, email, password) => ipcRenderer.invoke('monitor:signIn', mode, email, password),
+  signIn: (mode, email, password, code) =>
+    ipcRenderer.invoke('monitor:signIn', mode, email, password, code),
+  sendCode: (purpose, email) => ipcRenderer.invoke('monitor:sendCode', purpose, email),
+  resetPassword: (email, code, password) =>
+    ipcRenderer.invoke('monitor:resetPassword', email, code, password),
   takeSignIn: () => ipcRenderer.invoke('monitor:takeSignIn'),
   onSignIn: (listener) => {
     const relay = () => listener()

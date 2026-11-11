@@ -8,10 +8,11 @@ import {
   ipcMain,
   nativeTheme,
   Notification,
+  screen,
   shell,
-  systemPreferences,
   type Tray
 } from 'electron'
+import { execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import * as account from './account'
@@ -26,7 +27,7 @@ import { releaseNoteLines } from './runners/release-notes'
 import { readSettings, writeSettings } from './settings'
 import { noteCpu, noteFrontApp, suggestions, type Suggestion } from './suggest'
 import { createTray, showReading, type Level } from './tray'
-import type { Emptied, QuitReport } from '../preload/api'
+import type { Emptied, QuitReport, SettingsTab } from '../preload/api'
 import { diskPercent, type Snapshot } from './types'
 import { checkNow, startUpdates } from './updates'
 import {
@@ -34,9 +35,7 @@ import {
   askUpdate,
   createPanel,
   placeUnderTray,
-  showAbout,
-  showComputers,
-  showComputersHidden,
+  showSettings,
   hiddenPage,
   updateWindowOpen,
   TRANSLUCENT,
@@ -96,14 +95,14 @@ let sampler: Sampler | null = null
  *  extra readings that would cut CPU averages short and double the history. */
 let latest: Snapshot | null = null
 /** The slow reasons and icon level as held for a minute (trackSlow). Why: the icon held them while the panel badge,
- *  the right-click menu and the phone read the moment's value, so the four disagreed on a Mac near the line. */
+ *  the Linux tray menu and the phone read the moment's value, so the four disagreed on a Mac near the line. */
 let heldNow: { held: Reason[]; level: Level } = { held: [], level: 'fine' }
 
 /** This computer's Tailscale name (m2-pro-1), learned in the background; null without Tailscale. */
 let tailnetName: string | null = null
 
 /** The reading with its slow flags replaced by the held ones, plus the level, for everything that shows them; and the
- *  Tailscale name as the host, the name the All Computers window and the phones use (the system name otherwise). */
+ *  Tailscale name as the host, the name the Computers tab and the phones use (the system name otherwise). */
 function held(snap: Snapshot): Snapshot & { level: Level } {
   if (DEMO) {
     return { ...snap, level: snap.slowMemory || snap.slowCpu ? 'warn' : 'fine' }
@@ -301,7 +300,18 @@ function togglePanel(): void {
 }
 
 function menuState(): MenuState {
-  return { openAtLogin: login.isOn(), autoUpdate: readSettings().autoUpdate }
+  const settings = readSettings()
+  return {
+    openAtLogin: login.isOn(),
+    autoUpdate: settings.autoUpdate,
+    trayIcon: settings.showTrayIcon !== false,
+    canHideIcon: process.platform === 'darwin'
+  }
+}
+
+function openSettings(tab?: SettingsTab): void {
+  hidePanel()
+  showSettings(tab, setFast)
 }
 
 function run(command: Command): void {
@@ -315,9 +325,12 @@ function run(command: Command): void {
     case 'autoUpdate':
       writeSettings({ autoUpdate: !readSettings().autoUpdate })
       break
-    case 'about':
-      hidePanel()
-      showAbout()
+    case 'trayIcon':
+      writeSettings({ showTrayIcon: readSettings().showTrayIcon === false })
+      updateTray()
+      break
+    case 'settings':
+      openSettings()
       break
     case 'updates':
       hidePanel()
@@ -340,7 +353,7 @@ function refreshLinuxMenu(): void {
   if (process.platform !== 'linux' || !tray) {
     return
   }
-  const menu = buildMenu(latest && held(latest), menuState(), run)
+  const menu = buildMenu(latest && held(latest), run)
   const text =
     menu.items.map((item) => item.label).join('\n') +
     JSON.stringify(menuState()) +
@@ -503,14 +516,6 @@ async function emptyKind(kind: string): Promise<Emptied> {
   return done
 }
 
-function accentColor(): string | null {
-  if (process.platform !== 'darwin' && process.platform !== 'win32') {
-    return null
-  }
-  const color = systemPreferences.getAccentColor()
-  return color ? `#${color.slice(0, 6)}` : null
-}
-
 /** What this computer tells the account's other Monitors: names and numbers only. */
 function usage(from: Snapshot | null = latest): Usage | null {
   if (!from) {
@@ -545,7 +550,7 @@ async function computerName(): Promise<string> {
   return net?.self.name ?? latest?.host ?? ''
 }
 
-/** What the phone app shows for this computer: the same numbers as the All Computers window, plus what can be
+/** What the phone app shows for this computer: the same numbers as the Computers tab, plus what can be
  *  emptied by kind and the runners by name, so the phone can offer those commands. */
 function phoneState(): unknown {
   const mine = usage()
@@ -559,6 +564,12 @@ function phoneState(): unknown {
     topCpu: latest.topCpu
       .slice(0, 5)
       .map((a) => ({ name: a.name, cpuPercent: a.cpuPercent, quit: a.quit })),
+    // Why: the Computers tab of another computer offers commands only to a Monitor that takes them (4A).
+    hostCommands: true,
+    // Why: another computer shows what this panel would suggest; the folder is left out, since no path leaves the computer.
+    suggestions: suggestions(latest, latestCleanup).map((s) =>
+      s.action === 'quit' ? { ...s, folder: undefined } : s
+    ),
     cleanupKinds: latestCleanup?.kinds ?? [],
     runners: latest.runners.map((r) => ({
       name: r.name,
@@ -574,13 +585,10 @@ async function quitApp(name: string): Promise<QuitReport> {
   return JSON.parse(await sampler!.quitApp(name)) as QuitReport
 }
 
-/** The phone app's commands (runners-app-kit docs/relay.md, "앱별 명령"). */
+/** The commands of the phone app and of the account's other computers (runners-app-kit docs/relay.md, "앱별 명령"). */
 const phoneCommands: Record<string, relay.Handler> = {
   'usage.get': async () => phoneState(),
-  'app.quit': async (args) => {
-    const { gone, alreadyGone } = await quitApp(String(args.name ?? ''))
-    return { gone, alreadyGone }
-  },
+  'app.quit': async (args) => quitApp(String(args.name ?? '')),
   'cleanup.empty': async (args) => emptyKind(String(args.kind ?? '')),
   'runner.pause': async (args) => ({ until: await pauseRunner(String(args.name ?? '')) }),
   'runner.resume': async (args) => {
@@ -589,7 +597,13 @@ const phoneCommands: Record<string, relay.Handler> = {
   }
 }
 
-/** Set when the All Computers window is opened to sign in, and taken by that window once it has loaded. */
+const COMPUTER_COMMANDS = new Set(['app.quit', 'cleanup.empty', 'runner.pause', 'runner.resume'])
+/** How long the other computer has to say it took a command; the kit then waits on for the result. */
+/** 공통 로그인 창이 원인별로 보여 주는 오류 코드(kit runners-account.tsx 의 SignInProblem). */
+const SIGN_IN_PROBLEMS = ['bad', 'none', 'format', 'exists', 'code', 'many']
+const COMMAND_ANSWER_MS = 20 * 1000
+
+/** Set when Settings is opened to sign in, and taken by its Computers tab once it has loaded. */
 let signInWanted = false
 
 function openComputers(signIn = false): void {
@@ -601,7 +615,7 @@ function openComputers(signIn = false): void {
       window.webContents.send('monitor:signIn')
     }
   }
-  showComputers(setFast)
+  openSettings('computers')
 }
 
 function registerIpc(): void {
@@ -619,12 +633,18 @@ function registerIpc(): void {
     }
     measureNow?.()
   })
-  ipcMain.handle('monitor:quitApp', (_event, name: string) => quitApp(String(name)))
-  ipcMain.handle('monitor:emptyCleanup', (_event, kind: string) => emptyCleanup(String(kind)))
+  ipcMain.handle('monitor:quitApp', (_event, name: string) => {
+    return quitApp(String(name))
+  })
+  ipcMain.handle('monitor:emptyCleanup', (_event, kind: string) => {
+    return emptyCleanup(String(kind))
+  })
   ipcMain.handle('monitor:pauseRunner', async (_event, name: string) => {
     await pauseRunner(String(name))
   })
-  ipcMain.handle('monitor:resumeRunner', (_event, name: string) => resumeRunner(String(name)))
+  ipcMain.handle('monitor:resumeRunner', (_event, name: string) => {
+    return resumeRunner(String(name))
+  })
   // Why: demo names follow the page's language (`?lang=` in screenshot runs), not the app's.
   ipcMain.handle('monitor:peers', (event) =>
     DEMO
@@ -633,12 +653,33 @@ function registerIpc(): void {
         )
       : peerList()
   )
+  // Why: the window's buttons send what a phone sends: to the computer chosen, or to this one's own commands (null).
+  ipcMain.handle(
+    'monitor:computerCommand',
+    async (_event, deviceId: unknown, name: unknown, args: unknown) => {
+      const command = String(name)
+      if (!COMPUTER_COMMANDS.has(command)) {
+        throw new Error('unknown command')
+      }
+      // Safety: screenshot runs act only on test computers (`fake-…`), never on this one or a real one.
+      if (process.env.MONITOR_CAPTURE && !String(deviceId).startsWith('fake-')) {
+        throw new Error('capture runs act only on test computers')
+      }
+      const given = (args ?? {}) as Record<string, unknown>
+      const result =
+        deviceId === null
+          ? await phoneCommands[command](given)
+          : await relay.ask(String(deviceId), command, given, COMMAND_ANSWER_MS)
+      askNow()
+      return result
+    }
+  )
   // Why: the cards are named as Tailscale names the computers (m1-pro-2), not by the system host name.
   ipcMain.handle('monitor:selfUsage', async () => {
     if (DEMO) {
       return usage(latestDemo)
     }
-    const mine = usage()
+    const mine = phoneState() as Usage | null
     const net = await tailnet()
     return mine && net ? { ...mine, host: net.self.name } : mine
   })
@@ -647,7 +688,6 @@ function registerIpc(): void {
   )
   ipcMain.handle('monitor:translucent', () => TRANSLUCENT)
   ipcMain.handle('monitor:version', () => app.getVersion())
-  ipcMain.handle('monitor:accentColor', () => accentColor())
   ipcMain.handle('monitor:menuState', () => menuState())
   ipcMain.handle('monitor:command', (_event, command: Command) => {
     run(command)
@@ -677,21 +717,37 @@ function registerIpc(): void {
     email: account.current(),
     status: relay.currentStatus()
   }))
+  // Why: IPC 로 던진 오류는 메시지 앞에 꼬리가 붙어, 로그인 창이 읽는 코드만 답으로 돌려준다.
+  const signInProblem = async (work: () => Promise<unknown>) => {
+    try {
+      await work()
+      return null
+    } catch (error) {
+      const code = error instanceof Error ? error.message : ''
+      return SIGN_IN_PROBLEMS.includes(code) ? code : 'network'
+    }
+  }
   ipcMain.handle(
     'monitor:signIn',
-    async (_event, mode: unknown, email: unknown, password: unknown) => {
-      try {
-        await account.signIn(
+    (_event, mode: unknown, email: unknown, password: unknown, code: unknown) =>
+      signInProblem(() =>
+        account.signIn(
           mode === 'signup' ? 'signup' : 'login',
           String(email),
-          String(password)
+          String(password),
+          typeof code === 'string' && code ? code : undefined
         )
-        return null
-      } catch (error) {
-        const code = error instanceof Error ? error.message : ''
-        return code === 'bad' || code === 'exists' ? code : 'network'
-      }
-    }
+      )
+  )
+  ipcMain.handle('monitor:sendCode', (_event, purpose: unknown, email: unknown) =>
+    signInProblem(() =>
+      account.sendCode(purpose === 'reset' ? 'reset' : 'signup', String(email), currentLocale())
+    )
+  )
+  ipcMain.handle(
+    'monitor:resetPassword',
+    (_event, email: unknown, code: unknown, password: unknown) =>
+      signInProblem(() => account.resetPassword(String(email), String(code), String(password)))
   )
   ipcMain.handle('monitor:takeSignIn', () => {
     const wanted = signInWanted
@@ -705,7 +761,7 @@ function registerIpc(): void {
   )
 }
 
-/** Debug runs only: `MONITOR_OPEN=panel|about|update` opens that window at launch, so it can be captured without
+/** Debug runs only: `MONITOR_OPEN=panel|settings[:tab]|update` opens that window at launch, so it can be captured without
  *  clicking the tray (`update` / `update-progress` show the update question with the notes in RELEASE_NOTES.md, downloaded or still
  *  downloading, and install nothing), and
  *  `MONITOR_THEME=dark|light` forces the look, and `MONITOR_SOLID=1` turns the blur off so the desktop does not show through. The panel opens without focus, so it stays up. */
@@ -714,7 +770,7 @@ function debugHooks(): void {
   if (theme === 'dark' || theme === 'light') {
     nativeTheme.themeSource = theme
   }
-  // `MONITOR_CAPTURE=<folder>` saves the panel and the All Computers window as PNGs without ever showing them, then quits.
+  // `MONITOR_CAPTURE=<folder>` saves the panel and every Settings tab as PNGs without ever showing them, then quits.
   // Why: screenshots for review must not pop windows up on the screen of the person working at this computer.
   const captureTo = process.env.MONITOR_CAPTURE
   if (captureTo) {
@@ -737,8 +793,12 @@ function debugHooks(): void {
   }
   const which = process.env.MONITOR_OPEN
   // Why: the tray icon needs a moment before it reports where it sits.
-  if (which === 'about') {
-    setTimeout(showAbout, 1500)
+  // Why: `settings:general` (or another tab) opens Settings on that tab, `settings` on the first one.
+  if (which?.startsWith('settings')) {
+    setTimeout(
+      () => openSettings((which.split(':')[1] as SettingsTab | undefined) || undefined),
+      1500
+    )
   }
   if (which === 'panel') {
     setTimeout(showWithoutFocus, 1500)
@@ -810,6 +870,96 @@ async function homepageShots(folder: string): Promise<void> {
   app.quit()
 }
 
+type CaptureStep =
+  | { card: string }
+  | { act: string }
+  | { go: true }
+  | { cancel: true }
+  | { type: [selector: string, text: string] }
+  | { press: string }
+  | { key: string }
+  | { size: [width: number, height: number] }
+  | { click: string }
+  | { open: 'panel' | SettingsTab }
+  | { wait: number }
+  | { shot: string }
+
+/** Presses buttons on a hidden page, one step at a time (see MONITOR_CAPTURE_STEPS). It starts on the Computers page;
+ *  `open` swaps to the panel or a Settings tab. */
+async function captureSteps(
+  steps: CaptureStep[],
+  save: (window: BrowserWindow, name: string) => Promise<void>
+): Promise<void> {
+  setFast(true)
+  await sleep(6000)
+  let page = hiddenPage('computers', '', 900)
+  await sleep(3500)
+  const run = (code: string) => page.webContents.executeJavaScript(code) as Promise<unknown>
+  for (const step of steps) {
+    if (page.isDestroyed() && !('open' in step)) {
+      console.log('window closed, skipping', JSON.stringify(step))
+      continue
+    }
+    if ('open' in step) {
+      if (!page.isDestroyed()) {
+        page.destroy()
+      }
+      page =
+        step.open === 'panel'
+          ? hiddenPage('panel', '', 720)
+          : hiddenPage('settings', `tab=${step.open}`, 720)
+      await sleep(3000)
+    } else if ('size' in step) {
+      page.setContentSize(...step.size)
+      await sleep(500)
+    } else if ('key' in step) {
+      await run(
+        `document.dispatchEvent(new KeyboardEvent('keydown',{key:${JSON.stringify(step.key)},bubbles:true}))`
+      )
+    } else if ('click' in step) {
+      await run(`document.querySelector(${JSON.stringify(step.click)})?.click()`)
+    } else if ('card' in step) {
+      await run(
+        `[...document.querySelectorAll('.c-card')].find(c=>c.querySelector('.c-name').textContent.startsWith(${JSON.stringify(step.card)}))?.click()`
+      )
+    } else if ('act' in step) {
+      console.log(
+        'press',
+        step.act,
+        await run(
+          `(()=>{const b=document.querySelector(${JSON.stringify(`.c-detail [data-act="${step.act}"]`)});b?.click();return !!b})()`
+        )
+      )
+    } else if ('go' in step) {
+      await run(`document.querySelector('.c-confirm-go')?.click()`)
+    } else if ('cancel' in step) {
+      await run(`document.querySelector('.c-confirm-cancel')?.click()`)
+    } else if ('type' in step) {
+      // Why: React reads the value through the input's own setter, so a plain assignment would not reach the form.
+      await run(
+        `(()=>{const f=document.querySelector(${JSON.stringify(step.type[0])});if(!f)return;Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(f,${JSON.stringify(step.type[1])});f.dispatchEvent(new Event('input',{bubbles:true}))})()`
+      )
+    } else if ('press' in step) {
+      // Why: the sign-in sheet's buttons come first, since the window behind it has its own Sign In button.
+      console.log(
+        'press',
+        step.press,
+        await run(
+          `(()=>{const b=[...document.querySelectorAll('.ra-sheet button'),...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(step.press)});b?.click();return !!b})()`
+        )
+      )
+    } else if ('wait' in step) {
+      await sleep(step.wait)
+    } else {
+      await save(page, step.shot)
+    }
+    await sleep(400)
+  }
+  if (!page.isDestroyed()) {
+    page.destroy()
+  }
+}
+
 async function captureHidden(folder: string): Promise<void> {
   const save = async (window: BrowserWindow | null, name: string) => {
     if (!window) {
@@ -828,17 +978,46 @@ async function captureHidden(folder: string): Promise<void> {
     await save(page, `panel-${section}`)
     page.destroy()
   }
+  // `MONITOR_CAPTURE_MENU=1` pops the tray menu up near the top right for a moment and photographs that part of the
+  // screen, since a native menu cannot be captured like a page. It shows on screen for about a second.
+  if (process.env.MONITOR_CAPTURE_MENU) {
+    const { width } = screen.getPrimaryDisplay().bounds
+    const [x, y] = [width - 460, 60]
+    const spot = new BrowserWindow({ x, y, width: 1, height: 1, frame: false, transparent: true })
+    await sleep(400)
+    const menu = buildMenu(latest && held(latest), run)
+    menu.popup({ window: spot, x: 0, y: 0 })
+    await sleep(700)
+    execFileSync('screencapture', ['-x', `-R${x - 10},${y - 10},440,420`, join(folder, 'menu.png')])
+    menu.closePopup(spot)
+    spot.destroy()
+  }
   // `MONITOR_CAPTURE_SIGNIN=1` captures the window with the sign-in sheet up, as the panel's account line opens it.
   if (process.env.MONITOR_CAPTURE_SIGNIN) {
     signInWanted = true
   }
-  const open = showComputersHidden()
-  await sleep(4000)
-  await save(open, 'computers')
-  const about = hiddenPage('about', '', 560)
-  await sleep(2500)
-  await save(about, 'about')
-  about.destroy()
+  // `MONITOR_CAPTURE_STEPS=<json>` presses the Computers tab's buttons on a test computer and captures each step.
+  const stepsFile = process.env.MONITOR_CAPTURE_STEPS
+  if (stepsFile) {
+    await captureSteps(JSON.parse(readFileSync(stepsFile, 'utf8')) as CaptureStep[], save)
+    app.quit()
+    return
+  }
+  // Why: every Settings tab is captured, since each holds what used to be its own window or panel line.
+  for (const tab of ['computers', 'general', 'account', 'about']) {
+    const page = hiddenPage('settings', `tab=${tab}`, 720)
+    await sleep(tab === 'computers' ? 4000 : 2500)
+    await save(page, `settings-${tab}`)
+    // Why: turning the menu-bar icon off asks first, and that question is a screen of its own.
+    if (tab === 'general') {
+      await page.webContents.executeJavaScript(
+        `[...document.querySelectorAll('.switch')].at(-1)?.click()`
+      )
+      await sleep(600)
+      await save(page, 'settings-general-hide')
+    }
+    page.destroy()
+  }
   for (const downloading of [false, true]) {
     const prompt = askUpdate(
       { version: '2.6.110701', notes: debugNotes(), downloading, percent: downloading ? 42 : 100 },
@@ -849,6 +1028,42 @@ async function captureHidden(folder: string): Promise<void> {
     prompt.close()
   }
   app.quit()
+}
+
+/** Puts the tray icon up or takes it down, as Settings' "Show in menu bar" says. Left and right click both open the
+ *  panel (shared decision 2026-11-07 2A); Linux trays only open a menu set beforehand, so Linux keeps the menu. */
+function updateTray(): void {
+  // Why: a capture run lasts about a minute and shows nothing, so a second menu-bar icon next to the installed Monitor only confuses.
+  const wanted = readSettings().showTrayIcon !== false && !(DEV && process.env.MONITOR_CAPTURE)
+  if (!wanted) {
+    tray?.destroy()
+    tray = null
+    linuxMenuText = ''
+    return
+  }
+  if (tray) {
+    return
+  }
+  const icon = createTray()
+  tray = icon
+  if (latest) {
+    showReading(icon, latest, held(latest).level)
+  }
+  if (process.platform === 'linux') {
+    refreshLinuxMenu()
+  } else {
+    icon.on('click', togglePanel)
+    icon.on('right-click', togglePanel)
+  }
+}
+
+/** Opening Monitor while it runs shows the panel, or Settings when the icon is hidden and the panel has nowhere to sit. */
+function openedAgain(): void {
+  if (!tray) {
+    openSettings()
+  } else if (panel && !panel.isVisible()) {
+    togglePanel()
+  }
 }
 
 function start(): void {
@@ -866,18 +1081,10 @@ function start(): void {
     hiddenByBlurAt = Date.now()
     hidePanel()
   })
-  // Why: a capture run lasts about a minute and shows nothing, so a second menu-bar icon next to the installed Monitor only confuses.
-  if (!(DEV && process.env.MONITOR_CAPTURE)) {
-    const icon = createTray()
-    tray = icon
-    if (process.platform === 'linux') {
-      refreshLinuxMenu()
-    } else {
-      icon.on('click', togglePanel)
-      icon.on('right-click', () =>
-        icon.popUpContextMenu(buildMenu(latest && held(latest), menuState(), run))
-      )
-    }
+  updateTray()
+  // Why: with the icon hidden nothing else on screen leads to Monitor, so launching it shows Settings (as Split does).
+  if (!tray && !(DEV && process.env.MONITOR_CAPTURE)) {
+    openSettings()
   }
   nativeTheme.on('updated', () => {
     forgetIcons()
@@ -889,7 +1096,7 @@ function start(): void {
     void askLoop()
     relay.startRelay({ state: phoneState, name: computerName, commands: phoneCommands })
   }
-  // Why: the panel's account line and the All Computers window show whether this computer is on the relay as it
+  // Why: the panel's account line and Settings show whether this computer is on the relay as it
   // changes, and the other computers are asked as soon as it joins rather than up to 30 seconds later.
   relay.onStatus((status) => {
     for (const window of BrowserWindow.getAllWindows()) {
@@ -909,12 +1116,10 @@ function start(): void {
 if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {
-  app.on('second-instance', () => {
-    if (panel && !panel.isVisible()) {
-      togglePanel()
-    }
-  })
-  // Why: closing the About window must not quit a tray app.
+  app.on('second-instance', openedAgain)
+  // Why: macOS sends this, not second-instance, when Monitor is opened again from Finder or Spotlight.
+  app.on('activate', openedAgain)
+  // Why: closing Settings must not quit a tray app.
   app.on('window-all-closed', () => undefined)
   void app.whenReady().then(start)
 }

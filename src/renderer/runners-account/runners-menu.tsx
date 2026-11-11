@@ -27,7 +27,12 @@ export function MenuItem(props: {
     <button type="button" className="rm-item" onClick={props.onSelect}>
       {props.icon}
       <span className="rm-label">{props.label}</span>
-      {props.trailing && <span className="rm-trailing">{props.trailing}</span>}
+      {props.trailing && (
+        <span className="rm-trailing">
+          {/* Why: 아랍어 줄에서 ⇧⌘A 가 A⇧⌘ 로 뒤집히지 않게 글자 방향을 따로 잡는다. */}
+          {typeof props.trailing === 'string' ? <bdi>{props.trailing}</bdi> : props.trailing}
+        </span>
+      )}
     </button>
   )
 }

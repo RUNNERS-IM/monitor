@@ -1,4 +1,4 @@
-// 이 컴퓨터를 시스템 서버 relay 에 올려 둔다. 휴대폰 앱이 이 컴퓨터를 보고 명령하고, 계정의 다른 컴퓨터가 숫자를 읽는다.
+// 이 컴퓨터를 시스템 서버 relay 에 올려 둔다. 휴대폰 앱과 계정의 다른 컴퓨터가 이 컴퓨터를 보고 명령한다.
 // 연결 동작은 kit 부품(relay-core)이 하고, 여기에는 Monitor 만의 규칙만 둔다.
 import { app } from 'electron'
 import { randomUUID } from 'node:crypto'
@@ -9,8 +9,15 @@ import { readSettings, writeSettings } from './settings'
 /** 개발 실행은 시험 서버를 쓸 수 있다(`MONITOR_RELAY_URL=ws://127.0.0.1:8787/api/relay`). */
 const RELAY_URL =
   (!app.isPackaged && process.env.MONITOR_RELAY_URL) || 'wss://server.system.runners.im/api/relay'
-/** 다른 컴퓨터가 보낼 수 있는 유일한 명령: 숫자 읽기. 끄기와 비우기는 사용자에게 먼저 묻는 휴대폰만 한다. */
-const HOST_COMMANDS = new Set(['usage.get'])
+/** 다른 컴퓨터가 보낼 수 있는 명령: 휴대폰과 같다. 보내는 쪽 창에서 사용자에게 먼저 묻는다(2026-11-07 결정 1A).
+ *  저쪽 화면에는 아무것도 띄우지 않는다(3B). */
+const HOST_COMMANDS = new Set([
+  'usage.get',
+  'app.quit',
+  'cleanup.empty',
+  'runner.pause',
+  'runner.resume'
+])
 
 /** 화면에 보이는 연결 상태. elsewhere: 다른 연결이 이 컴퓨터 자리를 가져갔거나 토큰이 다른 앱 것이다. 다시 연결을 누를 때까지 멈춘다. */
 export type RelayStatus = 'signedOut' | 'connecting' | 'connected' | 'elsewhere'
@@ -78,11 +85,11 @@ function statusOf(relay: Relay): RelayStatus {
   return status === 'offline' ? 'connecting' : status
 }
 
-/** 휴대폰 명령은 먼저 「받음」을 돌려준다. 큰 폴더 비우기는 몇 분 걸릴 수 있어, 휴대폰이 1분 만에 포기하지 않고 같은 id 의 최종 답을 기다린다.
- *  다른 컴퓨터는 바로 답이 오는 숫자만 물으므로 첫 답을 곧 결과로 받는다. */
+/** 명령은 먼저 「받음」을 돌려준다. 큰 폴더 비우기는 몇 분 걸릴 수 있어, 묻는 쪽이 1분 만에 포기하지 않고 같은 id 의 최종 답을 기다린다.
+ *  다른 컴퓨터가 묻는 숫자는 바로 답이 오고, 받음을 모르는 옛 Monitor 도 숫자를 묻으므로 첫 답을 곧 결과로 준다. */
 function withReceipt(handler: Handler): RelayCommand {
   return (args, message) => {
-    if (message.fromRole === 'viewer') {
+    if (message.fromRole === 'viewer' || message.name !== 'usage.get') {
       core?.send({
         type: 'result',
         to: message.from,

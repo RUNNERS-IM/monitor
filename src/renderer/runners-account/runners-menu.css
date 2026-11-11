@@ -9,6 +9,8 @@
  * The window itself gets the menu material from the OS (Electron `vibrancy: "menu"` on macOS), so the page stays
  * transparent there and only draws a solid background where the OS has no blur (`data-translucent="false"`).
  */
+@import './runners-font.css';
+
 :root {
   --rm-font: 13px;
   --rm-font-small: 11px;
@@ -29,20 +31,21 @@
   --rm-sep-gap: 8px;
 
   --rm-text: rgba(0, 0, 0, 0.85);
-  --rm-text-secondary: rgba(0, 0, 0, 0.5);
+  /* 작은 회색 글자(머리글 · 아래 줄 · 설명 · 단축키). macOS 값 0.5 는 고른 줄 바탕에서 대비 3.64 라, 어디서나 4.5 를 넘도록 진하게 한다(2026-11-11). */
+  --rm-text-secondary: rgba(0, 0, 0, 0.6);
   --rm-separator: rgba(0, 0, 0, 0.1);
   --rm-group-bg: rgba(0, 0, 0, 0.04);
   --rm-hover: rgba(0, 0, 0, 0.06);
   --rm-track: rgba(0, 0, 0, 0.1);
-  --rm-solid-bg: #ececec;
-  /* The macOS accent colour is passed in at runtime when the OS gives one. */
-  --rm-accent: #007aff;
-  --rm-selected: color-mix(in srgb, var(--rm-accent) 22%, transparent);
+  --rm-solid-bg: #ffffff;
+  --rm-primary: #0a0a0a;
+  --rm-on-primary: #ffffff;
+  --rm-selected: color-mix(in srgb, var(--rm-primary) 14%, transparent);
   --rm-ok: #34c759;
   --rm-high: #ff9f0a;
   --rm-full: #ff453a;
 
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   font-size: var(--rm-font);
   color: var(--rm-text);
   -webkit-font-smoothing: antialiased;
@@ -51,12 +54,14 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --rm-text: rgba(255, 255, 255, 0.85);
-    --rm-text-secondary: rgba(255, 255, 255, 0.5);
+    --rm-text-secondary: rgba(255, 255, 255, 0.55);
     --rm-separator: rgba(255, 255, 255, 0.1);
     --rm-group-bg: rgba(255, 255, 255, 0.05);
     --rm-hover: rgba(255, 255, 255, 0.08);
     --rm-track: rgba(255, 255, 255, 0.16);
-    --rm-solid-bg: #2a2a2a;
+    --rm-solid-bg: #0a0a0a;
+    --rm-primary: #ffffff;
+    --rm-on-primary: #0a0a0a;
   }
 }
 
@@ -83,7 +88,7 @@ html[data-translucent='false'] body {
   background: none;
   color: inherit;
   font: inherit;
-  text-align: left;
+  text-align: start;
   width: calc(100% - 2 * (var(--rm-inset) - 8px));
   box-sizing: border-box;
 }
@@ -212,7 +217,7 @@ button.rm-item:hover {
 
 /* On/off switch at the right of a line. Sizes are the macOS 26 NSSwitch "small" control, measured by drawing one
    (2026-11-06): track 44 x 20, a pill knob 26 x 16 two in from the edge. The old 26 x 16 was the pre-26 "mini" one,
-   which the apps found too small. On is the system accent colour. */
+   which the apps found too small. On is the primary colour. */
 .rm-switch {
   position: relative;
   cursor: pointer;
@@ -251,10 +256,11 @@ button.rm-item:hover {
 }
 
 .rm-switch input:checked + .rm-knob {
-  background: var(--rm-accent);
+  background: var(--rm-primary);
 }
 
 .rm-switch input:checked + .rm-knob::after {
+  background: var(--rm-on-primary);
   transform: translateX(calc(var(--rm-switch-w) - var(--rm-knob-w) - 4px));
 }
 
@@ -267,6 +273,6 @@ button.rm-item:hover {
 }
 
 .rm-switch input:focus-visible + .rm-knob {
-  outline: 2px solid var(--rm-accent);
+  outline: 2px solid var(--rm-primary);
   outline-offset: 2px;
 }

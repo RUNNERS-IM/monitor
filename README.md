@@ -18,7 +18,7 @@ Click the number in the menu bar (macOS) or the tray icon (Windows, Linux) to op
 | claude sessions | Number of running `claude` processes                                                                        |
 | GitHub runner   | **Building** when a job is running, **Idle** when a runner is waiting, **None** when no runner is installed |
 
-The panel is also Monitor's menu: under the readings are Open at login, Check for Updates Automatically, About Monitor, Check for Updates, Help & Feedback and Quit Monitor. Right-clicking the icon opens the same commands as a native menu, with a status line on top.
+The panel is also Monitor's menu: a left or a right click on the icon opens it, and under the readings are Settings… (⌘,), Help & Feedback and Quit Monitor. Settings has four tabs: Computers (every computer on the account), General (Open at Login, Check for Updates Automatically, Show in menu bar, Check for Updates), Account and About. Linux trays only open a menu set beforehand, so there the same commands come as a menu.
 
 The panel and menu follow the language set for your computer. Monitor speaks 20 languages: Arabic, Chinese (Simplified), Chinese (Traditional), Dutch, English, Finnish, French, German, Hindi, Indonesian, Italian, Japanese, Korean, Polish, Portuguese, Russian, Spanish, Thai, Turkish and Vietnamese.
 
@@ -64,10 +64,10 @@ pnpm dist           # build an installer for this OS into dist.noindex/
 
 For an Intel Mac build on Apple silicon, also run `pnpm native --target x86_64-apple-darwin` (after `rustup target add x86_64-apple-darwin`).
 
-- `src/main/` is the main process (tray, panel window, sampling loop, updates), `src/preload/` the bridge the page talks through, `src/renderer/` the panel and About window. Parts shared by the RUNNERS apps are copies from runners-app-kit (`src/main/runners/`, `src/renderer/runners-account/`, the root configs); `pnpm check:account` fails when a copy changed, so change them in the kit.
+- `src/main/` is the main process (tray, panel window, sampling loop, updates), `src/preload/` the bridge the page talks through, `src/renderer/` the panel and Settings window. Parts shared by the RUNNERS apps are copies from runners-app-kit (`src/main/runners/`, `src/renderer/runners-account/`, the root configs); `pnpm check:account` fails when a copy changed, so change them in the kit.
 - `native/` is the one native module (napi-rs): system readings, the cleanup scan, quitting an app, pausing a runner and the tray picture.
 - Screen text lives in `locales/`; the page and the main process read the same files. Check them with `pnpm check:locales`.
-- Debug runs take `MONITOR_OPEN=panel|about|update|update-progress` (the last two show the update window with made-up notes), `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1` (made-up names for screenshots) and `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup`.
+- Debug runs take `MONITOR_OPEN=panel|settings|settings:<tab>|update|update-progress` (`settings:general` picks a Settings tab; the last two show the update window with made-up notes), `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1` (made-up names for screenshots) and `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup`.
 
 So far Monitor has been built and checked on macOS (Apple silicon) only. Windows and Linux builds have not been tried yet.
 

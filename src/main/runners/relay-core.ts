@@ -72,6 +72,11 @@ export type RelayOptions = {
   stateEveryMs?: number
   /** 실행해도 state 를 바로 다시 보내지 않을 명령(읽기만 하는 명령). */
   quietCommands?: string[]
+  /**
+   * 휴대폰(viewer)이 보낸 명령이 이만큼 지나도 안 끝나면 「받음」({pending:true})을 먼저 보낸다. 0 이면 받자마자.
+   * 없으면 보내지 않는다. 받음을 모르는 옛 휴대폰판은 이것을 최종 답으로 읽으므로, 그 앱의 휴대폰판이 옮긴 뒤 켠다.
+   */
+  takenAfterMs?: number
   /** relay 가 처리한 뒤의 모든 메시지. state · signal 처럼 앱이 쓰는 것을 여기서 받는다. */
   onMessage?: (message: RelayMessage) => void
 }
@@ -86,11 +91,13 @@ export type Relay = {
   onStatus: (listener: (status: RelayStatus) => void) => () => void
   peers: (role?: string) => RelayPeer[]
   onPeers: (listener: (peers: RelayPeer[]) => void) => () => void
+  /** timeoutMs 안에 답이 없으면 timeout. 「받음」이 오면 그때부터 takenTimeoutMs 까지 최종 답을 기다린다. */
   ask: (
     to: string,
     name: string,
     args?: Record<string, unknown>,
-    timeoutMs?: number
+    timeoutMs?: number,
+    takenTimeoutMs?: number
   ) => Promise<unknown>
   send: (message: unknown) => boolean
   /** 휴대폰으로 푸시를 보낸다. 끊겨 있으면 30분까지 기다렸다 보낸다. */
@@ -106,6 +113,8 @@ const RETRY_MIN_MS = 2000
 const RETRY_MAX_MS = 60_000
 const STATE_MS = 5000
 const ASK_TIMEOUT_MS = 60_000
+// 컴퓨터가 명령을 받았다고 답한 뒤 최종 답을 기다리는 시간. 큰 폴더를 비우는 데 몇 분씩 걸린다.
+const TAKEN_TIMEOUT_MS = 30 * 60_000
 const CLOSE_UNAUTHORIZED = 4401
 const CLOSE_WRONG_APP = 4403
 const CLOSE_REPLACED = 4409
@@ -119,6 +128,16 @@ const TOKEN_HOUR_MS = 60 * 60_000
 const ALERT_KEEP_MS = 30 * 60_000
 // host 는 5초마다 보내므로 이만큼 아무 말이 없으면 소켓이 죽은 것으로 본다.
 const SILENT_MS = 30_000
+
+/** 「받음」은 정확히 {pending:true} 다. 다른 칸이 있으면 pending 이라는 칸을 가진 최종 답으로 읽는다. */
+function isTaken(data: unknown): boolean {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    (data as { pending?: unknown }).pending === true &&
+    Object.keys(data).length === 1
+  )
+}
 
 /** 토큰이 끝나는 때(밀리초). 읽을 수 없으면 null. */
 export function tokenExpiry(token: string): number | null {
@@ -158,6 +177,7 @@ export function createRelay(options: RelayOptions): Relay {
     string,
     {
       to: string
+      takenTimeoutMs: number
       resolve: (data: unknown) => void
       reject: (error: Error) => void
       timer: ReturnType<typeof setTimeout>
@@ -327,17 +347,32 @@ export function createRelay(options: RelayOptions): Relay {
       reply(false, { error: 'unknown command' })
       return
     }
+    // 휴대폰에만 보낸다. 다른 컴퓨터는 숫자만 물어 바로 답을 받고, 옛 컴퓨터판은 받음을 모른다.
+    const { takenAfterMs } = options
+    let takenTimer: ReturnType<typeof setTimeout> | null = null
+    if (takenAfterMs === 0 && message.fromRole === 'viewer') {
+      reply(true, { pending: true })
+    } else if (takenAfterMs && message.fromRole === 'viewer') {
+      takenTimer = setTimeout(() => reply(true, { pending: true }), takenAfterMs)
+    }
+    const stopTaken = () => {
+      if (takenTimer) {
+        clearTimeout(takenTimer)
+      }
+    }
     handler(message.args ?? {}, message)
       .then((data) => {
+        stopTaken()
         reply(true, data ?? null)
         // 명령이 바꾼 것(앱을 껐다, 폴더를 비웠다)이 휴대폰에 바로 보이게 한다.
         if (!options.quietCommands?.includes(message.name ?? '')) {
           sendState()
         }
       })
-      .catch((error: unknown) =>
+      .catch((error: unknown) => {
+        stopTaken()
         reply(false, { error: error instanceof Error ? error.message : String(error) })
-      )
+      })
   }
 
   const handleMessage = (message: RelayMessage) => {
@@ -369,11 +404,19 @@ export function createRelay(options: RelayOptions): Relay {
       const wait = waiting.get(message.id)
       // 물어본 기기의 답만 받는다. 서버가 from 을 채우므로 앱이 속일 수 없다.
       if (wait && (!message.from || message.from === wait.to)) {
-        waiting.delete(message.id)
         clearTimeout(wait.timer)
-        if (message.ok) {
+        if (message.ok && isTaken(message.data)) {
+          // 컴퓨터가 명령을 받았다. 최종 답은 같은 id 로 오므로 기다리는 시간만 늘린다.
+          const { id } = message
+          wait.timer = setTimeout(() => {
+            waiting.delete(id)
+            wait.reject(new Error('timeout'))
+          }, wait.takenTimeoutMs)
+        } else if (message.ok) {
+          waiting.delete(message.id)
           wait.resolve(message.data)
         } else {
+          waiting.delete(message.id)
           const error = (message.data as { error?: unknown } | undefined)?.error
           wait.reject(new Error(String(error ?? 'failed')))
         }
@@ -533,7 +576,7 @@ export function createRelay(options: RelayOptions): Relay {
       peerListeners.add(listener)
       return () => peerListeners.delete(listener)
     },
-    ask(to, name, args = {}, timeoutMs = ASK_TIMEOUT_MS) {
+    ask(to, name, args = {}, timeoutMs = ASK_TIMEOUT_MS, takenTimeoutMs = TAKEN_TIMEOUT_MS) {
       if (status !== 'connected') {
         return Promise.reject(new Error('offline'))
       }
@@ -544,7 +587,7 @@ export function createRelay(options: RelayOptions): Relay {
           waiting.delete(id)
           reject(new Error('timeout'))
         }, timeoutMs)
-        waiting.set(id, { to, resolve, reject, timer })
+        waiting.set(id, { to, takenTimeoutMs, resolve, reject, timer })
         send({ type: 'command', to, id, name, args })
       })
     },

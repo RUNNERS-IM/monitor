@@ -1,10 +1,11 @@
 // The account's other computers: every Monitor signed in to the same RUNNERS account, found and asked through the
 // system server's relay instead of the Tailscale network (shared decision 2026-11-05 "네 앱 계정 · 연결 통일" 1A, which
-// replaced 2026-11-02's Tailscale-only way). Look only: another computer may ask this one for its numbers (`usage.get`)
-// and nothing else, so nobody can quit an app or delete files from afar.
+// replaced 2026-11-02's Tailscale-only way). The Computers tab in Settings also quits apps, empties folders and pauses
+// runners on them with the phones' commands, after asking in its own window (decision 2026-11-07 1A, 3B).
+// Commands for numbers come back at once; the others first hear 「받음」 and then wait for the result (kit relay-core).
 import * as relay from './relay'
 
-/** How often the other computers are asked: slowly with nothing open, quickly while the All Computers window shows. */
+/** How often the other computers are asked: slowly with nothing open, quickly while Settings (with its Computers tab) is open. */
 const SLOW_MS = 30 * 1000
 const FAST_MS = 5 * 1000
 const ASK_TIMEOUT_MS = 4000
@@ -29,16 +30,24 @@ export type Usage = {
   /** The icon's level, held for a minute like slowMemory and slowCpu: "fine", "warn" or "bad" (memory critical).
    *  Optional because older Monitors do not send it. */
   level?: 'fine' | 'warn' | 'bad'
-  topMemory: { name: string; memory: number }[]
+  topMemory: { name: string; memory: number; quit?: 'app' | 'process' | null }[]
   claudeSessions: number
   runnersBusy: number
   runnersIdle: number
   /** Bytes of caches and build folders that could be emptied; null while the first measurement runs. */
   cleanable: number | null
+  /** Set by a Monitor that takes commands from other computers; an older one only answers the numbers. */
+  hostCommands?: boolean
+  cleanupKinds?: { kind: string; bytes: number }[]
+  runners?: { name: string; busy: boolean; off: boolean; pausedUntil: number | null }[]
+  /** What that computer's own panel suggests now, without folder paths. */
+  suggestions?: unknown[]
 }
 
 /** One other computer as the panel and the window show it. */
 export type Peer = {
+  /** Where commands for this computer go. */
+  deviceId: string
   name: string
   /** `ok` answered; `noAnswer` is on the relay but did not answer in time (busy, asleep a moment, or an older Monitor
    *  that only answers phones); `offline` left the relay. */
@@ -61,10 +70,11 @@ async function askOne(deviceId: string, name: string): Promise<Peer> {
     if (!usage) {
       throw new Error('no reading yet')
     }
-    return { name: usage.host || name, state: 'ok', usage, at: Date.now() }
+    return { deviceId, name: usage.host || name, state: 'ok', usage, at: Date.now() }
   } catch {
     // Why: a computer short of memory answers late; its last numbers stay up with the time they were read.
     return {
+      deviceId,
       name: last?.name ?? name,
       state: 'noAnswer',
       usage: last?.usage ?? null,
@@ -106,7 +116,7 @@ export async function askLoop(): Promise<void> {
   }
 }
 
-/** Asks quickly while the All Computers window is open; turning it on also asks right away. */
+/** Asks quickly while Settings is open; turning it on also asks right away. */
 export function setFast(on: boolean): void {
   const was = fast
   fast = on
@@ -150,6 +160,7 @@ export function demoPeers(korean: boolean): Peer[] {
     claude: number,
     busy: number
   ): Peer => ({
+    deviceId: name,
     name,
     state: 'ok',
     at: Date.now() - 20_000,
@@ -232,6 +243,12 @@ export function demoPeers(korean: boolean): Peer[] {
       0,
       0
     ),
-    { name: korean ? '노트북' : 'Laptop', state: 'offline', usage: null, at: null }
+    {
+      deviceId: 'laptop',
+      name: korean ? '노트북' : 'Laptop',
+      state: 'offline',
+      usage: null,
+      at: null
+    }
   ]
 }

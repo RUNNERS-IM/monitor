@@ -105,6 +105,14 @@ entries.push({
     `published with Electron ${electronPkg.version} at https://github.com/electron/electron/releases/tag/v${electronPkg.version}.`
 })
 
+// Pretendard 는 kit 의 글꼴 파일로 들어와 위 목록에 안 나온다.
+entries.push({
+  name: 'Pretendard',
+  version: '1.3.9',
+  license: 'OFL-1.1',
+  text: readFileSync(join(import.meta.dirname, 'pretendard-license.txt'), 'utf8')
+})
+
 entries.sort((a, b) => a.name.localeCompare(b.name))
 let apacheUsed = false
 const parts = [

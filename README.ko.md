@@ -18,7 +18,7 @@ Monitor는 RUNNERS-IM이 사무실 컴퓨터를 보려고 만드는 앱입니다
 | claude 세션 | 돌고 있는 `claude` 프로세스 수                                                          |
 | GitHub 러너 | 작업이 돌고 있으면 **빌드 중**, 러너가 기다리고 있으면 **대기**, 러너가 없으면 **없음** |
 
-패널이 곧 Monitor의 메뉴입니다. 사용량 아래에 로그인할 때 열기, 업데이트 자동 확인, Monitor 정보, 업데이트 확인, 도움말 · 피드백, Monitor 종료가 있습니다. 아이콘을 오른쪽 클릭하면 같은 명령이 시스템 메뉴로 나오고, 맨 위에 상태 줄이 붙습니다.
+패널이 곧 Monitor의 메뉴입니다. 아이콘을 왼쪽 · 오른쪽 어느 쪽으로 눌러도 패널이 열리고, 사용량 아래에 설정… (⌘,), 도움말 · 피드백, Monitor 종료가 있습니다. 설정 창은 탭 네 개입니다: 컴퓨터(같은 계정의 모든 컴퓨터), 일반(로그인할 때 열기 · 업데이트 자동 확인 · 메뉴 막대에 아이콘 표시 · 업데이트 확인), 계정, 정보. 리눅스는 트레이가 미리 정한 메뉴만 열 수 있어 같은 명령이 메뉴로 나옵니다.
 
 패널과 메뉴는 컴퓨터에 설정된 언어를 따릅니다. 20개 언어를 지원합니다: 한국어, 영어, 일본어, 중국어(간체), 중국어(번체), 독일어, 프랑스어, 스페인어, 포르투갈어, 이탈리아어, 네덜란드어, 핀란드어, 폴란드어, 러시아어, 터키어, 아랍어, 힌디어, 태국어, 베트남어, 인도네시아어.
 
@@ -64,10 +64,10 @@ pnpm dist           # 지금 운영체제용 설치 파일을 dist.noindex/ 에 
 
 애플 실리콘 맥에서 인텔 맥용을 만들려면 `rustup target add x86_64-apple-darwin` 뒤에 `pnpm native --target x86_64-apple-darwin` 도 돌립니다.
 
-- `src/main/` 은 메인 프로세스(트레이, 패널 창, 3초마다 재기, 업데이트), `src/preload/` 는 화면이 메인 프로세스와 말하는 통로, `src/renderer/` 는 패널과 정보 창입니다. RUNNERS 앱 공통 부품은 runners-app-kit 에서 복사한 것입니다(`src/main/runners/`, `src/renderer/runners-account/`, 뿌리의 설정 파일). 복사본을 고치면 `pnpm check:account` 가 실패하므로 kit 에서 고칩니다.
+- `src/main/` 은 메인 프로세스(트레이, 패널 창, 3초마다 재기, 업데이트), `src/preload/` 는 화면이 메인 프로세스와 말하는 통로, `src/renderer/` 는 패널과 설정 창입니다. RUNNERS 앱 공통 부품은 runners-app-kit 에서 복사한 것입니다(`src/main/runners/`, `src/renderer/runners-account/`, 뿌리의 설정 파일). 복사본을 고치면 `pnpm check:account` 가 실패하므로 kit 에서 고칩니다.
 - `native/` 는 하나뿐인 네이티브 모듈(napi-rs)입니다. 컴퓨터 사용량 읽기, 정리할 거리 재기, 앱 끄기, 러너 멈추기, 트레이 그림 그리기를 합니다.
 - 화면 글자는 `locales/` 에 모여 있고 화면과 메인 프로세스가 같은 파일을 읽습니다. `pnpm check:locales` 로 빠진 키를 확인합니다.
-- 개발 실행은 `MONITOR_OPEN=panel|about|update|update-progress`(뒤의 둘은 가짜 바뀐 점으로 업데이트 창을 띄움), `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1`(스크린샷용 가짜 이름), `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup` 를 받습니다.
+- 개발 실행은 `MONITOR_OPEN=panel|settings|settings:<탭>|update|update-progress`(`settings:general` 처럼 설정 창의 탭을 고르고, 뒤의 둘은 가짜 바뀐 점으로 업데이트 창을 띄움), `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1`(스크린샷용 가짜 이름), `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup` 를 받습니다.
 
 아직 macOS(애플 실리콘)에서만 빌드하고 확인했습니다. 윈도우·리눅스 판은 아직 시험해 보지 않았습니다.
 

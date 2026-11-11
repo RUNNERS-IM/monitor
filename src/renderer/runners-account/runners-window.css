@@ -1,9 +1,11 @@
 /*
  * RUNNERS 창 모양: 칸으로 된 창(About · 설정 · 업데이트 창 등)의 공통 값. 다섯 앱이 같은 파일을 복사해 쓴다.
- * 디자인 기준 A 이고 macOS 시스템 설정의 밀도에 맞췄다(사용자 결정 `[RUNNERS] 네 앱 화면 값 통일` 1B, 2026-10-30).
+ * 간격은 macOS 시스템 설정의 밀도에 맞췄다(사용자 결정 `[RUNNERS] 네 앱 화면 값 통일` 1B, 2026-10-30).
+ * 색은 검정 · 흰색이 기본이고 빨강은 위험한 단추에만 쓴다(사용자 결정 `[RUNNERS] 디자인 시스템` 3A 4A, 2026-11-08).
  * 메뉴 막대 패널은 runners-menu.css 를 쓴다.
- * --rw-accent 는 운영체제 강조색이고 앱이 실행 중에 <html> 에 넣는다. #007aff(어두운 모드 #0a84ff)는 강조색이 없는 곳의 값이다.
  */
+@import './runners-font.css';
+
 :root {
   --rw-font: 13px;
   --rw-font-small: 11px;
@@ -25,18 +27,23 @@
   --rw-small-radius: 6px;
   --rw-button-height: 28px;
 
-  --rw-text: #1d1d1f;
-  --rw-text-secondary: rgba(0, 0, 0, 0.5);
-  --rw-separator: rgba(0, 0, 0, 0.12);
-  --rw-box-bg: rgba(255, 255, 255, 0.85);
+  --rw-text: #0a0a0a;
+  --rw-text-secondary: rgba(10, 10, 10, 0.56);
+  --rw-separator: rgba(10, 10, 10, 0.1);
+  --rw-box-bg: #f5f5f5;
   /* Grey fill of a plain button or a track. */
-  --rw-control-bg: rgba(0, 0, 0, 0.06);
-  --rw-control-hover: rgba(0, 0, 0, 0.1);
-  /* Where the OS draws no material behind the window (Linux). */
-  --rw-window-bg: #ececec;
-  --rw-accent: #007aff;
+  --rw-control-bg: rgba(10, 10, 10, 0.06);
+  --rw-control-hover: rgba(10, 10, 10, 0.11);
+  --rw-window-bg: #ffffff;
+  /* Filled buttons, switches that are on, links and focus rings. */
+  --rw-primary: #0a0a0a;
+  --rw-on-primary: #ffffff;
+  /* Only for actions that destroy something. */
+  --rw-danger: #e11d1d;
+  --rw-font-family:
+    'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--rw-font-family);
   font-size: var(--rw-font);
   color: var(--rw-text);
   -webkit-font-smoothing: antialiased;
@@ -44,14 +51,16 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --rw-text: #f5f5f7;
-    --rw-text-secondary: rgba(255, 255, 255, 0.55);
-    --rw-separator: rgba(255, 255, 255, 0.12);
-    --rw-box-bg: rgba(255, 255, 255, 0.05);
-    --rw-control-bg: rgba(255, 255, 255, 0.1);
-    --rw-control-hover: rgba(255, 255, 255, 0.16);
-    --rw-window-bg: #1e1e1e;
-    --rw-accent: #0a84ff;
+    --rw-text: #ffffff;
+    --rw-text-secondary: rgba(255, 255, 255, 0.6);
+    --rw-separator: rgba(255, 255, 255, 0.11);
+    --rw-box-bg: #171717;
+    --rw-control-bg: rgba(255, 255, 255, 0.09);
+    --rw-control-hover: rgba(255, 255, 255, 0.15);
+    --rw-window-bg: #0a0a0a;
+    --rw-primary: #ffffff;
+    --rw-on-primary: #0a0a0a;
+    --rw-danger: #fa2929;
   }
 }
 
@@ -107,8 +116,13 @@
 }
 
 .rw-button.default {
-  background: var(--rw-accent);
-  color: #fff;
+  background: var(--rw-primary);
+  color: var(--rw-on-primary);
+  font-weight: 600;
+}
+
+.rw-button.danger {
+  color: var(--rw-danger);
   font-weight: 600;
 }
 
@@ -117,6 +131,6 @@
 }
 
 .rw-button:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--rw-accent) 50%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--rw-primary) 50%, transparent);
   outline-offset: 1px;
 }

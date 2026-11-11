@@ -46,6 +46,10 @@ export function createLoginItem(options: LoginItemOptions) {
   }
 
   const setOn = (on: boolean) => {
+    // 개발 실행은 등록하지 않는다. 등록하면 로그인할 때 개발용 Electron 이 켜진다.
+    if (!app.isPackaged) {
+      return
+    }
     if (platform !== 'linux') {
       app.setLoginItemSettings(args ? { openAtLogin: on, args } : { openAtLogin: on })
       return
