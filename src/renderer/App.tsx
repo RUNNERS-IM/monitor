@@ -20,6 +20,7 @@ import {
 import { cleanError, formatDuration, formatGb } from './format'
 import { locale, t } from './i18n'
 import * as native from './native'
+import { platform } from './os'
 import type { AccountState, CleanupKind, MenuCommand, Peer, QuitReport } from './native'
 import { RunnersMark } from './runners-account/runners-account'
 import { MenuHead } from './runners-account/runners-menu'
@@ -421,13 +422,15 @@ function cpuParts(snap: Snapshot): { parts: Part[]; total: number } {
   const rest = Math.max(0, snap.cpuPercent - used)
   // Why: kernel time (compressing memory, swapping) belongs to no app; mixed into "other apps" it sent people looking
   // for an app to quit when the real cause was memory. Capped by the rest, since apps' own system calls count as both.
-  const macos = Math.min(rest, snap.cpuSystemPercent ?? 0)
+  // Why: Windows 는 이 몫을 재지 않는다(native cpu_ticks 가 0). 시험 실행의 꾸민 값으로 「macOS」 줄이 보이지 않게 0 으로 둔다.
+  const macos = platform === 'win32' ? 0 : Math.min(rest, snap.cpuSystemPercent ?? 0)
   const other = rest - macos
   const parts: Part[] = [
     ...apps,
     {
       key: 'macos',
-      label: t('slow.macos'),
+      // Why: Linux 에서도 커널 몫을 재지만 「macOS」라 적으면 틀린 말이다.
+      label: t(platform === 'linux' ? 'slow.macosLinux' : 'slow.macos'),
       amount: `${Math.round(macos)}%`,
       size: macos,
       colour: '#8e8e93'
@@ -635,7 +638,7 @@ function Breakdown({ parts, total, label }: { parts: Part[]; total: number; labe
   )
 }
 
-const SETTINGS_KEY = navigator.userAgent.includes('Macintosh') ? '⌘,' : 'Ctrl+,'
+const SETTINGS_KEY = platform === 'darwin' ? '⌘,' : 'Ctrl+,'
 const run = (name: MenuCommand) => void native.command(name)
 
 /** The shared bottom lines (shared decision 2026-11-07 2A): Settings… ⌘, · Help · Quit. The on/off switches and the

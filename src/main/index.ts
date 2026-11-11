@@ -17,6 +17,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import * as account from './account'
 import { currentLocale, t } from './i18n'
+import { osSuffix } from '../shared/os-words'
 import * as login from './login'
 import { buildMenu, forgetIcons, type Command, type MenuState } from './menu'
 import { native, type Sampler } from './native'
@@ -73,6 +74,8 @@ const REOPEN_GUARD_MS = 300
 const DEV = !app.isPackaged
 const DEMO = DEV && !!process.env.MONITOR_DEMO
 const DEMO_OS = 'macOS 26.5 Tahoe'
+// Why: 시험 실행은 `MONITOR_TEST_PLATFORM=win32|linux` 로 Mac 에서도 다른 운영체제의 글을 띄워 본다. 글만 바꾸고 동작은 그대로다.
+const WORDS_PLATFORM = (DEV && process.env.MONITOR_TEST_PLATFORM) || process.platform
 const DEMO_VERSION = '2.6.1102'
 // Why: a debug run keeps its own data folder, so it runs next to the installed Monitor (which holds the
 // single-instance lock on the shared folder) and never signs it in or out.
@@ -239,7 +242,7 @@ function notifyIfSlow(snap: Snapshot, held: Reason[], suggested: Suggestion[]): 
             name: offer.name,
             size: `${(offer.bytes / 1024 ** 3).toFixed(1)} GB`
           })
-        : t('notice.body', { apps: apps.join(', ') }),
+        : t(`notice.body${osSuffix(WORDS_PLATFORM)}`, { apps: apps.join(', ') }),
       actions: offer ? [{ type: 'button', text: t('notice.quit', { name: offer.name }) }] : []
     })
     notice.on('click', () => {
