@@ -30,12 +30,18 @@ export function RunnersApps({ groups, locale, getLabel, onOpen }: RunnersAppsPro
               {group.items.map((item) => (
                 <li key={item.id} className="runners-apps-row">
                   {item.iconUrl ? (
-                    <img
-                      className="runners-apps-icon"
-                      src={item.iconUrl}
-                      alt=""
-                      draggable={false}
-                    />
+                    // 어두운 화면에서는 블랙 판으로 바뀐다. 시스템 밝기를 바꾸면 창을 다시 열지 않아도 따라간다.
+                    <picture>
+                      {item.iconDarkUrl && (
+                        <source media="(prefers-color-scheme: dark)" srcSet={item.iconDarkUrl} />
+                      )}
+                      <img
+                        className="runners-apps-icon"
+                        src={item.iconUrl}
+                        alt=""
+                        draggable={false}
+                      />
+                    </picture>
                   ) : (
                     // 그림이 없어도 구멍이 나지 않게 첫 글자를 그린다.
                     <span className="runners-apps-icon runners-apps-letter" aria-hidden>

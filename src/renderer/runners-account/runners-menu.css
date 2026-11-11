@@ -31,7 +31,8 @@
   --rm-sep-gap: 8px;
 
   --rm-text: rgba(0, 0, 0, 0.85);
-  --rm-text-secondary: rgba(0, 0, 0, 0.5);
+  /* 작은 회색 글자(머리글 · 아래 줄 · 설명 · 단축키). macOS 값 0.5 는 고른 줄 바탕에서 대비 3.64 라, 어디서나 4.5 를 넘도록 진하게 한다(2026-11-11). */
+  --rm-text-secondary: rgba(0, 0, 0, 0.6);
   --rm-separator: rgba(0, 0, 0, 0.1);
   --rm-group-bg: rgba(0, 0, 0, 0.04);
   --rm-hover: rgba(0, 0, 0, 0.06);
@@ -53,7 +54,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --rm-text: rgba(255, 255, 255, 0.85);
-    --rm-text-secondary: rgba(255, 255, 255, 0.5);
+    --rm-text-secondary: rgba(255, 255, 255, 0.55);
     --rm-separator: rgba(255, 255, 255, 0.1);
     --rm-group-bg: rgba(255, 255, 255, 0.05);
     --rm-hover: rgba(255, 255, 255, 0.08);

@@ -2,11 +2,19 @@
 // Electron 을 직접 불러오지 않고 safeStorage 와 파일 위치를 받는다. 그래서 앱마다 그대로 복사해 쓰고 Electron 없이 시험한다.
 import { mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
+import { SHARED_LOGIN_APPS, type SharedLogin, type SharedLoginStore } from './shared-login'
 
 const TIMEOUT_MS = 15_000
 
 export type AccountTokens = { accessToken: string; refreshToken: string }
-type Saved = { email: string; tokens: AccountTokens }
+type Saved = {
+  email: string
+  tokens: AccountTokens
+  /** 이 로그인이 공용 칸의 몇 번째 로그인까지 본 것인가. 옛 판이 저장한 로그인에는 없다. */
+  generation?: number
+  /** 다른 앱의 로그인을 따라 들어왔으면 그 앱의 서버 이름 */
+  from?: string
+}
 
 export type AccountSafeStorage = {
   isEncryptionAvailable: () => boolean
@@ -28,6 +36,8 @@ export type AccountOptions = {
   isPackaged?: boolean
   /** 서버가 어느 앱의 요청인지 알아보게 보내는 이름. 예: Monitor/2.6.110701. 없으면 Node 기본값 node 가 나간다. */
   userAgent?: string
+  /** 같은 Mac 의 앱들과 로그인을 함께 쓰는 칸(shared-login.ts). macOS 설치판만 넘긴다. 없으면 이 앱만 따로 로그인한다. */
+  sharedLogin?: SharedLoginStore
   /** 시험할 때 바꿔 끼운다. */
   fetch?: typeof fetch
 }
@@ -82,6 +92,11 @@ export function createAccount(options: AccountOptions) {
   let saved: Saved | null | undefined
   let refreshing: Promise<AccountRefreshResult> | null = null
   const listeners = new Set<() => void>()
+  const shared =
+    options.isPackaged !== false && project in SHARED_LOGIN_APPS ? options.sharedLogin : undefined
+  let joining: Promise<void> | null = null
+  let joinAgain = false
+  let watching = false
 
   // 토큰은 이 사람으로 로그인하는 열쇠라 키체인으로 암호화해서만 파일에 둔다. 개인정보 처리방침의
   // 「토큰은 시스템 키체인으로 암호화합니다」와 맞춘다. 암호화할 수 없으면(키링 없는 Linux, 개발 실행) 메모리에만 두고,
@@ -136,7 +151,7 @@ export function createAccount(options: AccountOptions) {
     return saved
   }
 
-  const store = (next: Saved | null) => {
+  const keep = (next: Saved | null) => {
     saved = next
     if (next && canEncrypt()) {
       write(next)
@@ -144,6 +159,10 @@ export function createAccount(options: AccountOptions) {
       // 메모리에만 둘 때도 앞 로그인 파일은 지운다. 남기면 키체인이 돌아왔을 때 앞 계정이 살아난다.
       rmSync(filePath, { force: true })
     }
+  }
+
+  const store = (next: Saved | null) => {
+    keep(next)
     for (const listener of listeners) {
       listener()
     }
@@ -183,9 +202,162 @@ export function createAccount(options: AccountOptions) {
     return now ? { ok: true, token: now.tokens.accessToken } : { ok: false, reason: 'signedOut' }
   }
 
+  // 공용 칸을 못 읽거나 못 써도 이 앱의 로그인은 그대로 돈다. undefined 는 읽지 못한 것, null 은 칸이 없는 것이다.
+  const readShared = async (): Promise<SharedLogin | null | undefined> => {
+    try {
+      return await shared?.read()
+    } catch {
+      return undefined
+    }
+  }
+  const writeShared = async (next: SharedLogin) => {
+    await shared?.write(next).catch(() => undefined)
+  }
+  const sharedFields = (email: string, tokens: AccountTokens): SharedLogin['signedIn'] => ({
+    email,
+    project,
+    refreshToken: tokens.refreshToken
+  })
+
+  const endSession = async (refreshToken: string) => {
+    await post('/api/mobile/auth/logout', { refreshToken }).catch(() => undefined)
+  }
+
+  // 비밀번호로 들어왔을 때. 번호를 올려 다른 앱이 따라오게 한다.
+  const signedInHere = async (email: string, tokens: AccountTokens) => {
+    if (!shared) {
+      store({ email, tokens })
+      return
+    }
+    const generation = ((await readShared())?.generation ?? 0) + 1
+    store({ email, tokens, generation })
+    await writeShared({ generation, signedIn: sharedFields(email, tokens) })
+  }
+
+  // 갱신하면 서버가 옛 토큰을 지우므로 칸에 새 토큰을 둔다. 칸이 다른 로그인으로 넘어갔으면 건드리지 않는다.
+  const refreshedHere = async (now: Saved) => {
+    const found = await readShared()
+    if (found?.signedIn?.email === now.email && found.generation === now.generation) {
+      await writeShared({ ...found, signedIn: sharedFields(now.email, now.tokens) })
+    }
+  }
+
+  // 칸의 토큰을 보여 주고 이 앱의 토큰을 받는다. 칸의 토큰이 이 앱 것이면 교환이 안 되므로(서버가 거절) 갱신해서 쓴다.
+  // 읽는 사이 다른 앱이 갱신해 401 이 오면 칸을 다시 읽어 한 번만 더 해 본다. 그래도 안 되면 로그인 창을 보여 준다.
+  const followShared = async (first: SharedLogin) => {
+    let found = first
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const slot = found.signedIn
+      if (!slot) {
+        return
+      }
+      const own = slot.project === project
+      try {
+        const tokens = await post<AccountTokens>(
+          own ? '/api/mobile/auth/refresh' : '/api/mobile/auth/exchange',
+          own
+            ? { refreshToken: slot.refreshToken }
+            : { refreshToken: slot.refreshToken, projectName: project }
+        )
+        const latest = await readShared()
+        if (load() || (latest && latest.generation !== found.generation)) {
+          // 기다리는 사이 직접 로그인했거나 로그아웃했다. 아무도 쓰지 않을 토큰이라 서버에서도 끝낸다.
+          await endSession(tokens.refreshToken)
+          joinAgain = true
+          return
+        }
+        store({
+          email: slot.email,
+          tokens,
+          generation: found.generation,
+          ...(own ? {} : { from: slot.project })
+        })
+        if (own) {
+          await writeShared({ ...found, signedIn: sharedFields(slot.email, tokens) })
+        }
+        return
+      } catch (error) {
+        if (!(error instanceof AccountApiError) || error.status !== 401 || attempt > 0) {
+          return
+        }
+        const again = await readShared()
+        if (!again?.signedIn || again.signedIn.refreshToken === slot.refreshToken) {
+          return
+        }
+        found = again
+      }
+    }
+  }
+
+  const joinOnce = async () => {
+    const found = await readShared()
+    if (found === undefined) {
+      return
+    }
+    const mine = load()
+    const seen = mine?.generation ?? 0
+    // 공용 칸이 생기기 전의 로그인이거나 칸이 지워졌으면, 지금 로그인을 칸에 올린다.
+    if (mine && (!found || seen > found.generation)) {
+      const generation = Math.max(seen, 1)
+      keep({ ...mine, generation })
+      await writeShared({ generation, signedIn: sharedFields(mine.email, mine.tokens) })
+      return
+    }
+    if (!found) {
+      return
+    }
+    const behind = seen < found.generation
+    if (mine && !behind) {
+      return
+    }
+    if (mine && found.signedIn?.email === mine.email) {
+      keep({ ...mine, generation: found.generation })
+      return
+    }
+    if (mine) {
+      // 꺼져 있거나 켜져 있는 동안 다른 앱이 로그아웃했거나 다른 계정으로 바꿨다. 서버 로그아웃은 토큰마다라 자기 토큰으로 부른다.
+      store(null)
+      await endSession(mine.tokens.refreshToken)
+    }
+    await followShared(found)
+  }
+
+  const joinShared = (): Promise<void> => {
+    if (joining) {
+      joinAgain = true
+      return joining
+    }
+    joining = (async () => {
+      do {
+        joinAgain = false
+        await joinOnce()
+      } while (joinAgain)
+    })().finally(() => {
+      joining = null
+    })
+    return joining
+  }
+
   return {
     /** 로그인한 이메일. 없으면 null. */
     current: () => load()?.email ?? null,
+    /** 로그아웃이 같은 Mac 의 앱 모두에 퍼지는가. 계정 메뉴의 문구를 고르는 데 쓴다. */
+    sharedLogin: () => shared !== undefined,
+    /** 다른 앱의 로그인을 따라 들어왔으면 그 앱의 화면 이름. 비밀번호로 직접 들어왔으면 null. */
+    signedInFrom: () => SHARED_LOGIN_APPS[load()?.from ?? ''] ?? null,
+    /** 앱이 켜질 때 한 번 부른다. 공용 칸을 보고 로그인 · 로그아웃을 맞춘 뒤, 다른 앱이 바꿀 때마다 다시 맞춘다. */
+    joinSharedLogin(): Promise<void> {
+      if (!shared) {
+        return Promise.resolve()
+      }
+      if (!watching) {
+        watching = true
+        shared.watch(() => {
+          void joinShared()
+        })
+      }
+      return joinShared()
+    },
     onChange(listener: () => void) {
       listeners.add(listener)
       return () => {
@@ -203,7 +375,7 @@ export function createAccount(options: AccountOptions) {
         projectName: project,
         ...(code ? { code } : {})
       }).catch(problem)
-      store({ email: res.user?.email ?? typed, tokens: res.tokens })
+      await signedInHere(res.user?.email ?? typed, res.tokens)
     },
     /** 메일로 6자리 숫자를 보낸다. signup 은 가입용(이미 계정이 있으면 exists), reset 은 비밀번호 찾기용(없으면 none). */
     async sendCode(purpose: 'signup' | 'reset', email: string, locale?: string) {
@@ -225,15 +397,17 @@ export function createAccount(options: AccountOptions) {
         password,
         projectName: project
       }).catch(problem)
-      store({ email: res.user?.email ?? typed, tokens: res.tokens })
+      await signedInHere(res.user?.email ?? typed, res.tokens)
     },
     async signOut() {
       const was = load()
       store(null)
       if (was) {
-        await post('/api/mobile/auth/logout', {
-          refreshToken: was.tokens.refreshToken
-        }).catch(() => undefined)
+        if (shared) {
+          const found = await readShared()
+          await writeShared({ generation: (found?.generation ?? 0) + 1, signedIn: null })
+        }
+        await endSession(was.tokens.refreshToken)
       }
     },
     accessToken: () => load()?.tokens.accessToken ?? null,
@@ -256,7 +430,9 @@ export function createAccount(options: AccountOptions) {
             )
             return afterAccountChange()
           }
-          store({ ...was, tokens })
+          const now = { ...was, tokens }
+          store(now)
+          await refreshedHere(now)
           return { ok: true, token: tokens.accessToken }
         } catch (error) {
           if (load() !== was) {

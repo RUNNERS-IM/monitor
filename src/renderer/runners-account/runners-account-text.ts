@@ -1,5 +1,6 @@
-// The sign-in sheet's and account menu's words in the 20 languages the RUNNERS desktop apps ship. Copied unchanged
-// into each app with the rest of this folder; each app passes its locale code, so no app's own locale files need these.
+// The sign-in sheet's, account menu's and open-source notices' words in the 20 languages the RUNNERS desktop apps
+// ship. Copied unchanged into each app with the rest of this folder; each app passes its locale code, so no app's own
+// locale files need these.
 
 export const TEXT = {
   ar: {
@@ -14,6 +15,8 @@ export const TEXT = {
     exists: 'لهذا البريد حساب RUNNERS بالفعل. سجّل الدخول بكلمة المرور التي تستخدمها.',
     network: 'تعذّر الوصول إلى الخادم. حاول مرة أخرى بعد قليل.',
     signOut: 'تسجيل الخروج',
+    signOutAll: 'تسجيل الخروج (كل تطبيقات RUNNERS على هذا الـMac)',
+    signedInFrom: 'تم تسجيل الدخول مع {app}',
     sheetTitle: 'تسجيل الدخول بحساب RUNNERS',
     sheetTitleSignUp: 'إنشاء حساب RUNNERS',
     sheetIntro: 'تستخدم Remote وMonitor وPrompt وSplit وDraw حساب RUNNERS وكلمة مرور واحدة.',
@@ -40,6 +43,11 @@ export const TEXT = {
     newPassword: 'كلمة مرور جديدة',
     resetSubmit: 'تسجيل الدخول بكلمة المرور الجديدة',
     backToSignIn: 'العودة إلى تسجيل الدخول',
+    noticesIntro:
+      'يتضمّن {app} برامج من المشاريع أدناه. تَرِد إشعارات حقوق النشر والترخيص لكل منها بنصّها الإنجليزي الأصلي. أيقونات القوائم مأخوذة من Lucide (ترخيص ISC) ومُدرجة تحت lucide-react.',
+    noticesLicense: 'الترخيص',
+    noticesApache: 'نصّ Apache License 2.0 في آخر هذه القائمة.',
+    noticesNoFile: 'لا تتضمّن هذه الحزمة ملف ترخيص. نصّ الترخيص والشيفرة المصدرية في {url}.',
     close: 'إغلاق'
   },
   de: {
@@ -54,6 +62,8 @@ export const TEXT = {
     exists: 'Für diese E-Mail gibt es schon ein RUNNERS-Konto. Melde dich mit deinem Passwort an.',
     network: 'Der Server ist nicht erreichbar. Versuche es gleich noch einmal.',
     signOut: 'Abmelden',
+    signOutAll: 'Abmelden (alle RUNNERS-Apps auf diesem Mac)',
+    signedInFrom: 'Zusammen mit {app} angemeldet',
     sheetTitle: 'Mit RUNNERS anmelden',
     sheetTitleSignUp: 'RUNNERS-Konto erstellen',
     sheetIntro:
@@ -82,6 +92,12 @@ export const TEXT = {
     newPassword: 'Neues Passwort',
     resetSubmit: 'Mit neuem Passwort anmelden',
     backToSignIn: 'Zurück zur Anmeldung',
+    noticesIntro:
+      '{app} enthält Software aus den unten genannten Projekten. Ihre Urheberrechts- und Lizenzhinweise folgen im englischen Original. Die Menüsymbole stammen von Lucide (ISC-Lizenz), aufgeführt unter lucide-react.',
+    noticesLicense: 'Lizenz',
+    noticesApache: 'Der Text der Apache License 2.0 steht am Ende dieser Liste.',
+    noticesNoFile:
+      'Dieses Paket enthält keine Lizenzdatei. Lizenztext und Quellcode findest du unter {url}.',
     close: 'Schließen'
   },
   en: {
@@ -92,16 +108,18 @@ export const TEXT = {
     signUp: 'Create Account',
     toSignUp: 'No account? Create one',
     toSignIn: 'Already have an account? Log in',
-    bad: 'The password is not right.',
+    bad: 'Incorrect password.',
     exists: 'That email already has a RUNNERS account. Log in with the password you use.',
     network: 'Could not reach the server. Try again in a moment.',
     signOut: 'Log Out',
-    sheetTitle: 'Sign in with RUNNERS',
+    signOutAll: 'Log Out (All RUNNERS Apps on This Mac)',
+    signedInFrom: 'Logged in together with {app}',
+    sheetTitle: 'Log in with RUNNERS',
     sheetTitleSignUp: 'Create a RUNNERS account',
     sheetIntro: 'Remote, Monitor, Prompt, Split and Draw share one RUNNERS account and password.',
     none: 'There is no RUNNERS account with this email.',
     format: 'Use 6 to 20 characters with both letters and numbers.',
-    code: 'That code is not right. Check the 6-digit code in the email again.',
+    code: 'Incorrect code. Check the 6-digit code in the email again.',
     many: 'Too many tries. Try again in a moment.',
     forgot: 'Forgot your password?',
     signUpThisEmail: 'Create an account with this email',
@@ -122,6 +140,11 @@ export const TEXT = {
     newPassword: 'New password',
     resetSubmit: 'Log in with the new password',
     backToSignIn: 'Back to log in',
+    noticesIntro:
+      '{app} includes software from the projects below. Their copyright and license notices follow in their original English. The menu icons are drawn from Lucide (ISC License), listed under lucide-react.',
+    noticesLicense: 'License',
+    noticesApache: 'The Apache License 2.0 text is at the end of this list.',
+    noticesNoFile: 'The package ships no license file. Its license text and source are at {url}.',
     close: 'Close'
   },
   es: {
@@ -136,6 +159,8 @@ export const TEXT = {
     exists: 'Ese correo ya tiene una cuenta de RUNNERS. Inicia sesión con tu contraseña.',
     network: 'No se pudo llegar al servidor. Inténtalo de nuevo en un momento.',
     signOut: 'Cerrar sesión',
+    signOutAll: 'Cerrar sesión (todas las apps de RUNNERS en este Mac)',
+    signedInFrom: 'Sesión iniciada junto con {app}',
     sheetTitle: 'Iniciar sesión con RUNNERS',
     sheetTitleSignUp: 'Crear una cuenta RUNNERS',
     sheetIntro:
@@ -163,6 +188,12 @@ export const TEXT = {
     newPassword: 'Contraseña nueva',
     resetSubmit: 'Iniciar sesión con la contraseña nueva',
     backToSignIn: 'Volver a iniciar sesión',
+    noticesIntro:
+      '{app} incluye software de los proyectos que aparecen abajo. Sus avisos de copyright y licencia se muestran en su inglés original. Los iconos de los menús proceden de Lucide (licencia ISC), en la entrada lucide-react.',
+    noticesLicense: 'Licencia',
+    noticesApache: 'El texto de la Apache License 2.0 está al final de esta lista.',
+    noticesNoFile:
+      'Este paquete no incluye archivo de licencia. El texto de la licencia y el código fuente están en {url}.',
     close: 'Cerrar'
   },
   fi: {
@@ -177,6 +208,8 @@ export const TEXT = {
     exists: 'Tällä sähköpostilla on jo RUNNERS-tili. Kirjaudu omalla salasanallasi.',
     network: 'Palvelimeen ei saatu yhteyttä. Yritä hetken päästä uudelleen.',
     signOut: 'Kirjaudu ulos',
+    signOutAll: 'Kirjaudu ulos (kaikki tämän Macin RUNNERS-apit)',
+    signedInFrom: 'Kirjauduttu yhdessä sovelluksen {app} kanssa',
     sheetTitle: 'Kirjaudu RUNNERS-tilillä',
     sheetTitleSignUp: 'Luo RUNNERS-tili',
     sheetIntro:
@@ -204,6 +237,12 @@ export const TEXT = {
     newPassword: 'Uusi salasana',
     resetSubmit: 'Kirjaudu uudella salasanalla',
     backToSignIn: 'Takaisin kirjautumiseen',
+    noticesIntro:
+      '{app} sisältää ohjelmistoa alla luetelluista projekteista. Niiden tekijänoikeus- ja lisenssitiedot ovat alkuperäisellä englannin kielellä. Valikkojen kuvakkeet ovat Lucidesta (ISC-lisenssi), kohdassa lucide-react.',
+    noticesLicense: 'Lisenssi',
+    noticesApache: 'Apache License 2.0 -teksti on tämän luettelon lopussa.',
+    noticesNoFile:
+      'Paketissa ei ole lisenssitiedostoa. Lisenssiteksti ja lähdekoodi ovat osoitteessa {url}.',
     close: 'Sulje'
   },
   fr: {
@@ -218,6 +257,8 @@ export const TEXT = {
     exists: 'Cet e-mail a déjà un compte RUNNERS. Connectez-vous avec votre mot de passe.',
     network: 'Impossible de joindre le serveur. Réessayez dans un instant.',
     signOut: 'Se déconnecter',
+    signOutAll: 'Se déconnecter (toutes les apps RUNNERS de ce Mac)',
+    signedInFrom: 'Connecté avec {app}',
     sheetTitle: 'Se connecter avec RUNNERS',
     sheetTitleSignUp: 'Créer un compte RUNNERS',
     sheetIntro:
@@ -245,6 +286,12 @@ export const TEXT = {
     newPassword: 'Nouveau mot de passe',
     resetSubmit: 'Se connecter avec le nouveau mot de passe',
     backToSignIn: 'Retour à la connexion',
+    noticesIntro:
+      '{app} contient des logiciels issus des projets ci-dessous. Leurs mentions de droits d’auteur et de licence suivent dans leur version originale en anglais. Les icônes des menus proviennent de Lucide (licence ISC), à l’entrée lucide-react.',
+    noticesLicense: 'Licence',
+    noticesApache: 'Le texte de l’Apache License 2.0 se trouve à la fin de cette liste.',
+    noticesNoFile:
+      'Ce paquet ne contient pas de fichier de licence. Le texte de la licence et le code source se trouvent sur {url}.',
     close: 'Fermer'
   },
   hi: {
@@ -259,6 +306,8 @@ export const TEXT = {
     exists: 'इस ईमेल का पहले से RUNNERS खाता है। अपने पासवर्ड से लॉग इन करें।',
     network: 'सर्वर तक नहीं पहुँच सके। थोड़ी देर बाद फिर कोशिश करें।',
     signOut: 'लॉग आउट',
+    signOutAll: 'लॉग आउट (इस Mac के सभी RUNNERS ऐप)',
+    signedInFrom: '{app} के साथ लॉग इन किया गया',
     sheetTitle: 'RUNNERS खाते से लॉग इन करें',
     sheetTitleSignUp: 'RUNNERS खाता बनाएँ',
     sheetIntro: 'Remote, Monitor, Prompt, Split और Draw एक ही RUNNERS खाता और पासवर्ड इस्तेमाल करते हैं।',
@@ -283,6 +332,11 @@ export const TEXT = {
     newPassword: 'नया पासवर्ड',
     resetSubmit: 'नए पासवर्ड से लॉग इन करें',
     backToSignIn: 'लॉग इन पर वापस जाएँ',
+    noticesIntro:
+      '{app} में नीचे दिए गए प्रोजेक्ट का सॉफ़्टवेयर शामिल है। उनकी कॉपीराइट और लाइसेंस सूचनाएँ मूल अंग्रेज़ी में दी गई हैं। मेनू आइकन Lucide (ISC लाइसेंस) से लिए गए हैं और lucide-react में सूचीबद्ध हैं।',
+    noticesLicense: 'लाइसेंस',
+    noticesApache: 'Apache License 2.0 का पाठ इस सूची के अंत में है।',
+    noticesNoFile: 'इस पैकेज में लाइसेंस फ़ाइल नहीं है। लाइसेंस का पाठ और सोर्स कोड {url} पर है।',
     close: 'बंद करें'
   },
   id: {
@@ -297,6 +351,8 @@ export const TEXT = {
     exists: 'Email ini sudah punya akun RUNNERS. Masuk dengan kata sandi yang kamu pakai.',
     network: 'Tidak dapat menjangkau server. Coba lagi sebentar lagi.',
     signOut: 'Keluar',
+    signOutAll: 'Keluar (semua aplikasi RUNNERS di Mac ini)',
+    signedInFrom: 'Masuk bersama {app}',
     sheetTitle: 'Masuk dengan RUNNERS',
     sheetTitleSignUp: 'Buat akun RUNNERS',
     sheetIntro:
@@ -324,6 +380,12 @@ export const TEXT = {
     newPassword: 'Kata sandi baru',
     resetSubmit: 'Masuk dengan kata sandi baru',
     backToSignIn: 'Kembali ke masuk',
+    noticesIntro:
+      '{app} menyertakan perangkat lunak dari proyek di bawah ini. Pemberitahuan hak cipta dan lisensinya ditampilkan dalam bahasa Inggris aslinya. Ikon menu berasal dari Lucide (Lisensi ISC), tercantum di lucide-react.',
+    noticesLicense: 'Lisensi',
+    noticesApache: 'Teks Apache License 2.0 ada di akhir daftar ini.',
+    noticesNoFile:
+      'Paket ini tidak menyertakan file lisensi. Teks lisensi dan kode sumbernya ada di {url}.',
     close: 'Tutup'
   },
   it: {
@@ -338,6 +400,8 @@ export const TEXT = {
     exists: 'Questa email ha già un account RUNNERS. Accedi con la tua password.',
     network: 'Impossibile raggiungere il server. Riprova tra poco.',
     signOut: 'Esci',
+    signOutAll: 'Esci (tutte le app RUNNERS su questo Mac)',
+    signedInFrom: 'Accesso effettuato insieme a {app}',
     sheetTitle: 'Accedi con RUNNERS',
     sheetTitleSignUp: 'Crea un account RUNNERS',
     sheetIntro:
@@ -365,6 +429,12 @@ export const TEXT = {
     newPassword: 'Nuova password',
     resetSubmit: 'Accedi con la nuova password',
     backToSignIn: 'Torna all’accesso',
+    noticesIntro:
+      '{app} include software dei progetti elencati qui sotto. Le loro note di copyright e di licenza seguono nell’inglese originale. Le icone dei menu provengono da Lucide (licenza ISC), alla voce lucide-react.',
+    noticesLicense: 'Licenza',
+    noticesApache: 'Il testo della Apache License 2.0 si trova alla fine di questo elenco.',
+    noticesNoFile:
+      'Questo pacchetto non include un file di licenza. Il testo della licenza e il codice sorgente sono su {url}.',
     close: 'Chiudi'
   },
   ja: {
@@ -380,6 +450,8 @@ export const TEXT = {
       'このメールアドレスにはすでに RUNNERS アカウントがあります。お使いのパスワードでログインしてください。',
     network: 'サーバーに接続できませんでした。しばらくしてからもう一度お試しください。',
     signOut: 'ログアウト',
+    signOutAll: 'ログアウト(この Mac のすべての RUNNERS アプリ)',
+    signedInFrom: '{app} と一緒にログイン済み',
     sheetTitle: 'RUNNERS アカウントでログイン',
     sheetTitleSignUp: 'RUNNERS アカウントを作成',
     sheetIntro:
@@ -407,6 +479,12 @@ export const TEXT = {
     newPassword: '新しいパスワード',
     resetSubmit: '新しいパスワードでログイン',
     backToSignIn: 'ログインに戻る',
+    noticesIntro:
+      '{app} には以下のプロジェクトのソフトウェアが含まれています。各プロジェクトの著作権表示とライセンス条文は英語の原文のまま掲載しています。メニューのアイコンは Lucide(ISC ライセンス)のもので、lucide-react の項にあります。',
+    noticesLicense: 'ライセンス',
+    noticesApache: 'Apache License 2.0 の全文はこの一覧の最後にあります。',
+    noticesNoFile:
+      'このパッケージにはライセンスファイルがありません。ライセンス全文とソースコードは {url} にあります。',
     close: '閉じる'
   },
   ko: {
@@ -421,6 +499,8 @@ export const TEXT = {
     exists: '이 이메일은 이미 RUNNERS 계정이 있습니다. 쓰던 비밀번호로 로그인해 주세요.',
     network: '서버에 연결할 수 없습니다. 잠시 뒤 다시 시도해 주세요.',
     signOut: '로그아웃',
+    signOutAll: '로그아웃 (이 Mac 의 네 앱 모두)',
+    signedInFrom: '{app} 에서 로그인해 함께 로그인됨',
     sheetTitle: 'RUNNERS 계정으로 로그인',
     sheetTitleSignUp: 'RUNNERS 계정 만들기',
     sheetIntro: 'Remote · Monitor · Prompt · Split · Draw는 같은 RUNNERS 계정과 비밀번호를 씁니다.',
@@ -446,6 +526,12 @@ export const TEXT = {
     newPassword: '새 비밀번호',
     resetSubmit: '새 비밀번호로 로그인',
     backToSignIn: '로그인으로 돌아가기',
+    noticesIntro:
+      '{app}에는 아래 프로젝트의 소프트웨어가 들어 있습니다. 각 프로젝트의 저작권 · 라이선스 고지는 영어 원문 그대로 싣습니다. 메뉴 아이콘은 Lucide(ISC 라이선스)의 것으로, lucide-react 항목에 있습니다.',
+    noticesLicense: '라이선스',
+    noticesApache: 'Apache License 2.0 전문은 이 목록 맨 끝에 있습니다.',
+    noticesNoFile:
+      '이 꾸러미에는 라이선스 파일이 없습니다. 라이선스 전문과 소스 코드는 {url} 에 있습니다.',
     close: '닫기'
   },
   nl: {
@@ -460,6 +546,8 @@ export const TEXT = {
     exists: 'Dit e-mailadres heeft al een RUNNERS-account. Log in met je wachtwoord.',
     network: 'Kan de server niet bereiken. Probeer het zo opnieuw.',
     signOut: 'Uitloggen',
+    signOutAll: 'Uitloggen (alle RUNNERS-apps op deze Mac)',
+    signedInFrom: 'Samen met {app} ingelogd',
     sheetTitle: 'Inloggen met RUNNERS',
     sheetTitleSignUp: 'RUNNERS-account maken',
     sheetIntro: 'Remote, Monitor, Prompt, Split en Draw delen één RUNNERS-account en wachtwoord.',
@@ -486,6 +574,12 @@ export const TEXT = {
     newPassword: 'Nieuw wachtwoord',
     resetSubmit: 'Inloggen met nieuw wachtwoord',
     backToSignIn: 'Terug naar inloggen',
+    noticesIntro:
+      '{app} bevat software van de projecten hieronder. Hun copyright- en licentievermeldingen volgen in het oorspronkelijke Engels. De menupictogrammen komen van Lucide (ISC-licentie), vermeld onder lucide-react.',
+    noticesLicense: 'Licentie',
+    noticesApache: 'De tekst van de Apache License 2.0 staat aan het einde van deze lijst.',
+    noticesNoFile:
+      'Dit pakket bevat geen licentiebestand. De licentietekst en broncode staan op {url}.',
     close: 'Sluiten'
   },
   pl: {
@@ -500,6 +594,8 @@ export const TEXT = {
     exists: 'Ten e-mail ma już konto RUNNERS. Zaloguj się swoim hasłem.',
     network: 'Nie udało się połączyć z serwerem. Spróbuj za chwilę.',
     signOut: 'Wyloguj',
+    signOutAll: 'Wyloguj (wszystkie aplikacje RUNNERS na tym Macu)',
+    signedInFrom: 'Zalogowano razem z {app}',
     sheetTitle: 'Zaloguj się kontem RUNNERS',
     sheetTitleSignUp: 'Utwórz konto RUNNERS',
     sheetIntro: 'Remote, Monitor, Prompt, Split i Draw korzystają z jednego konta i hasła RUNNERS.',
@@ -525,6 +621,12 @@ export const TEXT = {
     newPassword: 'Nowe hasło',
     resetSubmit: 'Zaloguj się nowym hasłem',
     backToSignIn: 'Wróć do logowania',
+    noticesIntro:
+      '{app} zawiera oprogramowanie z poniższych projektów. Ich informacje o prawach autorskich i licencjach podajemy w oryginalnym brzmieniu angielskim. Ikony menu pochodzą z Lucide (licencja ISC), pozycja lucide-react.',
+    noticesLicense: 'Licencja',
+    noticesApache: 'Tekst Apache License 2.0 znajduje się na końcu tej listy.',
+    noticesNoFile:
+      'Ten pakiet nie zawiera pliku licencji. Tekst licencji i kod źródłowy są pod adresem {url}.',
     close: 'Zamknij'
   },
   pt: {
@@ -539,6 +641,8 @@ export const TEXT = {
     exists: 'Este e-mail já tem uma conta RUNNERS. Entre com a senha que você usa.',
     network: 'Não foi possível alcançar o servidor. Tente de novo em instantes.',
     signOut: 'Sair',
+    signOutAll: 'Sair (todos os apps RUNNERS neste Mac)',
+    signedInFrom: 'Sessão iniciada junto com {app}',
     sheetTitle: 'Entrar com RUNNERS',
     sheetTitleSignUp: 'Criar conta RUNNERS',
     sheetIntro: 'Remote, Monitor, Prompt, Split e Draw usam a mesma conta e senha RUNNERS.',
@@ -565,6 +669,12 @@ export const TEXT = {
     newPassword: 'Nova senha',
     resetSubmit: 'Entrar com a nova senha',
     backToSignIn: 'Voltar para entrar',
+    noticesIntro:
+      'O {app} inclui software dos projetos abaixo. Os avisos de direitos autorais e de licença de cada um seguem no inglês original. Os ícones dos menus vêm do Lucide (licença ISC), listado em lucide-react.',
+    noticesLicense: 'Licença',
+    noticesApache: 'O texto da Apache License 2.0 está no fim desta lista.',
+    noticesNoFile:
+      'Este pacote não inclui arquivo de licença. O texto da licença e o código-fonte estão em {url}.',
     close: 'Fechar'
   },
   ru: {
@@ -579,6 +689,8 @@ export const TEXT = {
     exists: 'У этого адреса уже есть аккаунт RUNNERS. Войдите со своим паролем.',
     network: 'Не удалось связаться с сервером. Попробуйте чуть позже.',
     signOut: 'Выйти',
+    signOutAll: 'Выйти (все приложения RUNNERS на этом Mac)',
+    signedInFrom: 'Вход выполнен вместе с {app}',
     sheetTitle: 'Вход с учётной записью RUNNERS',
     sheetTitleSignUp: 'Создать учётную запись RUNNERS',
     sheetIntro: 'Remote, Monitor, Prompt, Split и Draw используют один аккаунт и пароль RUNNERS.',
@@ -605,6 +717,12 @@ export const TEXT = {
     newPassword: 'Новый пароль',
     resetSubmit: 'Войти с новым паролем',
     backToSignIn: 'Вернуться ко входу',
+    noticesIntro:
+      '{app} содержит программное обеспечение из проектов ниже. Их уведомления об авторских правах и лицензиях приведены на языке оригинала (английском). Значки меню взяты из Lucide (лицензия ISC), см. lucide-react.',
+    noticesLicense: 'Лицензия',
+    noticesApache: 'Текст Apache License 2.0 приведён в конце этого списка.',
+    noticesNoFile:
+      'В этом пакете нет файла лицензии. Текст лицензии и исходный код — по адресу {url}.',
     close: 'Закрыть'
   },
   th: {
@@ -619,6 +737,8 @@ export const TEXT = {
     exists: 'อีเมลนี้มีบัญชี RUNNERS อยู่แล้ว โปรดเข้าสู่ระบบด้วยรหัสผ่านที่คุณใช้',
     network: 'ติดต่อเซิร์ฟเวอร์ไม่ได้ ลองอีกครั้งในอีกสักครู่',
     signOut: 'ออกจากระบบ',
+    signOutAll: 'ออกจากระบบ (แอป RUNNERS ทั้งหมดใน Mac เครื่องนี้)',
+    signedInFrom: 'เข้าสู่ระบบพร้อมกับ {app}',
     sheetTitle: 'เข้าสู่ระบบด้วยบัญชี RUNNERS',
     sheetTitleSignUp: 'สร้างบัญชี RUNNERS',
     sheetIntro: 'Remote, Monitor, Prompt, Split และ Draw ใช้บัญชีและรหัสผ่าน RUNNERS เดียวกัน',
@@ -643,6 +763,11 @@ export const TEXT = {
     newPassword: 'รหัสผ่านใหม่',
     resetSubmit: 'เข้าสู่ระบบด้วยรหัสผ่านใหม่',
     backToSignIn: 'กลับไปหน้าเข้าสู่ระบบ',
+    noticesIntro:
+      '{app} มีซอฟต์แวร์จากโครงการด้านล่าง ประกาศลิขสิทธิ์และสัญญาอนุญาตของแต่ละโครงการแสดงตามต้นฉบับภาษาอังกฤษ ไอคอนเมนูมาจาก Lucide (สัญญาอนุญาต ISC) อยู่ในรายการ lucide-react',
+    noticesLicense: 'สัญญาอนุญาต',
+    noticesApache: 'ข้อความ Apache License 2.0 อยู่ท้ายรายการนี้',
+    noticesNoFile: 'แพ็กเกจนี้ไม่มีไฟล์สัญญาอนุญาต ข้อความสัญญาอนุญาตและซอร์สโค้ดอยู่ที่ {url}',
     close: 'ปิด'
   },
   tr: {
@@ -657,6 +782,8 @@ export const TEXT = {
     exists: 'Bu e-postanın zaten bir RUNNERS hesabı var. Kullandığın şifreyle giriş yap.',
     network: 'Sunucuya ulaşılamadı. Biraz sonra yeniden deneyin.',
     signOut: 'Çıkış Yap',
+    signOutAll: 'Çıkış Yap (bu Mac’teki tüm RUNNERS uygulamaları)',
+    signedInFrom: '{app} ile birlikte giriş yapıldı',
     sheetTitle: 'RUNNERS ile giriş yap',
     sheetTitleSignUp: 'RUNNERS hesabı oluştur',
     sheetIntro:
@@ -684,6 +811,11 @@ export const TEXT = {
     newPassword: 'Yeni şifre',
     resetSubmit: 'Yeni şifreyle giriş yap',
     backToSignIn: 'Girişe dön',
+    noticesIntro:
+      '{app}, aşağıdaki projelerden yazılımlar içerir. Telif hakkı ve lisans bildirimleri İngilizce asıllarıyla verilmiştir. Menü simgeleri Lucide’dan (ISC Lisansı) alınmıştır ve lucide-react altında listelenir.',
+    noticesLicense: 'Lisans',
+    noticesApache: 'Apache License 2.0 metni bu listenin sonundadır.',
+    noticesNoFile: 'Bu pakette lisans dosyası yok. Lisans metni ve kaynak kodu {url} adresinde.',
     close: 'Kapat'
   },
   vi: {
@@ -698,6 +830,8 @@ export const TEXT = {
     exists: 'Email này đã có tài khoản RUNNERS. Hãy đăng nhập bằng mật khẩu bạn đang dùng.',
     network: 'Không kết nối được máy chủ. Hãy thử lại sau giây lát.',
     signOut: 'Đăng xuất',
+    signOutAll: 'Đăng xuất (mọi ứng dụng RUNNERS trên máy Mac này)',
+    signedInFrom: 'Đã đăng nhập cùng với {app}',
     sheetTitle: 'Đăng nhập bằng RUNNERS',
     sheetTitleSignUp: 'Tạo tài khoản RUNNERS',
     sheetIntro:
@@ -724,6 +858,11 @@ export const TEXT = {
     newPassword: 'Mật khẩu mới',
     resetSubmit: 'Đăng nhập bằng mật khẩu mới',
     backToSignIn: 'Quay lại đăng nhập',
+    noticesIntro:
+      '{app} có dùng phần mềm từ các dự án dưới đây. Thông báo bản quyền và giấy phép của từng dự án được giữ nguyên bản tiếng Anh. Biểu tượng trong menu lấy từ Lucide (Giấy phép ISC), có trong mục lucide-react.',
+    noticesLicense: 'Giấy phép',
+    noticesApache: 'Toàn văn Apache License 2.0 ở cuối danh sách này.',
+    noticesNoFile: 'Gói này không có tệp giấy phép. Văn bản giấy phép và mã nguồn có tại {url}.',
     close: 'Đóng'
   },
   'zh-Hans': {
@@ -738,6 +877,8 @@ export const TEXT = {
     exists: '此邮箱已有 RUNNERS 账号。请用你的密码登录。',
     network: '无法连接服务器，请稍后再试。',
     signOut: '退出登录',
+    signOutAll: '退出登录(此 Mac 上的所有 RUNNERS 应用)',
+    signedInFrom: '已随 {app} 一同登录',
     sheetTitle: '使用 RUNNERS 账户登录',
     sheetTitleSignUp: '创建 RUNNERS 账户',
     sheetIntro: 'Remote、Monitor、Prompt、Split 和 Draw 使用同一个 RUNNERS 账号和密码。',
@@ -762,6 +903,11 @@ export const TEXT = {
     newPassword: '新密码',
     resetSubmit: '用新密码登录',
     backToSignIn: '返回登录',
+    noticesIntro:
+      '{app} 包含以下项目的软件。各项目的版权和许可声明按英文原文列出。菜单图标来自 Lucide(ISC 许可证)，列在 lucide-react 下。',
+    noticesLicense: '许可证',
+    noticesApache: 'Apache License 2.0 全文位于此列表末尾。',
+    noticesNoFile: '此软件包没有许可证文件。许可证全文和源代码见 {url}。',
     close: '关闭'
   },
   'zh-Hant': {
@@ -776,6 +922,8 @@ export const TEXT = {
     exists: '此電子郵件已有 RUNNERS 帳號。請用你的密碼登入。',
     network: '無法連線到伺服器，請稍後再試。',
     signOut: '登出',
+    signOutAll: '登出(此 Mac 上的所有 RUNNERS 應用程式)',
+    signedInFrom: '已隨 {app} 一同登入',
     sheetTitle: '使用 RUNNERS 帳號登入',
     sheetTitleSignUp: '建立 RUNNERS 帳號',
     sheetIntro: 'Remote、Monitor、Prompt、Split 和 Draw 使用同一個 RUNNERS 帳號和密碼。',
@@ -800,6 +948,11 @@ export const TEXT = {
     newPassword: '新密碼',
     resetSubmit: '用新密碼登入',
     backToSignIn: '返回登入',
+    noticesIntro:
+      '{app} 包含以下專案的軟體。各專案的版權與授權聲明依英文原文列出。選單圖示來自 Lucide(ISC 授權)，列在 lucide-react 之下。',
+    noticesLicense: '授權',
+    noticesApache: 'Apache License 2.0 全文位於此清單末尾。',
+    noticesNoFile: '此套件沒有授權檔案。授權全文與原始碼請見 {url}。',
     close: '關閉'
   }
 } as const

@@ -51,6 +51,12 @@
   background: var(--rw-separator);
 }
 
+/* Why: <picture> is inline, which would add a text baseline gap under the icon. */
+.runners-apps-row > picture {
+  display: flex;
+  flex: none;
+}
+
 .runners-apps-icon {
   flex: none;
   width: 32px;

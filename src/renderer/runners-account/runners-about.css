@@ -158,6 +158,11 @@
   overflow-wrap: anywhere;
 }
 
+/* 안내 줄(「라이선스: MIT」)과 본문 사이를 고지 파일의 빈 줄만큼 띄운다. */
+.notices-block p + p {
+  margin-top: 1em;
+}
+
 .notices-actions {
   display: flex;
   justify-content: flex-end;
