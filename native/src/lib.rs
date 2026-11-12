@@ -149,17 +149,49 @@ pub fn cleanup_load(path: String) -> Option<String> {
 
 /// Measures every cleanable folder (minutes) on a low-priority thread; resolves to the result's JSON.
 /// `progress_path` keeps finished folders so a restart picks up where it stopped.
+/// Rejects with "cleanup scan stopped" after `cleanup_stop`, so a half-walked result is never saved.
 #[napi(ts_return_type = "Promise<string>")]
 pub fn cleanup_measure(progress_path: Option<String>) -> AsyncTask<Work> {
     Work::new(move || {
+        let (send, receive) = std::sync::mpsc::channel();
         // Why: its own thread, so lowering the priority never slows the shared thread pool that serves other work.
         std::thread::spawn(move || {
             cleanup::run_in_background();
-            to_json(&cleanup::measure(progress_path.as_deref().map(Path::new)))
-        })
-        .join()
-        .map_err(|_| "cleanup scan stopped".to_owned())?
+            let found = cleanup::measure(progress_path.as_deref().map(Path::new));
+            let _ = send.send(if cleanup::stopped() {
+                Err("cleanup scan stopped".to_owned())
+            } else {
+                to_json(&found)
+            });
+        });
+        // Why a bounded wait after stop: quitting waits for this pool thread, and one entry on a slow disk can still
+        // take a while, so the quit goes on after STOP_WAIT and the walk ends with the process.
+        let mut stopped_at = None;
+        loop {
+            match receive.recv_timeout(std::time::Duration::from_millis(100)) {
+                Ok(result) => return result,
+                Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
+                    return Err("cleanup scan stopped".to_owned());
+                }
+                Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {}
+            }
+            if cleanup::stopped() {
+                let since = *stopped_at.get_or_insert_with(std::time::Instant::now);
+                if since.elapsed() >= STOP_WAIT {
+                    return Err("cleanup scan stopped".to_owned());
+                }
+            }
+        }
     })
+}
+
+/// How long a quit waits for the folder walk to notice `cleanup_stop`.
+const STOP_WAIT: std::time::Duration = std::time::Duration::from_secs(1);
+
+/// Called when Monitor quits: the folder walk stops at its next entry and `cleanup_measure` rejects within a second.
+#[napi]
+pub fn cleanup_stop() {
+    cleanup::stop();
 }
 
 /// Deletes one cleanable kind (`cache`, `packages`, `build`, or a kind in `extra::KINDS`) on a low-priority thread;
