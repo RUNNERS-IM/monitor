@@ -4,6 +4,9 @@
 #    윈도우 · 리눅스 판을 만들어 GitHub Releases(태그 v<버전>)에 올린다. electron-updater 가 읽는
 #    latest-mac.yml · latest.yml · latest-linux.yml 도 같이 올린다.
 #
+# 빌드 단계는 build.yml 에 있다. Mac 판은 GitHub Mac(macos-15)에서 먼저 만들고, 그 작업이 취소 · 실패하면
+# 사무실 맥 스튜디오(m2-ultra-sun-1)가 같은 출시 안에서 이어서 만든다. publish 는 성공한 쪽 Mac 판을 올린다.
+#
 # macOS 는 Developer ID 로 서명 · 공증한다. 서명 키는 조직 비밀값에서 이 실행 동안만 쓰는
 # 임시 키체인에 넣고 끝나면 지운다. 윈도우는 코드 서명 인증서가 없어 서명하지 않는다
 # (처음 열 때 SmartScreen 경고가 뜬다).
@@ -19,6 +22,10 @@ on:
     inputs:
       publish:
         description: '버전을 올리고 배포하기 (끄면 시험 실행)'
+        type: boolean
+        default: false
+      skip_github_mac:
+        description: 'GitHub Mac 작업을 건너뛰어 맥 스튜디오 대체 경로를 시험하기'
         type: boolean
         default: false
 
@@ -72,187 +79,64 @@ jobs:
           echo "version=$(echo "$APP_VERSION" | tr + .)-test" >> "$GITHUB_OUTPUT"
           echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
 
+  # Windows · Linux 판. Mac 판은 아래 두 작업이 맡는다.
   build:
     needs: version
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: macos
-            # GitHub 호스팅 macos-26 은 Split 출시 때(2026-10-31) 대기열에서 16분 만에 두 번 취소돼서 자리가 많은 macos-15 를 쓴다.
-            runner: macos-15
-            builder: --mac
           - os: windows
-            runner: windows-latest
+            runner: '"windows-latest"'
             builder: --win
           - os: linux
-            runner: ubuntu-22.04 # 오래된 glibc 로 빌드해야 더 많은 배포판에서 켜진다
+            runner: '"ubuntu-22.04"' # 오래된 glibc 로 빌드해야 더 많은 배포판에서 켜진다
             builder: --linux
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 60
-    env:
-      VERSION: ${{ needs.version.outputs.version }}
-      # 파일 이름은 태그 모양을 쓴다. 지금은 앱 버전과 태그가 같다(2.6.110502). 예전 판은 앱 2.6.1030+2 · 태그 2.6.1030.2 였다 (electron-builder.config.cjs)
-      MONITOR_TAG: ${{ needs.version.outputs.version }}
-      CARGO_TARGET_DIR: ${{ github.workspace }}/native/target.noindex
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          ref: ${{ needs.version.outputs.sha }}
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+    with:
+      os: ${{ matrix.os }}
+      runner: ${{ matrix.runner }}
+      builder: ${{ matrix.builder }}
+      version: ${{ needs.version.outputs.version }}
+      sha: ${{ needs.version.outputs.sha }}
 
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
+  # Mac 판은 먼저 GitHub 의 Apple 칩 Mac(macos-15)에서 만든다. GitHub 호스팅 macos-26 은 Split 출시 때(2026-10-31)
+  # 대기열에서 16분 만에 두 번 취소돼서 자리가 많은 macos-15 를 쓴다. 그래도 2026-11-12 새벽 Split 은 자리가 없어 네 번 취소됐다.
+  build-mac:
+    needs: version
+    if: ${{ !inputs.skip_github_mac }}
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+    with:
+      os: macos
+      runner: '"macos-15"'
+      builder: --mac
+      version: ${{ needs.version.outputs.version }}
+      sha: ${{ needs.version.outputs.sha }}
 
-      - uses: dtolnay/rust-toolchain@1.99.1
-        with:
-          targets: ${{ matrix.os == 'macos' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: native -> target.noindex
-
-      - name: Install the Linux packaging tools
-        if: matrix.os == 'linux'
-        run: sudo apt-get update && sudo apt-get install -y rpm
-
-      - run: pnpm install --frozen-lockfile
-
-      # 네이티브 모듈 하나(native/monitor-native.<OS>-<CPU>.node)를 패키지할 CPU 마다 만든다.
-      # 맥은 Apple silicon 과 Intel 판을 따로 내므로 두 개를 만든다.
-      - name: Build the native module
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ "${{ matrix.os }}" = macos ]; then
-            pnpm native --target aarch64-apple-darwin
-            pnpm native --target x86_64-apple-darwin
-          else
-            pnpm native
-          fi
-          ls -la native/*.node
-          # 깨끗한 Windows 에는 Visual C++ 런타임이 없어 이 DLL 을 찾으면 앱이 켜지지 않는다. 그런 모듈은 내지 않는다(.cargo/config.toml).
-          if [ "${{ matrix.os }}" = windows ] && grep -aqiE 'vcruntime[0-9]+[a-z0-9_]*\.dll' native/*.node; then
-            echo "::error::native module still needs the Visual C++ runtime"
-            exit 1
-          fi
-
-      - run: pnpm build
-
-      # Split 과 같은 방식: 이 실행 동안만 쓰는 임시 키체인에 Developer ID 를 넣고, 끝나면 지운다.
-      - name: Prepare a temporary signing keychain
-        if: matrix.os == 'macos'
-        env:
-          DEVELOPER_ID_P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
-          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
-          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
-          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
-        run: |
-          set -euo pipefail
-          SECRETS="$RUNNER_TEMP/monitor-secrets"
-          mkdir -p "$SECRETS" && chmod 700 "$SECRETS"
-          KEYCHAIN="$RUNNER_TEMP/monitor-signing.keychain-db"
-          KEYCHAIN_PASSWORD="$(uuidgen)"
-          # The search list is put back as it was when the run ends.
-          security list-keychains -d user | tr -d '" ' > "$SECRETS/keychains-before"
-          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
-          security set-keychain-settings -lut 3600 "$KEYCHAIN"
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
-          echo "$DEVELOPER_ID_P12_BASE64" | base64 --decode > "$SECRETS/developer-id.p12"
-          security import "$SECRETS/developer-id.p12" -k "$KEYCHAIN" -P "$DEVELOPER_ID_P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
-          security list-keychains -d user -s "$KEYCHAIN" $(cat "$SECRETS/keychains-before")
-          rm "$SECRETS/developer-id.p12"
-          security find-identity -v -p codesigning "$KEYCHAIN"
-          printf '%s' "$ASC_API_KEY_P8" > "$SECRETS/AuthKey_${ASC_API_KEY_ID}.p8"
-          chmod 600 "$SECRETS/"*
-          echo "APPLE_API_KEY_PATH=$SECRETS/AuthKey_${ASC_API_KEY_ID}.p8" >> "$GITHUB_ENV"
-
-      # macOS 에서는 위 키체인의 Developer ID 로 서명하고(CSC_NAME), APPLE_API_* 로 앱을 공증한다.
-      # 올리기는 publish 작업이 한꺼번에 하므로 여기서는 --publish never.
-      - name: Build the app
-        shell: bash
-        env:
-          MONITOR_RELEASE: ${{ matrix.os == 'macos' && '1' || '' }}
-          CSC_NAME: ${{ matrix.os == 'macos' && 'Runners Co., Ltd (RGWVXJ8URP)' || '' }}
-          CSC_IDENTITY_AUTO_DISCOVERY: ${{ matrix.os == 'macos' && 'true' || 'false' }}
-          APPLE_API_KEY_ID: ${{ matrix.os == 'macos' && secrets.ASC_API_KEY_ID || '' }}
-          APPLE_API_ISSUER: ${{ matrix.os == 'macos' && secrets.ASC_API_ISSUER_ID || '' }}
-        run: |
-          set -euo pipefail
-          if [ "${{ matrix.os }}" = macos ]; then export APPLE_API_KEY="$APPLE_API_KEY_PATH"; fi
-          pnpm exec electron-builder --config electron-builder.config.cjs ${{ matrix.builder }} --publish never
-
-      # 앱은 electron-builder 가 공증했지만 DMG 자체도 서명 · 공증 · 스테이플해야 오프라인에서도 경고 없이 열린다
-      - name: Notarize the DMGs
-        if: matrix.os == 'macos'
-        env:
-          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
-          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
-        run: |
-          set -euo pipefail
-          for DMG in dist.noindex/*.dmg; do
-            # electron-builder 는 안의 앱만 서명하고 DMG 는 서명하지 않는다. Gatekeeper 는 DMG 서명도 본다.
-            codesign --sign "Runners Co., Ltd (RGWVXJ8URP)" --timestamp "$DMG"
-            xcrun notarytool submit "$DMG" --key "$APPLE_API_KEY_PATH" --key-id "$ASC_API_KEY_ID" --issuer "$ASC_API_ISSUER_ID" --wait
-            # 애플 티켓 서버가 연결을 끊는 일이 있어 다시 시도한다(Split 2026-11-01).
-            for TRY in 1 2 3; do
-              xcrun stapler staple "$DMG" && break
-              [ "$TRY" = 3 ] && exit 1
-              echo "::warning::stapler failed (try $TRY), trying again in 30 seconds"
-              sleep 30
-            done
-            spctl -a -t open --context context:primary-signature -v "$DMG"
-          done
-
-      # 이미 설치된 Tauri 판 Monitor 가 받을 묶음(.app.tar.gz, 심볼릭 링크 그대로). 서명은 publish 작업에서 한다.
-      # Tauri 판이 남아 있지 않게 되면 이 단계와 publish 의 latest.json 단계를 지운다.
-      - name: Pack the app for installed Tauri copies
-        if: matrix.os == 'macos'
-        run: |
-          set -euo pipefail
-          # Why: macOS tar stores extended attributes as "._name" entries. The Tauri updater unpacks those as plain
-          # files inside the app, which breaks the code signature ("Monitor is damaged"; v2.6.1030.3 did this).
-          # Without them the signature still verifies: the seal covers file contents, not attributes.
-          COPYFILE_DISABLE=1 tar --no-mac-metadata --no-xattrs -czf "dist.noindex/Monitor-$VERSION-aarch64.app.tar.gz" -C dist.noindex/mac-arm64 Monitor.app
-          COPYFILE_DISABLE=1 tar --no-mac-metadata --no-xattrs -czf "dist.noindex/Monitor-$VERSION-x86_64.app.tar.gz" -C dist.noindex/mac Monitor.app
-          # Fail the release rather than ship a bridge that installs a broken app.
-          for f in dist.noindex/Monitor-$VERSION-*.app.tar.gz; do
-            python3 -c "import sys,tarfile; n=tarfile.open(sys.argv[1]).getnames(); sys.exit(any('/._' in x for x in n))" "$f"
-          done
-
-      - name: Collect the files
-        shell: bash
-        run: |
-          set -euo pipefail
-          OUT=dist-release && mkdir -p $OUT
-          shopt -s nullglob
-          for f in dist.noindex/*.{dmg,zip,exe,AppImage,deb,rpm,blockmap,yml,tar.gz}; do
-            case "$(basename "$f")" in builder-debug.yml|builder-effective-config.yaml) continue ;; esac
-            cp "$f" "$OUT/"
-          done
-          ls -la $OUT
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: monitor-${{ matrix.os }}
-          path: dist-release/*
-          retention-days: 3
-
-      - name: Remove the temporary keychain and keys
-        if: always() && matrix.os == 'macos'
-        run: |
-          SECRETS="$RUNNER_TEMP/monitor-secrets"
-          if [ -f "$SECRETS/keychains-before" ]; then
-            security list-keychains -d user -s $(cat "$SECRETS/keychains-before")
-          fi
-          security delete-keychain "$RUNNER_TEMP/monitor-signing.keychain-db" 2>/dev/null || true
-          rm -rf "$SECRETS"
+  # GitHub Mac 작업이 취소 · 실패하면(시험에서 건너뛰어도) 같은 출시 안에서 사무실 맥 스튜디오가 이어서 만든다
+  # (2026-11-12 결정 「Mac 판은 GitHub 기계 먼저, 못 받으면 맥 스튜디오에서」). 서명 키체인은 끝나면 지우고,
+  # 남아 있으면 이 작업을 실패로 끝낸다(build.yml 맨 끝 단계).
+  build-mac-studio:
+    needs: [version, build-mac]
+    if: ${{ !cancelled() && needs.version.result == 'success' && needs.build-mac.result != 'success' }}
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
+    with:
+      os: macos
+      runner: '["self-hosted", "macOS", "ARM64", "m2-ultra-sun-1"]'
+      builder: --mac
+      version: ${{ needs.version.outputs.version }}
+      sha: ${{ needs.version.outputs.sha }}
 
   publish:
-    needs: [version, build]
-    if: needs.version.result == 'success' && github.event_name == 'push' || inputs.publish
+    needs: [version, build, build-mac, build-mac-studio]
+    # 둘 중 성공한 Mac 판으로 올린다. 맥 스튜디오 작업은 GitHub Mac 이 성공하면 건너뛰어진다.
+    if: >-
+      !cancelled() && needs.version.result == 'success' && needs.build.result == 'success' &&
+      (needs.build-mac.result == 'success' || needs.build-mac-studio.result == 'success') &&
+      (github.event_name == 'push' || inputs.publish)
     runs-on: ubuntu-24.04
     env:
       VERSION: ${{ needs.version.outputs.version }}

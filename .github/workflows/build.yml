@@ -1,0 +1,220 @@
+# Release 워크플로가 부르는 빌드 한 벌(OS 하나). 같은 단계를 GitHub 기계와 사무실 맥 스튜디오가 같이 쓰려고 떼어 냈다
+# (Split 과 같은 모양). 버전 · 서명 · 공증 설명은 release.yml 맨 위에 있다.
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        description: 'macos · windows · linux'
+        type: string
+        required: true
+      runner:
+        description: 'runs-on 값을 JSON 으로 ("macos-15" 또는 ["self-hosted", …])'
+        type: string
+        required: true
+      builder:
+        description: 'electron-builder 의 OS 인자 (--mac · --win · --linux)'
+        type: string
+        required: true
+      version:
+        type: string
+        required: true
+      sha:
+        type: string
+        required: true
+
+jobs:
+  build:
+    runs-on: ${{ fromJSON(inputs.runner) }}
+    timeout-minutes: 60
+    env:
+      VERSION: ${{ inputs.version }}
+      # 파일 이름은 태그 모양을 쓴다. 지금은 앱 버전과 태그가 같다(2.6.110502). 예전 판은 앱 2.6.1030+2 · 태그 2.6.1030.2 였다 (electron-builder.config.cjs)
+      MONITOR_TAG: ${{ inputs.version }}
+      CARGO_TARGET_DIR: ${{ github.workspace }}/native/target.noindex
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.sha }}
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@1.99.1
+        with:
+          targets: ${{ inputs.os == 'macos' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: native -> target.noindex
+
+      - name: Install the Linux packaging tools
+        if: inputs.os == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y rpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Why: on the office Mac Studio the build waits its turn behind the phone builds and Claude sessions there
+      # (heavy-run runs one heavy job at a time on a Mac). GitHub's machines run only this job, so nothing waits.
+      - name: Take a turn on an office Mac
+        if: runner.environment == 'self-hosted'
+        shell: bash
+        run: |
+          HEAVY="$HOME/git/claude-config/bin/heavy-run"
+          [ -x "$HEAVY" ] && echo "HEAVY=$HEAVY --name Monitor-release" >> "$GITHUB_ENV" || true
+
+      # 네이티브 모듈 하나(native/monitor-native.<OS>-<CPU>.node)를 패키지할 CPU 마다 만든다.
+      # 맥은 Apple silicon 과 Intel 판을 따로 내므로 두 개를 만든다.
+      - name: Build the native module
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.os }}" = macos ]; then
+            ${HEAVY:-} pnpm native --target aarch64-apple-darwin
+            ${HEAVY:-} pnpm native --target x86_64-apple-darwin
+          else
+            pnpm native
+          fi
+          ls -la native/*.node
+          # 깨끗한 Windows 에는 Visual C++ 런타임이 없어 이 DLL 을 찾으면 앱이 켜지지 않는다. 그런 모듈은 내지 않는다(.cargo/config.toml).
+          if [ "${{ inputs.os }}" = windows ] && grep -aqiE 'vcruntime[0-9]+[a-z0-9_]*\.dll' native/*.node; then
+            echo "::error::native module still needs the Visual C++ runtime"
+            exit 1
+          fi
+
+      - run: ${HEAVY:-} pnpm build
+        shell: bash
+
+      # Split 과 같은 방식: 이 실행 동안만 쓰는 임시 키체인에 Developer ID 를 넣고, 끝나면 지운다.
+      - name: Prepare a temporary signing keychain
+        if: inputs.os == 'macos'
+        env:
+          DEVELOPER_ID_P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
+          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+        run: |
+          set -euo pipefail
+          SECRETS="$RUNNER_TEMP/monitor-secrets"
+          mkdir -p "$SECRETS" && chmod 700 "$SECRETS"
+          KEYCHAIN="$RUNNER_TEMP/monitor-signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          # The search list is put back as it was when the run ends.
+          security list-keychains -d user | tr -d '" ' > "$SECRETS/keychains-before"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          echo "$DEVELOPER_ID_P12_BASE64" | base64 --decode > "$SECRETS/developer-id.p12"
+          security import "$SECRETS/developer-id.p12" -k "$KEYCHAIN" -P "$DEVELOPER_ID_P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(cat "$SECRETS/keychains-before")
+          rm "$SECRETS/developer-id.p12"
+          security find-identity -v -p codesigning "$KEYCHAIN"
+          printf '%s' "$ASC_API_KEY_P8" > "$SECRETS/AuthKey_${ASC_API_KEY_ID}.p8"
+          chmod 600 "$SECRETS/"*
+          echo "APPLE_API_KEY_PATH=$SECRETS/AuthKey_${ASC_API_KEY_ID}.p8" >> "$GITHUB_ENV"
+          # Why: an office Mac may hold another copy of the same certificate; signing from this keychain only
+          # keeps codesign from finding two identities with one name.
+          echo "CSC_KEYCHAIN=$KEYCHAIN" >> "$GITHUB_ENV"
+          # Why: codesign looks a name up in every keychain, and the Mac Studio's login keychain holds a Developer ID
+          # of the same name (Split 2026-11-12: "ambiguous"). The certificate's SHA-1 picks the one in this keychain.
+          echo "DEVELOPER_ID_SHA1=$(security find-identity -v -p codesigning "$KEYCHAIN" | awk '/Developer ID Application/ {print $2; exit}')" >> "$GITHUB_ENV"
+
+      # macOS 에서는 위 키체인의 Developer ID 로 서명하고(CSC_NAME), APPLE_API_* 로 앱을 공증한다.
+      # 올리기는 publish 작업이 한꺼번에 하므로 여기서는 --publish never.
+      - name: Build the app
+        shell: bash
+        env:
+          MONITOR_RELEASE: ${{ inputs.os == 'macos' && '1' || '' }}
+          CSC_NAME: ${{ inputs.os == 'macos' && 'Runners Co., Ltd (RGWVXJ8URP)' || '' }}
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ inputs.os == 'macos' && 'true' || 'false' }}
+          APPLE_API_KEY_ID: ${{ inputs.os == 'macos' && secrets.ASC_API_KEY_ID || '' }}
+          APPLE_API_ISSUER: ${{ inputs.os == 'macos' && secrets.ASC_API_ISSUER_ID || '' }}
+        run: |
+          set -euo pipefail
+          if [ "${{ inputs.os }}" = macos ]; then export APPLE_API_KEY="$APPLE_API_KEY_PATH"; fi
+          # Why: stapling inside electron-builder fails now and then when Apple's ticket server drops the
+          # connection (NSURLErrorDomain -1005, stapler error 68); a second try a little later goes through.
+          for TRY in 1 2 3; do
+            ${HEAVY:-} pnpm exec electron-builder --config electron-builder.config.cjs ${{ inputs.builder }} --publish never && break
+            [ "$TRY" = 3 ] && exit 1
+            echo "::warning::electron-builder failed (try $TRY), trying again in 30 seconds"
+            sleep 30
+          done
+
+      # 앱은 electron-builder 가 공증했지만 DMG 자체도 서명 · 공증 · 스테이플해야 오프라인에서도 경고 없이 열린다
+      - name: Notarize the DMGs
+        if: inputs.os == 'macos'
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+          for DMG in dist.noindex/*.dmg; do
+            # electron-builder 는 안의 앱만 서명하고 DMG 는 서명하지 않는다. Gatekeeper 는 DMG 서명도 본다.
+            codesign --sign "$DEVELOPER_ID_SHA1" --keychain "$CSC_KEYCHAIN" --timestamp "$DMG"
+            xcrun notarytool submit "$DMG" --key "$APPLE_API_KEY_PATH" --key-id "$ASC_API_KEY_ID" --issuer "$ASC_API_ISSUER_ID" --wait
+            # 애플 티켓 서버가 연결을 끊는 일이 있어 다시 시도한다(Split 2026-11-01).
+            for TRY in 1 2 3; do
+              xcrun stapler staple "$DMG" && break
+              [ "$TRY" = 3 ] && exit 1
+              echo "::warning::stapler failed (try $TRY), trying again in 30 seconds"
+              sleep 30
+            done
+            spctl -a -t open --context context:primary-signature -v "$DMG"
+          done
+
+      # 이미 설치된 Tauri 판 Monitor 가 받을 묶음(.app.tar.gz, 심볼릭 링크 그대로). 서명은 publish 작업에서 한다.
+      # Tauri 판이 남아 있지 않게 되면 이 단계와 publish 의 latest.json 단계를 지운다.
+      - name: Pack the app for installed Tauri copies
+        if: inputs.os == 'macos'
+        run: |
+          set -euo pipefail
+          # Why: macOS tar stores extended attributes as "._name" entries. The Tauri updater unpacks those as plain
+          # files inside the app, which breaks the code signature ("Monitor is damaged"; v2.6.1030.3 did this).
+          # Without them the signature still verifies: the seal covers file contents, not attributes.
+          COPYFILE_DISABLE=1 tar --no-mac-metadata --no-xattrs -czf "dist.noindex/Monitor-$VERSION-aarch64.app.tar.gz" -C dist.noindex/mac-arm64 Monitor.app
+          COPYFILE_DISABLE=1 tar --no-mac-metadata --no-xattrs -czf "dist.noindex/Monitor-$VERSION-x86_64.app.tar.gz" -C dist.noindex/mac Monitor.app
+          # Fail the release rather than ship a bridge that installs a broken app.
+          for f in dist.noindex/Monitor-$VERSION-*.app.tar.gz; do
+            python3 -c "import sys,tarfile; n=tarfile.open(sys.argv[1]).getnames(); sys.exit(any('/._' in x for x in n))" "$f"
+          done
+
+      - name: Collect the files
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=dist-release && mkdir -p $OUT
+          shopt -s nullglob
+          for f in dist.noindex/*.{dmg,zip,exe,AppImage,deb,rpm,blockmap,yml,tar.gz}; do
+            case "$(basename "$f")" in builder-debug.yml|builder-effective-config.yaml) continue ;; esac
+            cp "$f" "$OUT/"
+          done
+          ls -la $OUT
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: monitor-${{ inputs.os }}
+          # Why: the Mac Studio build after a GitHub Mac build that failed late replaces that build's files.
+          overwrite: true
+          path: dist-release/*
+          retention-days: 3
+
+      - name: Remove the temporary keychain and keys
+        if: always() && inputs.os == 'macos'
+        run: |
+          SECRETS="$RUNNER_TEMP/monitor-secrets"
+          if [ -f "$SECRETS/keychains-before" ]; then
+            security list-keychains -d user -s $(cat "$SECRETS/keychains-before")
+          fi
+          security delete-keychain "$RUNNER_TEMP/monitor-signing.keychain-db" 2>/dev/null || true
+          rm -rf "$SECRETS"
+          # Why: on an office Mac the machine stays after the job. Fail the run when the signing key is still
+          # reachable there, so a leftover certificate shows up instead of staying on that Mac.
+          if [ -e "$RUNNER_TEMP/monitor-signing.keychain-db" ] || security list-keychains -d user | grep -q monitor-signing; then
+            echo "::error::The signing keychain is still on this machine"; exit 1
+          fi
+          echo "Keychains left on this machine:"; security list-keychains -d user
