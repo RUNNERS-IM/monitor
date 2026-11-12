@@ -1,6 +1,6 @@
-# runners-app-kit v0.1.31 e89049b. Do not edit these files here; change runners-app-kit and copy again.
-4bf7ac2ce30040fa06af0273e6fabb9629f7562d35442a91649ef3b18cffc879  runners-account.tsx
-220d01abe0b238b60f72554f0596d8188377c0e1f1325bc0fba970fd42ef5c16  runners-account-text.ts
+# runners-app-kit v0.1.32 bae4dbe. Do not edit these files here; change runners-app-kit and copy again.
+97f9cb82a9d6125dcf6598a0009b79cde79ce2a5d60cf2a62825b47010fd6ba2  runners-account.tsx
+edf4c77744337f05e19d4965f79d7269e5d5cc9b2876a435e6a6594de0f86443  runners-account-text.ts
 6a2221b9d8225b4ca008c9a950df6a07f54cf523d4fb1f252101b6288d217526  runners-account.css
 cf23c4130ab129f338d06b41d1f00e935e6b863a05bdcf85272753fe2ad42efa  runners-menu.tsx
 64255695cdefa1758dd584f703a04b705b7fc5f07f96d1e12689f5ec246bf361  runners-menu.css
