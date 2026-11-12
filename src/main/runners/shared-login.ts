@@ -8,7 +8,7 @@ const HELPER_TIMEOUT_MS = 5_000
 
 /** 함께 로그인하는 앱. 서버 projects 표의 이름과 화면에 보일 이름. 앱을 넣고 뺄 때는 이 목록과 서버 허용 목록만 고친다. */
 export const SHARED_LOGIN_APPS: Record<string, string> = {
-  REMOTE: 'Remote',
+  REMOTE: 'Remotrol',
   MONITOR: 'Monitor',
   PROMPT: 'Prompt',
   SPLIT: 'Split'

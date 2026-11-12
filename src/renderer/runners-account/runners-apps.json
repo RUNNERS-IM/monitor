@@ -112,7 +112,7 @@
         },
         {
           "id": "remote",
-          "name": "Remote",
+          "name": "Remotrol",
           "icon": "remote.png",
           "desc": {
             "ko": "다른 컴퓨터 화면을 보고 바로 조작",
@@ -136,7 +136,7 @@
             "zh-Hans": "查看并操作其他电脑的屏幕",
             "zh-Hant": "檢視並操作其他電腦的螢幕"
           },
-          "url": "https://runners.im/remote"
+          "url": "https://runners.im/remotrol"
         },
         {
           "id": "draw",
