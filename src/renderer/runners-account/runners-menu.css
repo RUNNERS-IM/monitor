@@ -40,6 +40,7 @@
   --rm-solid-bg: #ffffff;
   --rm-primary: #0a0a0a;
   --rm-on-primary: #ffffff;
+  --rm-switch-on: #34c759;
   --rm-selected: color-mix(in srgb, var(--rm-primary) 14%, transparent);
   --rm-ok: #34c759;
   --rm-high: #ff9f0a;
@@ -62,6 +63,7 @@
     --rm-solid-bg: #0a0a0a;
     --rm-primary: #ffffff;
     --rm-on-primary: #0a0a0a;
+    --rm-switch-on: #30d158;
   }
 }
 
@@ -217,7 +219,8 @@ button.rm-item:hover {
 
 /* On/off switch at the right of a line. Sizes are the macOS 26 NSSwitch "small" control, measured by drawing one
    (2026-11-06): track 44 x 20, a pill knob 26 x 16 two in from the edge. The old 26 x 16 was the pre-26 "mini" one,
-   which the apps found too small. On is the primary colour. */
+   which the apps found too small. On is the system green (light #34c759, dark #30d158) with a white knob in every state,
+   the same in all five apps (2026-11-12). */
 .rm-switch {
   position: relative;
   cursor: pointer;
@@ -256,11 +259,10 @@ button.rm-item:hover {
 }
 
 .rm-switch input:checked + .rm-knob {
-  background: var(--rm-primary);
+  background: var(--rm-switch-on);
 }
 
 .rm-switch input:checked + .rm-knob::after {
-  background: var(--rm-on-primary);
   transform: translateX(calc(var(--rm-switch-w) - var(--rm-knob-w) - 4px));
 }
 

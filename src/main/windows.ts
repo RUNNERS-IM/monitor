@@ -16,9 +16,16 @@ const SOLID = !app.isPackaged && process.env.MONITOR_SOLID === '1'
 /** Whether the OS blurs what is behind the panel; the page draws a solid background when it does not. */
 export const TRANSLUCENT = !SOLID && (process.platform === 'darwin' || process.platform === 'win32')
 
+/** Dev only: `MONITOR_TEST_PLATFORM=win32|linux` adds `os=` so the page uses that system's words (src/renderer/os.ts). */
+function devQuery(query: string): string {
+  const os = process.env.MONITOR_TEST_PLATFORM
+  return [query, os ? `os=${os}` : ''].filter(Boolean).join('&')
+}
+
 function load(window: BrowserWindow, page: 'panel' | 'settings' | 'update', query = ''): void {
   if (process.env.ELECTRON_RENDERER_URL) {
-    void window.loadURL(`${process.env.ELECTRON_RENDERER_URL}${query ? `?${query}` : ''}#${page}`)
+    const full = devQuery(query)
+    void window.loadURL(`${process.env.ELECTRON_RENDERER_URL}${full ? `?${full}` : ''}#${page}`)
   } else {
     void window.loadFile(join(__dirname, '../renderer/index.html'), { hash: page, search: query })
   }
@@ -125,7 +132,7 @@ export function hiddenPage(
   })
   const url = process.env.ELECTRON_RENDERER_URL
   if (url) {
-    void window.loadURL(`${url}?${query}#${page}`)
+    void window.loadURL(`${url}?${devQuery(query)}#${page}`)
   }
   return window
 }
