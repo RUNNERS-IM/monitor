@@ -7,10 +7,13 @@
   --separator: var(--rw-separator);
   --control-track: var(--rw-control-bg);
   --switch-off: rgba(0, 0, 0, 0.08);
+  /* 켬/끔 스위치는 모든 RUNNERS 앱이 켜짐 초록 · 동그라미 흰색으로 같다(2026-11-12 결정 1B 2A). */
+  --switch-on: #34c759;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --switch-off: rgba(255, 255, 255, 0.12);
+    --switch-on: #30d158;
   }
 }
 html[data-window='settings'],
@@ -148,7 +151,7 @@ html[data-window='settings'] body {
   transition: background-color 0.15s;
 }
 .switch.on {
-  background: var(--accent);
+  background: var(--switch-on);
 }
 .switch-knob {
   position: absolute;
@@ -162,7 +165,6 @@ html[data-window='settings'] body {
 }
 .switch.on .switch-knob {
   transform: translateX(10px);
-  background: var(--rw-on-primary);
 }
 .s-content {
   display: flex;
