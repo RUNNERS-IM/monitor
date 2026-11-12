@@ -88,9 +88,45 @@ jobs:
       - run: ${HEAVY:-} pnpm build
         shell: bash
 
+      # 사무실 맥의 서명 차례. 앱마다 저장소 러너가 따로 있어 Mac 판 작업이 동시에 돌 수 있는데, 작업마다 같은 사용자의
+      # 키체인 검색 목록을 바꾼다. 두 작업이 같은 순간에 목록을 읽고 쓰면 한쪽 임시 키체인이 빠져 서명이 깨진다
+      # (2026-11-12 Split · Prompt: errSecInternalComponent, no identity found).
+      # 키체인 준비부터 키체인 지우기까지를 그 맥 전체에서 한 번에 하나만 돌게 한다. Split 과 같은 경로 · 같은 방식이다.
+      #   잠금: ~/.runners/signing.lock 디렉터리(mkdir 은 한 번에 한 작업만 성공). 안의 owner 파일에 누가 잡았는지 적는다.
+      #   풀기: 맨 끝 always 단계에서, owner 가 자기일 때만 지운다.
+      #   오래된 잠금: 150분(작업 시간 제한 120분보다 김)이 지난 것은 주인이 죽은 것으로 보고 치운다. 60분을 기다려도 못 잡으면 실패.
+      - name: Wait for the signing turn on an office Mac
+        if: inputs.os == 'macos' && runner.environment == 'self-hosted'
+        shell: bash
+        run: |
+          set -euo pipefail
+          LOCK="$HOME/.runners/signing.lock"
+          OWNER="$GITHUB_REPOSITORY run $GITHUB_RUN_ID attempt $GITHUB_RUN_ATTEMPT"
+          mkdir -p "$HOME/.runners"
+          START=$(date +%s)
+          until mkdir "$LOCK" 2>/dev/null; do
+            NOW=$(date +%s)
+            HELD=$(( NOW - $(stat -f %m "$LOCK" 2>/dev/null || echo "$NOW") ))
+            if [ "$HELD" -gt 9000 ]; then
+              echo "::warning::Removing a signing lock held for $HELD s by $(cat "$LOCK/owner" 2>/dev/null)"
+              rm -rf "$LOCK"
+              continue
+            fi
+            if [ $(( NOW - START )) -gt 3600 ]; then
+              echo "::error::Waited 60 minutes for the signing lock held by $(cat "$LOCK/owner" 2>/dev/null)"
+              exit 1
+            fi
+            echo "Waiting for the signing lock held by $(cat "$LOCK/owner" 2>/dev/null) for $HELD s"
+            sleep 20
+          done
+          echo "$OWNER" > "$LOCK/owner"
+          echo "SIGNING_LOCK_OWNER=$OWNER" >> "$GITHUB_ENV"
+          echo "Took the signing lock after $(( $(date +%s) - START )) s"
+
       # Split 과 같은 방식: 이 실행 동안만 쓰는 임시 키체인에 Developer ID 를 넣고, 끝나면 지운다.
       - name: Prepare a temporary signing keychain
         if: inputs.os == 'macos'
+        shell: bash
         env:
           DEVELOPER_ID_P12_BASE64: ${{ secrets.DEVELOPER_ID_P12_BASE64 }}
           DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
@@ -102,15 +138,25 @@ jobs:
           mkdir -p "$SECRETS" && chmod 700 "$SECRETS"
           KEYCHAIN="$RUNNER_TEMP/monitor-signing.keychain-db"
           KEYCHAIN_PASSWORD="$(uuidgen)"
-          # The search list is put back as it was when the run ends.
-          security list-keychains -d user | tr -d '" ' > "$SECRETS/keychains-before"
+          # Why: other apps' release jobs on the Mac Studio edit the same user search list. Saving the whole list and
+          # putting it back drops a keychain another job added meanwhile, and its codesign stops with "no identity
+          # found" (2026-11-12 Remote run 43197215234, Split run 43195273439). Only this keychain goes in and out,
+          # and it goes in again right before each signing. bash, since zsh keeps an unquoted $OTHERS as one word.
+          cat > "$RUNNER_TEMP/monitor-keychain-on.sh" <<'SH'
+          #!/bin/bash
+          set -euo pipefail
+          K="$RUNNER_TEMP/monitor-signing.keychain-db"
+          OTHERS=$(security list-keychains -d user | tr -d '" ' | grep -vxF "$K" || true)
+          security list-keychains -d user -s "$K" $OTHERS
+          SH
+          chmod 700 "$RUNNER_TEMP/monitor-keychain-on.sh"
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security set-keychain-settings -lut 3600 "$KEYCHAIN"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           echo "$DEVELOPER_ID_P12_BASE64" | base64 --decode > "$SECRETS/developer-id.p12"
           security import "$SECRETS/developer-id.p12" -k "$KEYCHAIN" -P "$DEVELOPER_ID_P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
-          security list-keychains -d user -s "$KEYCHAIN" $(cat "$SECRETS/keychains-before")
+          "$RUNNER_TEMP/monitor-keychain-on.sh"
           rm "$SECRETS/developer-id.p12"
           security find-identity -v -p codesigning "$KEYCHAIN"
           printf '%s' "$ASC_API_KEY_P8" > "$SECRETS/AuthKey_${ASC_API_KEY_ID}.p8"
@@ -139,7 +185,8 @@ jobs:
           # Why: stapling inside electron-builder fails now and then when Apple's ticket server drops the
           # connection (NSURLErrorDomain -1005, stapler error 68); a second try a little later goes through.
           for TRY in 1 2 3; do
-            ${HEAVY:-} pnpm exec electron-builder --config electron-builder.config.cjs ${{ inputs.builder }} --publish never && break
+            # Why: another job may change the search list while this one waits for its heavy-run turn.
+            ${HEAVY:-} bash -c '[ "${{ inputs.os }}" != macos ] || "$RUNNER_TEMP/monitor-keychain-on.sh"; exec pnpm exec electron-builder --config electron-builder.config.cjs ${{ inputs.builder }} --publish never' && break
             [ "$TRY" = 3 ] && exit 1
             echo "::warning::electron-builder failed (try $TRY), trying again in 30 seconds"
             sleep 30
@@ -148,12 +195,14 @@ jobs:
       # 앱은 electron-builder 가 공증했지만 DMG 자체도 서명 · 공증 · 스테이플해야 오프라인에서도 경고 없이 열린다
       - name: Notarize the DMGs
         if: inputs.os == 'macos'
+        shell: bash
         env:
           ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
           ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
         run: |
           set -euo pipefail
           for DMG in dist.noindex/*.dmg; do
+            "$RUNNER_TEMP/monitor-keychain-on.sh"
             # electron-builder 는 안의 앱만 서명하고 DMG 는 서명하지 않는다. Gatekeeper 는 DMG 서명도 본다.
             codesign --sign "$DEVELOPER_ID_SHA1" --keychain "$CSC_KEYCHAIN" --timestamp "$DMG"
             xcrun notarytool submit "$DMG" --key "$APPLE_API_KEY_PATH" --key-id "$ASC_API_KEY_ID" --issuer "$ASC_API_ISSUER_ID" --wait
@@ -205,11 +254,14 @@ jobs:
 
       - name: Remove the temporary keychain and keys
         if: always() && inputs.os == 'macos'
+        shell: bash
         run: |
           SECRETS="$RUNNER_TEMP/monitor-secrets"
-          if [ -f "$SECRETS/keychains-before" ]; then
-            security list-keychains -d user -s $(cat "$SECRETS/keychains-before")
-          fi
+          K="$RUNNER_TEMP/monitor-signing.keychain-db"
+          # Only this keychain leaves the current list; keychains other jobs added stay.
+          OTHERS=$(security list-keychains -d user | tr -d '" ' | grep -vxF "$K" || true)
+          security list-keychains -d user -s $OTHERS
+          rm -f "$RUNNER_TEMP/monitor-keychain-on.sh"
           security delete-keychain "$RUNNER_TEMP/monitor-signing.keychain-db" 2>/dev/null || true
           rm -rf "$SECRETS"
           # Why: on an office Mac the machine stays after the job. Fail the run when the signing key is still
@@ -218,3 +270,16 @@ jobs:
             echo "::error::The signing keychain is still on this machine"; exit 1
           fi
           echo "Keychains left on this machine:"; security list-keychains -d user
+
+      # 앞 단계가 실패해도 잠금은 돌려준다. 자기가 잡은 잠금일 때만 지운다.
+      - name: Give the signing lock back
+        if: always() && env.SIGNING_LOCK_OWNER != ''
+        shell: bash
+        run: |
+          LOCK="$HOME/.runners/signing.lock"
+          if [ "$(cat "$LOCK/owner" 2>/dev/null)" = "$SIGNING_LOCK_OWNER" ]; then
+            rm -rf "$LOCK"
+            echo "Gave the signing lock back"
+          else
+            echo "::warning::The signing lock is no longer ours: $(cat "$LOCK/owner" 2>/dev/null)"
+          fi
