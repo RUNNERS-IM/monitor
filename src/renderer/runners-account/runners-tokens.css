@@ -1,0 +1,75 @@
+/*
+ * RUNNERS 색 칸: 다섯 앱 컴퓨터판의 모든 색을 이 파일 한 곳에서 정한다(사용자 결정 `[PROGRAM] 디자인 시스템 - 다시 만들기` 1A 2A 3A, 2026-11-13).
+ * 창(--rw-*) · 메뉴(--rm-*) · 계정(--ra-*) 부품은 옛 이름을 그대로 두고 값만 여기서 이어 받는다.
+ * 휴대폰판은 src/theme/tokens.ts 에 같은 값이 있고, test/tokens.test.ts 가 둘이 같은지 본다.
+ *
+ * 강조는 흑백이다. 빨강은 위험(지우기 · 끊기)에만 쓴다. 어두운 화면에서는 검정 단추 · 로고 타일을 흰색으로 뒤집는다.
+ * 글자 칸은 바탕 위 대비 4.5 이상으로 골랐다(흐린 글자 #6b6b6b 흰 바탕 5.33, #a3a3a3 #171717 위 7.11).
+ */
+:root {
+  --r-text: #0a0a0a;
+  --r-text-muted: #6b6b6b;
+  --r-border: rgba(10, 10, 10, 0.14);
+  --r-window: #ffffff;
+  --r-box: #f5f5f5;
+  /* 시트 · 펼친 메뉴처럼 창 위에 뜨는 칸 */
+  --r-raised: #ffffff;
+  /* 보통 단추 · 눌린 줄의 회색 */
+  --r-control: rgba(10, 10, 10, 0.08);
+  --r-control-hover: rgba(10, 10, 10, 0.13);
+  /* 꺼진 스위치 길. 카드 바탕과 구별되게 보통 단추보다 진하다(Remotrol 설정에서 꺼진 스위치가 카드에 묻혔다) */
+  --r-track: rgba(10, 10, 10, 0.18);
+  --r-input-bg: #ffffff;
+  --r-input-text: #0a0a0a;
+  --r-input-border: rgba(10, 10, 10, 0.2);
+  /* 채운 단추 · 켜진 스위치 */
+  --r-primary: #0a0a0a;
+  --r-on-primary: #ffffff;
+  /* 눌렀을 때 테두리 · 링크. 주 단추 색과 따로 둔다 */
+  --r-accent: #0a0a0a;
+  --r-link: #0a0a0a;
+  /* 골라진 줄 · 탭: 회색 칠 + 굵은 글자 */
+  --r-selected-bg: #e6e6e6;
+  --r-selected-text: #0a0a0a;
+  --r-selected-sub: #4d4d4d;
+  /* 쓸 수 없는 단추. 투명도로 흐리지 않고 이 색으로 칠한다 */
+  --r-disabled-bg: rgba(10, 10, 10, 0.06);
+  --r-disabled-text: #767676;
+  /* 위험: 단추 바탕(흰 글자 5.3)과 글자 */
+  --r-danger: #d70f0f;
+  --r-on-danger: #ffffff;
+  --r-danger-text: #d70f0f;
+  --r-mark-bg: #0a0a0a;
+  --r-mark-fg: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --r-text: #ffffff;
+    --r-text-muted: #a3a3a3;
+    --r-border: rgba(255, 255, 255, 0.16);
+    --r-window: #0a0a0a;
+    --r-box: #171717;
+    --r-raised: #1c1c1c;
+    --r-control: rgba(255, 255, 255, 0.12);
+    --r-control-hover: rgba(255, 255, 255, 0.18);
+    --r-track: rgba(255, 255, 255, 0.26);
+    --r-input-bg: #1f1f1f;
+    --r-input-text: #ffffff;
+    --r-input-border: rgba(255, 255, 255, 0.24);
+    --r-primary: #ffffff;
+    --r-on-primary: #0a0a0a;
+    --r-accent: #ffffff;
+    --r-link: #ffffff;
+    --r-selected-bg: #2e2e2e;
+    --r-selected-text: #ffffff;
+    --r-selected-sub: #c7c7c7;
+    --r-disabled-bg: rgba(255, 255, 255, 0.08);
+    --r-disabled-text: #8f8f8f;
+    --r-danger: #d70f0f;
+    --r-on-danger: #ffffff;
+    --r-danger-text: #ff6b6b;
+    --r-mark-bg: #ffffff;
+    --r-mark-fg: #0a0a0a;
+  }
+}
