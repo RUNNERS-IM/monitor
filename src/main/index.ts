@@ -1124,5 +1124,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on('activate', openedAgain)
   // Why: closing Settings must not quit a tray app.
   app.on('window-all-closed', () => undefined)
+  // Why: quitting waits for the folder scan's thread, which held the quit for minutes in the middle of a big folder.
+  app.on('will-quit', () => native.cleanupStop())
   void app.whenReady().then(start)
 }

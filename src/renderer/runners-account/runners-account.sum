@@ -1,7 +1,7 @@
-# runners-app-kit v0.1.31 e89049b. Do not edit these files here; change runners-app-kit and copy again.
-4bf7ac2ce30040fa06af0273e6fabb9629f7562d35442a91649ef3b18cffc879  runners-account.tsx
-220d01abe0b238b60f72554f0596d8188377c0e1f1325bc0fba970fd42ef5c16  runners-account-text.ts
-6a2221b9d8225b4ca008c9a950df6a07f54cf523d4fb1f252101b6288d217526  runners-account.css
+# runners-app-kit v0.1.34 eee21bf. Do not edit these files here; change runners-app-kit and copy again.
+97f9cb82a9d6125dcf6598a0009b79cde79ce2a5d60cf2a62825b47010fd6ba2  runners-account.tsx
+e91d21a33e5c550a6850fbc7a439442945633e28763923b97254797764ffd2d7  runners-account-text.ts
+a97c40438fc01f93372f75283ef91da8f21e73af889607cca7404a06c3051801  runners-account.css
 cf23c4130ab129f338d06b41d1f00e935e6b863a05bdcf85272753fe2ad42efa  runners-menu.tsx
 64255695cdefa1758dd584f703a04b705b7fc5f07f96d1e12689f5ec246bf361  runners-menu.css
 59552c8d9ba09a07c0b524540ed64d2199e8f74678b4ddce1fb3a9c1bea3ad04  runners-window.css
@@ -12,7 +12,7 @@ fa714b22503a20503e4c4fde6be0fd12e3c71aea3373c40a758982a4cacac360  runners-update
 6740c068cdddb7cd3c2edde375c171dd3eec80225a6158ed80a782510ffad029  runners-apps.tsx
 b80585d330cafbacdc764ec390a4695576f76fedae7ec374a5068c9174cd8ed7  runners-apps.css
 d3b21fe46cac009bf1e1914e7202f92fecd524d0e13dd2a2d8d92672c98c80c2  runners-apps-data.ts
-db892236ba85c22e126a1b76680d59635173d297cd3f19b77bfcba9ac14792ac  runners-apps.json
+28d6a6920a7d4c63d48e5f3acc5f1f304fd3fd957ee8c289d19487f411c73d1a  runners-apps.json
 be5c6571b0209fc869e245b7481ae5509bd45367c9ce6686d9c413ba44329dad  runners-font.css
 9599f12fd42fc0bce1cd50b47a0c022e108d7aa64dd0d1bb0ed44f3282d900b4  assets/fonts/PretendardVariable.woff2
 71ac4237896dba241fe6191a50fb935a87613b03c7d4c4443754a1665deda425  assets/panda/face.webp

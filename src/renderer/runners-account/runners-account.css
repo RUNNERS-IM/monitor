@@ -41,6 +41,14 @@
   font-size: 11px;
 }
 
+/* 한국어는 띄어쓰기에서만 줄을 바꾼다(창이 좁은 Prompt 에서 「계정 / 과」처럼 낱말 가운데서 끊겼다). 띄어쓰기 없는
+   긴 이메일 주소는 칸을 넘지 않게 아무 데서나 끊는다. 시트와 계정 메뉴 안의 모든 글에 이어진다. */
+.ra-sheet,
+.ra-menu {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
 .ra-mark {
   display: grid;
   place-items: center;

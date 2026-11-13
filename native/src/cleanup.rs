@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use serde::{Deserialize, Serialize};
 
@@ -84,6 +85,19 @@ fn kind_totals(candidates: &[Candidate]) -> Vec<KindTotal> {
     kinds
 }
 
+/// Set when Monitor is quitting. Why: quitting waits for the scan's thread, and a scan in the middle of a big folder
+/// held the quit for minutes, so the walk checks this between entries and gives up.
+static STOP: AtomicBool = AtomicBool::new(false);
+
+/// Asks a running scan to stop at the next folder entry. Nothing measures again until the app restarts.
+pub fn stop() {
+    STOP.store(true, Ordering::Relaxed);
+}
+
+pub fn stopped() -> bool {
+    STOP.load(Ordering::Relaxed)
+}
+
 /// Measures every folder, writing each finished folder to `progress` so a restart picks up where it stopped.
 /// Why: a full measurement takes about four minutes, and a restart in that time (every code change in a dev run,
 /// a quit, a log-out) used to throw the work away, so `cleanup.json` was never written.
@@ -98,6 +112,12 @@ pub fn measure(progress: Option<&Path>) -> Cleanup {
         };
     };
     let found = cleanable_folders(&home);
+    let unmeasured = Cleanup {
+        total: 0,
+        top: Vec::new(),
+        kinds: Vec::new(),
+        measured_at: 0,
+    };
 
     // Why: a folder deleted since the unfinished run must not be counted from the saved progress.
     let mut wanted: Vec<String> = found.iter().map(|folder| tilde(folder, &home)).collect();
@@ -113,10 +133,12 @@ pub fn measure(progress: Option<&Path>) -> Cleanup {
         if candidates.iter().any(|c| c.path == path) {
             continue;
         }
-        candidates.push(Candidate {
-            bytes: folder_size(&folder),
-            path,
-        });
+        let bytes = folder_size(&folder);
+        // Why: a stopped walk counted only part of the folder, so it must not be saved as finished.
+        if stopped() {
+            return unmeasured;
+        }
+        candidates.push(Candidate { bytes, path });
         if let Some(file) = progress {
             write_json(file, &candidates);
         }
@@ -126,10 +148,11 @@ pub fn measure(progress: Option<&Path>) -> Cleanup {
         if candidates.iter().any(|c| c.path == path) {
             continue;
         }
-        candidates.push(Candidate {
-            bytes: extra::measure(kind, &home),
-            path,
-        });
+        let bytes = extra::measure(kind, &home);
+        if stopped() {
+            return unmeasured;
+        }
+        candidates.push(Candidate { bytes, path });
         if let Some(file) = progress {
             write_json(file, &candidates);
         }
@@ -384,6 +407,9 @@ fn find_build_folders(dir: &Path, depth: usize, found: &mut Vec<PathBuf>) {
         return;
     };
     for entry in entries.flatten() {
+        if stopped() {
+            return;
+        }
         let Ok(kind) = entry.file_type() else {
             continue;
         };
@@ -409,6 +435,9 @@ pub(crate) fn folder_size(dir: &Path) -> u64 {
             continue;
         };
         for entry in entries.flatten() {
+            if stopped() {
+                return total;
+            }
             let Ok(meta) = entry.path().symlink_metadata() else {
                 continue;
             };

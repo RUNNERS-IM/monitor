@@ -49,10 +49,14 @@ export declare function cleanupLoad(path: string): string | null
 /**
  * Measures every cleanable folder (minutes) on a low-priority thread; resolves to the result's JSON.
  * `progress_path` keeps finished folders so a restart picks up where it stopped.
+ * Rejects with "cleanup scan stopped" after `cleanup_stop`, so a half-walked result is never saved.
  */
 export declare function cleanupMeasure(progressPath?: string | undefined | null): Promise<string>
 
 export declare function cleanupSave(path: string, json: string): void
+
+/** Called when Monitor quits: the folder walk stops at its next entry and `cleanup_measure` rejects within a second. */
+export declare function cleanupStop(): void
 
 /** Debug runs only (`MONITOR_DEMO=1`): a made-up cleanup result as JSON, for the panel's screenshots. */
 export declare function demoCleanup(): string | null

@@ -272,9 +272,19 @@ export function SignInSheet(props: {
           ? code.length === 6 && !!password
           : !!password))
 
+  // Why: the button stays bright on empty fields and says what is missing when pressed, like the phone apps'
+  // sign-in screen. The code and reset steps keep a dimmed button since they have no such words.
+  const asksMissing = step === 'login' || step === 'signup'
+
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    if (!ready || busy) {
+    if (busy) {
+      return
+    }
+    if (!ready) {
+      if (asksMissing) {
+        setProblem('missing')
+      }
       return
     }
     if (step === 'login') {
@@ -426,7 +436,7 @@ export function SignInSheet(props: {
           </>
         ) : (
           <>
-            <button className="ra-submit" type="submit" disabled={!ready || busy}>
+            <button className="ra-submit" type="submit" disabled={busy || (!ready && !asksMissing)}>
               {text(
                 step === 'login'
                   ? 'signIn'

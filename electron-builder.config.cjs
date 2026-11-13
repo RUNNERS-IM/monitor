@@ -57,7 +57,11 @@ module.exports = {
     ...(isRelease ? {} : { identity: null }),
     entitlements: 'build/entitlements.mac.plist',
     entitlementsInherit: 'build/entitlements.mac.plist',
+    // Why: macOS 26 draws the Icon Composer icon (scripts/app-icons.sh) full size and uses its black plate for dark
+    // icons; icon.icns stays for older macOS.
+    extraResources: [{ from: 'build/Assets.car', to: 'Assets.car' }],
     extendInfo: {
+      CFBundleIconName: 'icon',
       // Monitor lives in the menu bar only: no Dock icon, no app menu.
       LSUIElement: true,
       CFBundleShortVersionString: shownVersion,
