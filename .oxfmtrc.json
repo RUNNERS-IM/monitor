@@ -7,7 +7,6 @@
     "THIRD_PARTY_NOTICES.md",
     "**/*.generated.*",
     "native/index.d.ts",
-    "native/index.js",
-    "build/icon-source/**"
+    "native/index.js"
   ]
 }
