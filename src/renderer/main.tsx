@@ -1,3 +1,7 @@
+import * as Sentry from '@sentry/electron/renderer'
+import { startErrorReport } from './runners-account/error-report'
+// Why: 화면 오류는 main 으로 넘겨 보내므로 판 이름(release)은 main 의 것을 쓴다. DSN 이 비면 아무것도 하지 않는다.
+startErrorReport(Sentry, { dsn: import.meta.env.VITE_SENTRY_DSN })
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'

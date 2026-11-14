@@ -50,6 +50,11 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* 크롬 확장 팝업 · 일부 웹뷰는 브라우저가 body 에 시스템 글꼴을 따로 걸어 :root 의 글꼴이 내려오지 않는다(WebToFigma, 2026-11-15). */
+body {
+  font-family: inherit;
+}
+
 /* A section: small grey title, then its box. */
 .rw-section-title {
   margin: 0 0 var(--rw-section-gap);
