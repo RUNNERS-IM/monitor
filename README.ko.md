@@ -91,7 +91,7 @@ pnpm dist           # 지금 운영체제용 설치 파일을 dist.noindex/ 에 
 
 ## 개인정보
 
-Monitor는 아무것도 모으거나 보내지 않습니다. [PRIVACY.md](PRIVACY.md) 를 보세요.
+Monitor 에는 광고와 사용 통계 수집이 없습니다. 오류를 고치려고 이름 · 주소를 가린 오류 보고를 보냅니다. [PRIVACY.md](PRIVACY.md) 를 보세요.
 
 ## 라이선스
 

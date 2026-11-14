@@ -87,6 +87,10 @@ jobs:
 
       - run: ${HEAVY:-} pnpm build
         shell: bash
+        env:
+          # 오류 자동 수집 주소. 시크릿이 없으면 비어 앱이 아무것도 보내지 않는다(src/main/error-report-start.ts)
+          MAIN_VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          VITE_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
       # 사무실 맥의 서명 차례. 앱마다 저장소 러너가 따로 있어 Mac 판 작업이 동시에 돌 수 있는데, 작업마다 같은 사용자의
       # 키체인 검색 목록을 바꾼다. 두 작업이 같은 순간에 목록을 읽고 쓰면 한쪽 임시 키체인이 빠져 서명이 깨진다

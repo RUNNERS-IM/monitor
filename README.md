@@ -92,7 +92,7 @@ Korean screens read the `## 한국어` list, every other language the `## Englis
 
 ## Privacy
 
-Monitor collects nothing and sends nothing. See [PRIVACY.md](PRIVACY.md).
+Monitor has no ads and no analytics. It sends error reports, with names and addresses hidden, so errors can be fixed. See [PRIVACY.md](PRIVACY.md).
 
 ## License
 
