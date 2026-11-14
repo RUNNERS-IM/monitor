@@ -126,7 +126,8 @@
   padding: 20px;
   border-radius: 12px;
   border: 0.5px solid var(--rw-separator);
-  background: var(--rw-window-bg);
+  /* 창 위에 뜨는 칸이라 창 바탕보다 한 겹 밝게 둔다. 창 바탕과 같으면 어두운 화면에서 팝업 끝이 안 보였다(Draw D4). */
+  background: var(--r-raised);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 

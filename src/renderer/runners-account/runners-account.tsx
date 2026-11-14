@@ -50,8 +50,9 @@ export function accountText(lang: string, key: TextKey): string {
   return TEXT[pickLang(lang)][key]
 }
 
-/** The RUNNERS panda in the round account badge (user, 2026-11-08: no hair, eyebrows on every face). */
-function BadgePanda() {
+/** The RUNNERS panda in the round account badge (user, 2026-11-08: no hair, eyebrows on every face).
+ *  앱이 계정 그림을 어디서나 같게 보이도록 내보낸다. `.ra-badge` 안에 넣어 쓴다. */
+export function BadgePanda() {
   return <img src={panda} alt="" draggable={false} />
 }
 
