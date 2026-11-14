@@ -1,39 +1,25 @@
 @import './runners-font.css';
+@import './runners-tokens.css';
 
 /*
  * The RUNNERS sign-in sheet and account badge (runners-account.tsx), the same in all four desktop apps. Copied
  * unchanged with the rest of this folder. Every name starts with `ra-` so it cannot clash with an app's own classes.
- * The colours follow runners-window.css (`--rw-*`) where the app has it, with the same values as fallbacks, and the
- * sheet and menu are opaque so the window under them does not show through.
+ * 색은 runners-tokens.css 에서 받는다(2026-11-13). 시트와 메뉴는 불투명이라 아래 창이 비치지 않는다.
  */
 :root {
-  --ra-text: var(--rw-text, #1d1d1f);
-  --ra-sub: #6e6e73;
-  --ra-line: var(--rw-separator, rgba(0, 0, 0, 0.12));
-  --ra-field: #ffffff;
-  --ra-track: rgba(0, 0, 0, 0.08);
-  --ra-accent: var(--rw-primary, #0a0a0a);
-  --ra-on-accent: var(--rw-on-primary, #ffffff);
-  --ra-surface: #ffffff;
-  --ra-bad: #ff3b30;
-  --ra-mark-bg: #000000;
-  --ra-mark-fg: #ffffff;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ra-text: var(--rw-text, #f5f5f7);
-    --ra-sub: #98989d;
-    --ra-line: var(--rw-separator, rgba(255, 255, 255, 0.14));
-    --ra-field: rgba(255, 255, 255, 0.05);
-    --ra-track: rgba(255, 255, 255, 0.12);
-    --ra-accent: var(--rw-primary, #ffffff);
-    --ra-on-accent: var(--rw-on-primary, #0a0a0a);
-    --ra-surface: #2c2c2e;
-    --ra-bad: #ff453a;
-    --ra-mark-bg: #ffffff;
-    --ra-mark-fg: #000000;
-  }
+  --ra-text: var(--r-text);
+  --ra-sub: var(--r-text-muted);
+  --ra-line: var(--r-input-border);
+  --ra-field: var(--r-input-bg);
+  --ra-track: var(--r-control);
+  --ra-accent: var(--r-primary);
+  --ra-on-accent: var(--r-on-primary);
+  /* 링크는 주 단추 색과 따로 둔다. 주 단추 색을 바꿨을 때 링크까지 바탕에 묻히는 일을 막는다. */
+  --ra-link: var(--r-link);
+  --ra-surface: var(--r-raised);
+  --ra-bad: var(--r-danger-text);
+  --ra-mark-bg: var(--r-mark-bg);
+  --ra-mark-fg: var(--r-mark-fg);
 }
 
 .ra-hint {
@@ -72,8 +58,11 @@
   padding: 0;
   display: inline-grid;
   place-items: center;
+  /* 판다 그림이 흰 바탕을 전제로 그려져 있어 바탕은 흰색으로 둔다. 글자 동그라미도 같은 칸이라 글자색을 함께 정한다
+     (어두운 화면에서 흰 바탕에 흰 글자가 됐다). 테두리는 흰 창 위에서도 보이게 1px. */
   background: #fff;
-  box-shadow: 0 0 0 0.5px var(--ra-line);
+  color: #0a0a0a;
+  box-shadow: 0 0 0 1px var(--ra-line);
   overflow: hidden;
   cursor: pointer;
 }
@@ -212,15 +201,19 @@
 
 .ra-field {
   font: inherit;
-  color: var(--ra-text);
+  color: var(--r-input-text);
   padding: 7px 10px;
   border-radius: 6px;
   border: 0.5px solid var(--ra-line);
   background: var(--ra-field);
 }
 
+.ra-field::placeholder {
+  color: var(--ra-sub);
+}
+
 .ra-field:focus {
-  outline: 2px solid var(--ra-accent);
+  outline: 2px solid var(--r-accent);
   outline-offset: -1px;
 }
 
@@ -242,11 +235,12 @@
 }
 
 .ra-submit:disabled {
-  opacity: 0.5;
+  background: var(--r-disabled-bg);
+  color: var(--r-disabled-text);
 }
 
 .ra-submit:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--ra-accent) 50%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--r-accent) 50%, transparent);
   outline-offset: 1px;
 }
 
@@ -254,7 +248,7 @@
   align-self: center;
   font: inherit;
   font-size: 11px;
-  color: var(--ra-accent);
+  color: var(--ra-link);
   background: none;
   border: 0;
   padding: 0;
@@ -262,7 +256,7 @@
 }
 
 .ra-link:disabled {
-  opacity: 0.5;
+  color: var(--r-disabled-text);
 }
 
 /* "Forgot your password?" sits at the end of the password field's line. */

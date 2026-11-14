@@ -10,6 +10,7 @@
  * transparent there and only draws a solid background where the OS has no blur (`data-translucent="false"`).
  */
 @import './runners-font.css';
+@import './runners-tokens.css';
 
 :root {
   --rm-font: 13px;
@@ -30,18 +31,18 @@
   --rm-highlight-radius: 6px;
   --rm-sep-gap: 8px;
 
-  --rm-text: rgba(0, 0, 0, 0.85);
-  /* 작은 회색 글자(머리글 · 아래 줄 · 설명 · 단축키). macOS 값 0.5 는 고른 줄 바탕에서 대비 3.64 라, 어디서나 4.5 를 넘도록 진하게 한다(2026-11-11). */
-  --rm-text-secondary: rgba(0, 0, 0, 0.6);
-  --rm-separator: rgba(0, 0, 0, 0.1);
-  --rm-group-bg: rgba(0, 0, 0, 0.04);
-  --rm-hover: rgba(0, 0, 0, 0.06);
-  --rm-track: rgba(0, 0, 0, 0.1);
-  --rm-solid-bg: #ffffff;
-  --rm-primary: #0a0a0a;
-  --rm-on-primary: #ffffff;
+  /* 색은 runners-tokens.css 에서 받는다. 켜진 스위치 초록과 상태 색(ok · high · full)만 여기서 정한다. */
+  --rm-text: var(--r-text);
+  --rm-text-secondary: var(--r-text-muted);
+  --rm-separator: var(--r-border);
+  --rm-group-bg: color-mix(in srgb, var(--r-text) 4%, transparent);
+  --rm-hover: var(--r-control);
+  --rm-track: var(--r-track);
+  --rm-solid-bg: var(--r-window);
+  --rm-primary: var(--r-primary);
+  --rm-on-primary: var(--r-on-primary);
   --rm-switch-on: #34c759;
-  --rm-selected: color-mix(in srgb, var(--rm-primary) 14%, transparent);
+  --rm-selected: var(--r-selected-bg);
   --rm-ok: #34c759;
   --rm-high: #ff9f0a;
   --rm-full: #ff453a;
@@ -54,15 +55,6 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --rm-text: rgba(255, 255, 255, 0.85);
-    --rm-text-secondary: rgba(255, 255, 255, 0.55);
-    --rm-separator: rgba(255, 255, 255, 0.1);
-    --rm-group-bg: rgba(255, 255, 255, 0.05);
-    --rm-hover: rgba(255, 255, 255, 0.08);
-    --rm-track: rgba(255, 255, 255, 0.16);
-    --rm-solid-bg: #0a0a0a;
-    --rm-primary: #ffffff;
-    --rm-on-primary: #0a0a0a;
     --rm-switch-on: #30d158;
   }
 }
