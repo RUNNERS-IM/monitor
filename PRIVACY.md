@@ -12,6 +12,8 @@ Only error reports (below), and what signing in with a RUNNERS account needs (be
 
 When Monitor runs into an error, it sends a report to Runners through Sentry (sentry.io), a service that collects app errors, so the error can be fixed. A report holds the kind of error, the lines of Monitor's code it happened in, Monitor's version and the macOS version. Before it is sent, email addresses, sign-in tokens, your home folder name and your computer's name are replaced with a placeholder; your IP address, screenshots, screen recordings and console logs are not sent. Reports are not linked to your RUNNERS account.
 
+When the whole app crashes and quits, Monitor sends no crash record and no memory dump; only errors caught while Monitor keeps running are reported. Monitor also counts each run as started, ended normally or ended with an error, and sends only those counts, with nothing that identifies you, to see how often it runs without errors.
+
 ## What Monitor reads on your computer
 
 Every few seconds Monitor reads CPU use, memory use and the free space on the system disk. It also reads the names of running processes, only to count `claude` processes, to see whether a GitHub Actions runner is waiting or working (and, from launchd, whether one is turned off), and to name the apps using the most. It notes which app is in front, only to avoid suggesting you quit an app you are using. It never reads what is inside a window, a file or a process. This happens only on your computer and is not stored or sent anywhere.
@@ -65,6 +67,8 @@ Monitor는 Runners Co., Ltd가 만드는, 컴퓨터가 얼마나 바쁜지 보�
 ### 오류 보고
 
 Monitor 에 오류가 나면, 고칠 수 있도록 앱 오류를 모으는 서비스 Sentry(sentry.io)를 거쳐 Runners 에 보고를 보냅니다. 보고에는 오류 종류, 오류가 난 Monitor 코드 줄, Monitor 판, macOS 판이 들어갑니다. 보내기 전에 이메일 주소, 로그인 토큰, 홈 폴더 이름, 컴퓨터 이름은 `[가림]` 으로 바꾸고, IP 주소 · 스크린샷 · 화면 녹화 · 콘솔 기록은 보내지 않습니다. 보고는 RUNNERS 계정과 이어지지 않습니다.
+
+앱이 통째로 죽어 꺼지는 충돌은 충돌 기록도 메모리 덤프도 보내지 않습니다. Monitor 가 계속 도는 동안 잡힌 오류만 보고합니다. 또 Monitor 를 켤 때마다 「켜짐 · 정상 종료 · 오류로 끝남」 중 어느 것인지 세어, 사람을 알아볼 값 없이 그 숫자만 보냅니다. 오류 없이 도는 비율을 보려는 것입니다.
 
 ## 컴퓨터 안에서 읽는 정보
 

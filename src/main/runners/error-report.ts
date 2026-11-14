@@ -124,8 +124,9 @@ export type ErrorReportOptions = {
 }
 
 // 화면 녹화 · 스크린샷 · 화면 구조 · 콘솔 기록은 켜지 않는다(2A). 휴대폰판(@sentry/react-native)의 MobileReplay · ViewHierarchy 도 같이 뺀다.
+// 컴퓨터판의 SentryMinidump · ElectronMinidump 는 앱이 죽을 때 메모리 덤프를 가림 없이 올려서 뺀다(2026-11-15 [PROGRAM] 관리).
 const DROPPED_INTEGRATIONS =
-  /replay|screenshot|view.?hierarchy|console|feedback|browsertracing|reactnavigation|reactnativetracing/i
+  /replay|screenshot|view.?hierarchy|console|feedback|browsertracing|reactnavigation|reactnativetracing|minidump/i
 
 /** Sentry init 에 넘길 값. DSN 이 비면 null. */
 export function errorReportConfig(options: ErrorReportOptions): AnyRecord | null {
@@ -142,12 +143,14 @@ export function errorReportConfig(options: ErrorReportOptions): AnyRecord | null
     attachScreenshot: false,
     // 휴대폰판에만 있는 값. 화면 구조(글자 · 이름이 든 칸 목록)를 붙이지 않는다.
     attachViewHierarchy: false,
+    // 휴대폰판에만 있는 값. 네이티브 충돌은 앱 밖(iOS · Android SDK)에서 보내져 beforeSend 가림을 거치지 않는다.
+    enableNativeCrashHandling: false,
+    // 성능 추적은 0 이라 아무것도 보내지 않는다. beforeSendTransaction 은 새 판에서 무시되고 경고만 내서 넣지 않는다.
     tracesSampleRate: 0,
     maxBreadcrumbs: 30,
     integrations: (defaults: Integration[]) =>
       defaults.filter((integration) => !DROPPED_INTEGRATIONS.test(integration.name)),
     beforeSend: (event: object) => redactEvent(event, hide),
-    beforeSendTransaction: () => null,
     beforeBreadcrumb: (breadcrumb: Breadcrumb) =>
       breadcrumb.category === 'console' ? null : redactValue(breadcrumb, hide)
   }
