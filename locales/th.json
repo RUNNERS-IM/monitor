@@ -43,7 +43,7 @@
   "notice.bodyWin": "แอปที่ใช้มาก: {{apps}} · ปิดได้จาก Monitor ในพื้นที่แจ้งเตือน",
   "notice.bodyLinux": "แอปที่ใช้มาก: {{apps}} · ปิดได้จาก Monitor ในถาดระบบ",
   "slow.system": "ระบบ",
-  "slow.macos": "macOS (บีบอัดหน่วยความจำ · สวอป ฯลฯ)",
+  "slow.macos": "macOS (บีบอัด · สวอป ฯลฯ)",
   "slow.macosLinux": "Linux (เคอร์เนล · สวอป ฯลฯ)",
   "slow.cache": "แคช (ล้างเองอัตโนมัติ)",
   "slow.other": "แอปอื่น",

@@ -43,7 +43,7 @@
   "notice.bodyWin": "Zwaarste apps: {{apps}} · U kunt ze stoppen via Monitor in het meldingsgebied",
   "notice.bodyLinux": "Zwaarste apps: {{apps}} · U kunt ze stoppen via Monitor in het systeemvak",
   "slow.system": "Systeem",
-  "slow.macos": "macOS (geheugencompressie, swap…)",
+  "slow.macos": "macOS (compressie, swap…)",
   "slow.macosLinux": "Linux (kernel, swap…)",
   "slow.cache": "Cache (wordt vanzelf vrijgemaakt)",
   "slow.other": "Andere apps",
