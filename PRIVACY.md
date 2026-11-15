@@ -1,12 +1,18 @@
 # Monitor Privacy Policy
 
-Last updated: November 7, 2026
+Last updated: November 15, 2026
 
 Monitor is a Mac app made by Runners Co., Ltd that shows how busy a computer is. This policy covers every version of Monitor.
 
 ## What Monitor collects
 
-Nothing, unless you sign in with a RUNNERS account (below). Monitor has no ads and no analytics. Without signing in it does not send anything about you or your computer to Runners or anyone else.
+Only error reports (below), and what signing in with a RUNNERS account needs (below). Monitor has no ads and no analytics. Without signing in it sends nothing about you or your computer to Runners or anyone else, apart from error reports.
+
+### Error reports
+
+When Monitor runs into an error, it sends a report to Runners through Sentry (sentry.io), a service that collects app errors, so the error can be fixed. A report holds the kind of error, the lines of Monitor's code it happened in, Monitor's version and the macOS version. Before it is sent, email addresses, sign-in tokens, your home folder name and your computer's name are replaced with a placeholder; your IP address, screenshots, screen recordings and console logs are not sent. Reports are not linked to your RUNNERS account.
+
+When the whole app crashes and quits, Monitor sends no crash record and no memory dump; only errors caught while Monitor keeps running are reported. Monitor also counts each run as started, ended normally or ended with an error, and sends only those counts, with nothing that identifies you, to see how often it runs without errors.
 
 ## What Monitor reads on your computer
 
@@ -40,6 +46,8 @@ While signed in, Monitor sends, every 5 seconds, the same numbers as above plus 
 
 The phone app can ask this computer to quit one of the listed apps, to empty one kind of cleanable folders, or to pause a runner for an hour and start it again. Quitting works as in Monitor's own panel: an app is asked to quit as ⌘Q would, so it can ask to save first; a development server is ended right away; terminals, editors and `claude` sessions are never offered. Only a phone or computer signed in with the same account can ask; the server marks who sent each request, and Monitor takes them only from the account's own phones and computers. If a newer Monitor connection takes over this computer's place, this one stops instead of retrying, and says so on the account line. The phone asks you before sending; the computer then does it without asking again. Choosing **Sign Out** stops all of it.
 
+The phone app sends error reports the same way as Monitor (see **Error reports** above), with the app's and the phone system's versions instead of macOS's.
+
 ## Contact
 
 Questions: open an issue at https://github.com/RUNNERS-IM/monitor/issues.
@@ -48,13 +56,19 @@ Questions: open an issue at https://github.com/RUNNERS-IM/monitor/issues.
 
 # Monitor 개인정보 처리방침
 
-최종 수정: 2026년 11월 7일
+최종 수정: 2026년 11월 15일
 
 Monitor는 Runners Co., Ltd가 만드는, 컴퓨터가 얼마나 바쁜지 보여 주는 맥 앱입니다. 이 방침은 모든 Monitor에 적용됩니다.
 
 ## 모으는 정보
 
-RUNNERS 계정으로 로그인하지 않으면 없습니다(아래). Monitor 에는 광고와 사용 통계 수집이 없습니다. 로그인하지 않으면 사용자나 컴퓨터에 관한 어떤 정보도 Runners 나 다른 곳으로 보내지 않습니다.
+오류 보고(아래)와, RUNNERS 계정으로 로그인했을 때 필요한 정보(아래)뿐입니다. Monitor 에는 광고와 사용 통계 수집이 없습니다. 로그인하지 않으면 오류 보고 말고는 사용자나 컴퓨터에 관한 어떤 정보도 Runners 나 다른 곳으로 보내지 않습니다.
+
+### 오류 보고
+
+Monitor 에 오류가 나면, 고칠 수 있도록 앱 오류를 모으는 서비스 Sentry(sentry.io)를 거쳐 Runners 에 보고를 보냅니다. 보고에는 오류 종류, 오류가 난 Monitor 코드 줄, Monitor 판, macOS 판이 들어갑니다. 보내기 전에 이메일 주소, 로그인 토큰, 홈 폴더 이름, 컴퓨터 이름은 `[가림]` 으로 바꾸고, IP 주소 · 스크린샷 · 화면 녹화 · 콘솔 기록은 보내지 않습니다. 보고는 RUNNERS 계정과 이어지지 않습니다.
+
+앱이 통째로 죽어 꺼지는 충돌은 충돌 기록도 메모리 덤프도 보내지 않습니다. Monitor 가 계속 도는 동안 잡힌 오류만 보고합니다. 또 Monitor 를 켤 때마다 「켜짐 · 정상 종료 · 오류로 끝남」 중 어느 것인지 세어, 사람을 알아볼 값 없이 그 숫자만 보냅니다. 오류 없이 도는 비율을 보려는 것입니다.
 
 ## 컴퓨터 안에서 읽는 정보
 
@@ -86,6 +100,8 @@ Monitor가 인터넷에 접속하는 일은 업데이트, 그리고 로그인했
 로그인해 있는 동안 Monitor 는 5초마다 위와 같은 숫자에 더해, 비울 수 있는 폴더 종류와 크기, GitHub Actions 러너 이름을 보냅니다. 서버는 이것을 같은 계정으로 로그인한 Monitor 휴대폰 앱에만 넘기고, 나중에 여는 휴대폰에 보여 주려고 마지막 숫자만 메모리에 둡니다. 컴퓨터가 계속 느리면 느려짐 알림(제목과 많이 쓰는 앱 이름)도 보내, 서버가 그 휴대폰에 푸시 알림으로 보내게 합니다.
 
 휴대폰 앱은 이 컴퓨터에 목록의 앱 하나를 끄기, 비울 수 있는 폴더 한 종류 비우기, 러너 1시간 멈추기와 다시 켜기를 요청할 수 있습니다. 끄기는 Monitor 패널과 같습니다. 앱은 ⌘Q 처럼 끄라고 요청해 앱이 먼저 저장을 물을 수 있고, 개발 서버는 바로 끄며, 터미널 · 편집기 · `claude` 세션은 끄기 대상으로 내놓지 않습니다. 같은 계정으로 로그인한 휴대폰과 컴퓨터만 요청할 수 있습니다. 서버가 요청마다 보낸 쪽을 표시하고, Monitor 는 계정의 휴대폰과 컴퓨터가 보낸 것만 받습니다. 이 컴퓨터 자리를 더 새로운 Monitor 연결이 차지하면 이쪽은 다시 붙으려 하지 않고 멈추며, 계정 줄에 그렇다고 적습니다. 휴대폰이 보내기 전에 사용자에게 묻고, 컴퓨터는 다시 묻지 않고 실행합니다. **로그아웃** 을 고르면 이 모든 일이 멈춥니다.
+
+휴대폰 앱도 Monitor 와 같은 방식으로 오류 보고를 보냅니다(위 **오류 보고**). macOS 판 대신 앱 판과 휴대폰 운영체제 판이 들어갑니다.
 
 ## 문의
 

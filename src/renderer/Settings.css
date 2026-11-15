@@ -76,8 +76,9 @@ html[data-window='settings'] body {
   background: var(--control-track);
 }
 .toolbar-item.selected {
-  background: var(--control-track);
-  color: var(--accent);
+  background: var(--r-selected-bg);
+  color: var(--r-selected-text);
+  font-weight: 600;
 }
 .s-section {
   display: flex;

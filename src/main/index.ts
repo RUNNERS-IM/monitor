@@ -1,6 +1,7 @@
 // Monitor's main process: a tray app that samples this computer every 3 seconds, shows the reading on the tray and
 // in a panel under it, colours the tray icon and notifies once a day when the computer turns slow, and measures cleanable folders
 // every 30 minutes.
+import './error-report-start'
 import {
   app,
   BrowserWindow,
