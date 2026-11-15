@@ -76,11 +76,22 @@
   gap: 6px;
   min-height: 18px;
 }
+/* Why: the computer's name is how you tell the cards apart, so a long one wraps instead of being cut off. */
 .c-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 6px;
+  min-width: 0;
   font-weight: 600;
+  overflow-wrap: anywhere;
+}
+/* "This computer" sits after the name in small gray text and moves to the next line whole, flush left, when the card is narrow. */
+.c-self {
+  color: var(--rw-text-secondary);
+  font-size: var(--rw-font-small);
+  font-weight: 400;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .c-badge {
   flex: none;

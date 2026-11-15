@@ -94,7 +94,8 @@ function CardView({
     >
       <div className="c-head">
         <span className="c-name">
-          {card.self ? `${card.name} · ${t('computers.thisComputer')}` : card.name}
+          <span>{card.name}</span>
+          {card.self && <span className="c-self">{t('computers.thisComputer')}</span>}
         </span>
         {status && <span className="c-badge">{status}</span>}
       </div>
