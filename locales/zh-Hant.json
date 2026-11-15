@@ -48,7 +48,7 @@
   "slow.cache": "快取（自動釋放）",
   "slow.other": "其他 App",
   "slow.claudeSessions": "AI 工作階段 {{count}} 個",
-  "slow.claudeNote": "工作階段正在進行，不在此處結束",
+  "slow.claudeNote": "正在使用中，Monitor 不會在此處結束它們",
   "slow.cpu": "CPU 佔用超過 80% 已持續 1 分鐘以上。",
   "slow.swap": "交換 {{size}} · 正在用磁碟代替記憶體",
   "slow.compressed": "其中已壓縮記憶體 {{size}} · 記憶體不足時 macOS 壓縮的部分",

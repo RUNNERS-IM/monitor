@@ -48,7 +48,7 @@
   "slow.cache": "Cache (dikosongkan otomatis)",
   "slow.other": "Aplikasi lain",
   "slow.claudeSessions": "{{count}} sesi AI",
-  "slow.claudeNote": "Sesi sedang bekerja, jadi tidak ditutup dari sini",
+  "slow.claudeNote": "Sedang dipakai, jadi Monitor tidak menutupnya dari sini",
   "slow.cpu": "CPU berada di atas 80% selama lebih dari satu menit.",
   "slow.swap": "Swap {{size}} · disk dipakai sebagai pengganti memori",
   "slow.compressed": "{{size}} di antaranya dikompres · macOS memberi ruang",
