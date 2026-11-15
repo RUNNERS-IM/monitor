@@ -39,6 +39,10 @@ jobs:
           ref: ${{ inputs.sha }}
 
       - uses: pnpm/action-setup@v4
+        with:
+          # 사무실 맥에서는 앱마다 출시 작업이 동시에 돈다. 기본 자리(~/setup-pnpm)를 같이 쓰면 다른 앱 작업이 pnpm 을
+          # 다시 깔며 이 작업의 받은 파일 저장소를 지워, 끝의 저장 단계가 「경로 없음」으로 실패했다(2026-11-15 run 43665631276)
+          dest: ~/setup-pnpm-monitor
       - uses: actions/setup-node@v6
         with:
           node-version: 24
