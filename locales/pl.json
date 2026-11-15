@@ -48,7 +48,7 @@
   "slow.cache": "Pamięć podręczna (zwalniana sama)",
   "slow.other": "Inne aplikacje",
   "slow.claudeSessions": "Sesje AI: {{count}}",
-  "slow.claudeNote": "Sesje pracują, więc nie są tu zamykane",
+  "slow.claudeNote": "W użyciu, więc Monitor ich tu nie zamyka",
   "slow.cpu": "CPU od ponad minuty przekracza 80%.",
   "slow.swap": "Swap {{size}} · dysk zastępuje pamięć",
   "slow.compressed": "z tego {{size}} skompresowane · macOS robi miejsce",

@@ -49,7 +49,7 @@
   "slow.other": "Andere apps",
   "slow.claudeSessions_one": "{{count}} AI-sessie",
   "slow.claudeSessions_other": "{{count}} AI-sessies",
-  "slow.claudeNote": "Sessies aan het werk, dus hier niet stoppen",
+  "slow.claudeNote": "In gebruik, dus Monitor stopt ze hier niet",
   "slow.cpu": "De CPU zit al meer dan een minuut boven 80%.",
   "slow.swap": "{{size}} swap · schijf gebruikt als geheugen",
   "slow.compressed": "waarvan {{size}} gecomprimeerd · macOS maakt ruimte",

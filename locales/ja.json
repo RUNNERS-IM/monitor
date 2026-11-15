@@ -48,7 +48,7 @@
   "slow.cache": "キャッシュ(自動で解放)",
   "slow.other": "その他のアプリ",
   "slow.claudeSessions": "AI セッション {{count}} 件",
-  "slow.claudeNote": "作業中のセッションなのでここでは終了しません",
+  "slow.claudeNote": "使用中のため、Monitor はここでは終了しません",
   "slow.cpu": "CPU使用率が1分以上80%を超えています。",
   "slow.swap": "スワップ {{size}} · メモリの代わりにディスクを使用中",
   "slow.compressed": "うち圧縮メモリ {{size}} · 足りないため macOS が縮めた分",

@@ -540,7 +540,7 @@ export const TEXT = {
     resetSubmit: '새 비밀번호로 로그인',
     backToSignIn: '로그인으로 돌아가기',
     noticesIntro:
-      '{app}에는 아래 프로젝트의 소프트웨어가 들어 있습니다. 각 프로젝트의 저작권 · 라이선스 고지는 영어 원문 그대로 싣습니다. 메뉴 아이콘은 Lucide(ISC 라이선스)의 것으로, lucide-react 항목에 있습니다.',
+      '{app} 에는 아래 프로젝트의 소프트웨어가 들어 있습니다. 각 프로젝트의 저작권 · 라이선스 고지는 영어 원문 그대로 싣습니다. 메뉴 아이콘은 Lucide(ISC 라이선스)의 것으로, lucide-react 항목에 있습니다.',
     noticesLicense: '라이선스',
     noticesApache: 'Apache License 2.0 전문은 이 목록 맨 끝에 있습니다.',
     noticesNoFile:

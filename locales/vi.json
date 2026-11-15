@@ -48,7 +48,7 @@
   "slow.cache": "Bộ nhớ đệm (tự giải phóng)",
   "slow.other": "Ứng dụng khác",
   "slow.claudeSessions": "{{count}} phiên AI",
-  "slow.claudeNote": "Phiên đang làm việc nên không thoát từ đây",
+  "slow.claudeNote": "Đang được dùng nên Monitor không thoát chúng ở đây",
   "slow.cpu": "CPU đã vượt 80% trong hơn 1 phút.",
   "slow.swap": "Swap {{size}} · đang dùng ổ đĩa thay cho bộ nhớ",
   "slow.compressed": "trong đó {{size}} đã nén · macOS dồn chỗ",

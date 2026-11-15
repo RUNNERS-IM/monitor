@@ -49,7 +49,7 @@
   "slow.other": "Andere Apps",
   "slow.claudeSessions_one": "{{count}} KI-Sitzung",
   "slow.claudeSessions_other": "{{count}} KI-Sitzungen",
-  "slow.claudeNote": "Sitzungen arbeiten, daher hier nicht beenden",
+  "slow.claudeNote": "In Gebrauch, daher beendet Monitor sie hier nicht",
   "slow.cpu": "Die CPU liegt seit über einer Minute über 80 %.",
   "slow.swap": "{{size}} Swap · Festplatte ersetzt Arbeitsspeicher",
   "slow.compressed": "davon {{size}} komprimiert · macOS schafft so Platz",

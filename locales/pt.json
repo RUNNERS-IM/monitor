@@ -49,7 +49,7 @@
   "slow.other": "Outros apps",
   "slow.claudeSessions_one": "{{count}} sessão de IA",
   "slow.claudeSessions_other": "{{count}} sessões de IA",
-  "slow.claudeNote": "Sessões em andamento, não são encerradas aqui",
+  "slow.claudeNote": "Em uso, por isso o Monitor não as encerra aqui",
   "slow.cpu": "A CPU está acima de 80% há mais de um minuto.",
   "slow.swap": "{{size}} de swap · o disco está fazendo o papel da memória",
   "slow.compressed": "{{size}} comprimidos · o macOS abrindo espaço",
