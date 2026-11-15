@@ -48,7 +48,7 @@
   "slow.cache": "缓存(自动释放)",
   "slow.other": "其他应用",
   "slow.claudeSessions": "{{count}} 个 AI 会话",
-  "slow.claudeNote": "会话正在工作,不在此处退出",
+  "slow.claudeNote": "正在使用，Monitor 不会在此处退出它们",
   "slow.cpu": "CPU 占用超过 80% 已持续 1 分钟以上。",
   "slow.swap": "交换 {{size}} · 正在用磁盘代替内存",
   "slow.compressed": "其中已压缩内存 {{size}} · 内存不足时 macOS 压缩的部分",

@@ -48,7 +48,7 @@
   "slow.cache": "Önbellek (kendiliğinden boşalır)",
   "slow.other": "Diğer uygulamalar",
   "slow.claudeSessions": "AI oturumu: {{count}}",
-  "slow.claudeNote": "Çalışan oturumlar, bu yüzden buradan kapatılmaz",
+  "slow.claudeNote": "Kullanımda, bu yüzden Monitor bunları buradan kapatmaz",
   "slow.cpu": "CPU bir dakikadan uzun süredir %80'in üzerinde.",
   "slow.swap": "{{size}} takas · bellek yerine disk kullanılıyor",
   "slow.compressed": "{{size}} sıkıştırılmış · macOS yer açıyor",

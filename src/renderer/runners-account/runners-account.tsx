@@ -399,9 +399,10 @@ export function SignInSheet(props: {
             onChange={(event) => setPassword(event.target.value)}
           />
         )}
-        {(step === 'signup' || step === 'reset') && problem !== 'exists' && (
-          <div className="ra-hint ra-rule">{text('passwordRule')}</div>
-        )}
+        {/* 「format」 오류는 이 안내를 빨간 글로 다시 말하므로, 그때는 회색 안내를 숨겨 같은 말이 두 줄 나오지 않게 한다. */}
+        {(step === 'signup' || step === 'reset') &&
+          problem !== 'exists' &&
+          problem !== 'format' && <div className="ra-hint ra-rule">{text('passwordRule')}</div>}
         {step === 'login' && forgotLink}
         {problem && <div className="ra-hint ra-error">{text(problem as TextKey)}</div>}
         {resent && <div className="ra-hint ra-note">{text('resent')}</div>}

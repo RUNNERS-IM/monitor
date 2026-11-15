@@ -48,7 +48,7 @@
   "slow.cache": "แคช (ล้างเองอัตโนมัติ)",
   "slow.other": "แอปอื่น",
   "slow.claudeSessions": "เซสชัน AI {{count}} รายการ",
-  "slow.claudeNote": "เซสชันกำลังทำงาน จึงไม่ปิดจากที่นี่",
+  "slow.claudeNote": "กำลังใช้งานอยู่ Monitor จึงไม่ปิดจากที่นี่",
   "slow.cpu": "CPU ทำงานเกิน 80% นานกว่า 1 นาที",
   "slow.swap": "สว็อป {{size}} · ใช้ดิสก์แทนหน่วยความจำ",
   "slow.compressed": "ในนั้นถูกบีบอัด {{size}} · macOS บีบให้มีที่ว่าง",

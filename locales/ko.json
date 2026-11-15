@@ -48,7 +48,7 @@
   "slow.cache": "캐시 (자동으로 비움)",
   "slow.other": "다른 앱",
   "slow.claudeSessions": "AI 세션 {{count}}개",
-  "slow.claudeNote": "작업 중인 세션이라 여기서 끄지 않음",
+  "slow.claudeNote": "쓰는 중이라 Monitor가 여기서 끄지 않음",
   "slow.cpu": "CPU가 1분 넘게 80% 넘게 바쁩니다.",
   "slow.swap": "스왑 {{size}} · 메모리 대신 디스크를 쓰는 중",
   "slow.compressed": "그중 macOS 가 압축해 둔 것 {{size}}",
