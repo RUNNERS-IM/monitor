@@ -43,7 +43,7 @@
   "notice.bodyWin": "Größte Verbraucher: {{apps}} · Sie können sie über Monitor im Infobereich beenden",
   "notice.bodyLinux": "Größte Verbraucher: {{apps}} · Sie können sie über Monitor in der Systemleiste beenden",
   "slow.system": "System",
-  "slow.macos": "macOS (Speicherkomprimierung, Swap …)",
+  "slow.macos": "macOS (Komprimierung, Swap …)",
   "slow.macosLinux": "Linux (Kernel, Swap …)",
   "slow.cache": "Cache (wird automatisch geleert)",
   "slow.other": "Andere Apps",

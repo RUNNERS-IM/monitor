@@ -43,7 +43,7 @@
   "notice.bodyWin": "App più pesanti: {{apps}} · Può chiuderle da Monitor nell’area di notifica",
   "notice.bodyLinux": "App più pesanti: {{apps}} · Può chiuderle da Monitor nella barra di sistema",
   "slow.system": "Sistema",
-  "slow.macos": "macOS (compressione memoria, swap…)",
+  "slow.macos": "macOS (compressione, swap…)",
   "slow.macosLinux": "Linux (kernel, swap…)",
   "slow.cache": "Cache (svuotata automaticamente)",
   "slow.other": "Altre app",

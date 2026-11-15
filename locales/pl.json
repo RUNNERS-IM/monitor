@@ -43,7 +43,7 @@
   "notice.bodyWin": "Najbardziej obciążające aplikacje: {{apps}} · Możesz je zamknąć w aplikacji Monitor w obszarze powiadomień",
   "notice.bodyLinux": "Najbardziej obciążające aplikacje: {{apps}} · Możesz je zamknąć w aplikacji Monitor w zasobniku systemowym",
   "slow.system": "System",
-  "slow.macos": "macOS (kompresja pamięci, swap…)",
+  "slow.macos": "macOS (kompresja, swap…)",
   "slow.macosLinux": "Linux (jądro, swap…)",
   "slow.cache": "Pamięć podręczna (zwalniana sama)",
   "slow.other": "Inne aplikacje",

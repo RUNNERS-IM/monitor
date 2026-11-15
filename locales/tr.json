@@ -43,7 +43,7 @@
   "notice.bodyWin": "En çok kullanan uygulamalar: {{apps}} · Bildirim alanındaki Monitor'dan kapatabilirsiniz.",
   "notice.bodyLinux": "En çok kullanan uygulamalar: {{apps}} · Sistem tepsisindeki Monitor'dan kapatabilirsiniz.",
   "slow.system": "Sistem",
-  "slow.macos": "macOS (bellek sıkıştırma, takas…)",
+  "slow.macos": "macOS (sıkıştırma, takas…)",
   "slow.macosLinux": "Linux (çekirdek, takas…)",
   "slow.cache": "Önbellek (kendiliğinden boşalır)",
   "slow.other": "Diğer uygulamalar",

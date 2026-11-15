@@ -43,7 +43,7 @@
   "notice.bodyWin": "Apps les plus gourmandes : {{apps}} · Vous pouvez les quitter depuis Monitor dans la zone de notification",
   "notice.bodyLinux": "Apps les plus gourmandes : {{apps}} · Vous pouvez les quitter depuis Monitor dans la barre d’état système",
   "slow.system": "Système",
-  "slow.macos": "macOS (compression mémoire, swap…)",
+  "slow.macos": "macOS (compression, swap…)",
   "slow.macosLinux": "Linux (noyau, swap…)",
   "slow.cache": "Cache (vidé automatiquement)",
   "slow.other": "Autres apps",

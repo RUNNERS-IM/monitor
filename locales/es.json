@@ -43,7 +43,7 @@
   "notice.bodyWin": "Apps que más consumen: {{apps}} · Puede cerrarlas desde Monitor en el área de notificación",
   "notice.bodyLinux": "Apps que más consumen: {{apps}} · Puede cerrarlas desde Monitor en la bandeja del sistema",
   "slow.system": "Sistema",
-  "slow.macos": "macOS (compresión de memoria, swap…)",
+  "slow.macos": "macOS (compresión, swap…)",
   "slow.macosLinux": "Linux (kernel, swap…)",
   "slow.cache": "Caché (se vacía sola)",
   "slow.other": "Otras apps",
