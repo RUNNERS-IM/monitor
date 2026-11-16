@@ -1,7 +1,7 @@
 ## 한국어
 
-- 설정 › 컴퓨터 탭에서 긴 기기 이름이 잘리지 않고 끝까지 보입니다.
+- 켜진 스위치와 고른 탭이 파란색으로 바뀌고, 카드 둘레 선 · 상태 알약 · 빈 화면 그림을 RUNNERS 디자인 가이드에 맞췄습니다.
 
 ## English
 
-- Long computer names in Settings › Computers are no longer cut off and show in full.
+- Switches that are on and the chosen tab are now blue, and cards, status badges and empty screens follow the RUNNERS design guide.
