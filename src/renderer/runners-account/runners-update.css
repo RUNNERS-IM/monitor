@@ -11,6 +11,9 @@
 
 .update {
   box-sizing: border-box;
+  /* 한국어는 띄어쓰기에서만 줄을 바꾼다(「카/드」처럼 낱말 중간에서 끊기지 않게, Draw 검수 2026-11-16). 띄어쓰기 없는 긴 글은 칸을 넘지 않게 아무 데서나 끊는다. */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
   display: flex;
   flex-direction: column;
   align-items: center;
