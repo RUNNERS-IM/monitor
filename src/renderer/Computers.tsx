@@ -18,7 +18,9 @@ import type {
   PeerUsage,
   QuitReport
 } from './native'
-import { AccountButton, RunnersMark } from './runners-account/runners-account'
+import { AccountButton } from './runners-account/runners-account'
+import pandaEmpty from './assets/panda-empty.webp'
+import pandaLocked from './assets/panda-locked.webp'
 import { SignIn } from './SignIn'
 import './runners-account/runners-window.css'
 import './runners-account/runners-account.css'
@@ -577,9 +579,9 @@ export default function Computers() {
         )}
       </header>
       {signedOut && (
-        <section className="c-signed-out">
-          <RunnersMark size={28} />
-          <b>{t('computers.signedOutTitle')}</b>
+        <section className="c-state">
+          <img className="c-state-pic" src={pandaLocked} alt="" draggable={false} />
+          <b className="c-state-title">{t('computers.signedOutTitle')}</b>
           <p className="c-note">{t('computers.signedOutNote')}</p>
           <button type="button" className="rw-button default" onClick={() => setSigningIn(true)}>
             {t('account.signIn')}
@@ -587,7 +589,12 @@ export default function Computers() {
         </section>
       )}
       {state?.status === 'elsewhere' && <p className="c-note">{t('account.elsewhereNote')}</p>}
-      {state?.email && cards.length <= 1 && <p className="c-note">{t('computers.empty')}</p>}
+      {state?.email && cards.length <= 1 && (
+        <section className="c-state">
+          <img className="c-state-pic" src={pandaEmpty} alt="" draggable={false} />
+          <b className="c-state-title">{t('computers.empty')}</b>
+        </section>
+      )}
       <div className="c-grid">
         {cards.map((card, i) => (
           <CardView

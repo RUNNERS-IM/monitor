@@ -36,9 +36,11 @@
   --rw-control-bg: var(--r-control);
   --rw-control-hover: var(--r-control-hover);
   --rw-window-bg: var(--r-window);
-  /* Filled buttons and switches that are on. Links and focus rings use --r-link and --r-accent. */
+  /* Filled buttons. Switches that are on, picked tabs and chips use --r-active. Links and focus rings use --r-link and --r-accent. */
   --rw-primary: var(--r-primary);
   --rw-on-primary: var(--r-on-primary);
+  --rw-active: var(--r-active);
+  --rw-on-active: var(--r-on-active);
   /* Only for actions that destroy something. */
   --rw-danger: var(--r-danger-text);
   --rw-font-family:
@@ -135,11 +137,22 @@ body {
   outline-offset: 1px;
 }
 
-/* 골라진 줄 · 탭. 앱이 class 를 붙여 쓴다. */
+/* 골라진 줄 · 탭. 앱이 class 를 붙여 쓴다. 안의 아이콘(svg)만 파랑으로 칠하고 글자는 흑백 그대로 둔다. */
 .rw-selected {
   background: var(--r-selected-bg);
   color: var(--r-selected-text);
   font-weight: 600;
+}
+
+.rw-selected svg {
+  color: var(--r-active);
+}
+
+/* 여럿 중 고른 칩 · 고르기 단추. */
+.rw-picked {
+  background: var(--r-active);
+  border-color: var(--r-active);
+  color: var(--r-on-active);
 }
 
 .rw-link {

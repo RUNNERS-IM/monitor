@@ -1,5 +1,5 @@
 /* The Computers tab (and its own page for screenshots): the shared window values (runners-window.css, design standard A). Cards are the standard
-   boxes; the chosen one gets the primary ring. */
+   boxes; the chosen one gets the blue ring that marks a pick (--r-active). */
 :root[data-window='computers'] body {
   margin: 0;
   background: var(--rw-window-bg);
@@ -21,20 +21,30 @@
   justify-content: space-between;
   gap: 12px;
 }
-/* Signed out: one Sign In button where the cards go, so there are never two ways in. */
-.c-signed-out {
+/* Signed out, or no other computer yet: the design guide's empty screen (picture, one line, at most one filled button).
+   Signed out keeps one Sign In button where the cards go, so there are never two ways in. */
+.c-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
   margin-top: var(--rw-box-gap);
   padding: 28px var(--rw-pad);
-  border: var(--rw-border) solid var(--rw-separator);
+  border: 1px solid var(--r-border);
   border-radius: var(--rw-radius);
   background: var(--rw-box-bg);
   text-align: center;
 }
-.c-signed-out .c-note {
+.c-state-pic {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+}
+.c-state-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+.c-state .c-note {
   max-width: 360px;
   margin: 0 0 6px;
 }
@@ -54,7 +64,7 @@
   flex-direction: column;
   gap: 6px;
   padding: 12px var(--rw-row-pad-x);
-  border: var(--rw-border) solid var(--rw-separator);
+  border: 1px solid var(--r-border);
   border-radius: var(--rw-radius);
   background: var(--rw-box-bg);
   color: inherit;
@@ -63,7 +73,7 @@
   cursor: pointer;
 }
 .c-card.chosen {
-  box-shadow: 0 0 0 2px var(--rw-primary);
+  box-shadow: 0 0 0 2px var(--r-active);
 }
 .c-card.off .c-name {
   color: var(--rw-text-secondary);
@@ -97,8 +107,8 @@
   flex: none;
   padding: 0 6px;
   border-radius: 999px;
-  background: #ff9f0a;
-  color: #fff;
+  background: var(--r-warning);
+  color: var(--r-on-warning);
   font-size: var(--rw-font-small);
   font-weight: 600;
 }
@@ -137,18 +147,18 @@
   display: block;
   height: 100%;
   border-radius: 2px;
-  background: #34c759;
+  background: var(--r-success);
 }
 .c-bar i.high {
-  background: #ff9f0a;
+  background: var(--r-warning);
 }
 .c-bar i.full {
-  background: #ff3b30;
+  background: #ff453a;
 }
 .c-detail {
   margin-top: var(--rw-box-gap);
   padding: var(--rw-row-pad-y) var(--rw-row-pad-x);
-  border: var(--rw-border) solid var(--rw-separator);
+  border: 1px solid var(--r-border);
   border-radius: var(--rw-radius);
   background: var(--rw-box-bg);
 }
@@ -186,7 +196,7 @@
   flex: none;
   padding: 1px 8px;
   border: none;
-  border-radius: 5px;
+  border-radius: var(--rw-small-radius);
   background: var(--rw-primary);
   color: var(--rw-on-primary);
   font: inherit;
