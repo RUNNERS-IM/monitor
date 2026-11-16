@@ -19,8 +19,9 @@ import type {
   QuitReport
 } from './native'
 import { AccountButton } from './runners-account/runners-account'
-import pandaEmpty from './assets/panda-empty.webp'
-import pandaLocked from './assets/panda-locked.webp'
+import pandaDisconnected from './runners-account/assets/panda/disconnected.webp'
+import pandaNoComputer from './runners-account/assets/panda/no-computer.webp'
+import pandaSignIn from './runners-account/assets/panda/signin.webp'
 import { SignIn } from './SignIn'
 import './runners-account/runners-window.css'
 import './runners-account/runners-account.css'
@@ -580,7 +581,7 @@ export default function Computers() {
       </header>
       {signedOut && (
         <section className="c-state">
-          <img className="c-state-pic" src={pandaLocked} alt="" draggable={false} />
+          <img className="c-state-pic" src={pandaSignIn} alt="" draggable={false} />
           <b className="c-state-title">{t('computers.signedOutTitle')}</b>
           <p className="c-note">{t('computers.signedOutNote')}</p>
           <button type="button" className="rw-button default" onClick={() => setSigningIn(true)}>
@@ -588,10 +589,15 @@ export default function Computers() {
           </button>
         </section>
       )}
-      {state?.status === 'elsewhere' && <p className="c-note">{t('account.elsewhereNote')}</p>}
+      {state?.status === 'elsewhere' && (
+        <div className="c-elsewhere">
+          <img className="c-elsewhere-pic" src={pandaDisconnected} alt="" draggable={false} />
+          <p className="c-note">{t('account.elsewhereNote')}</p>
+        </div>
+      )}
       {state?.email && cards.length <= 1 && (
         <section className="c-state">
-          <img className="c-state-pic" src={pandaEmpty} alt="" draggable={false} />
+          <img className="c-state-pic" src={pandaNoComputer} alt="" draggable={false} />
           <b className="c-state-title">{t('computers.empty')}</b>
         </section>
       )}

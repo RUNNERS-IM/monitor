@@ -1,6 +1,11 @@
 // 트레이 · 메뉴 · 알림창 · 알림의 글.
 import { app } from 'electron'
-import { currentLocale as locale, startI18n, t as translate } from '../shared/i18n'
+import i18next, {
+  currentLocale as locale,
+  firstLocale,
+  startI18n,
+  t as translate
+} from '../shared/i18n'
 
 let started = false
 
@@ -23,4 +28,10 @@ export function currentLocale(): string {
 export function t(key: string, args?: Record<string, string | number>): string {
   start()
   return translate(key, args)
+}
+
+/** 시험 촬영 모드가 언어를 바꿀 때 쓴다. 트레이 · 알림창 · 업데이트 창의 글이 이 언어로 바뀐다. */
+export function setLocale(lang: string): void {
+  start()
+  void i18next.changeLanguage(firstLocale([lang]))
 }

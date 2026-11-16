@@ -44,6 +44,21 @@
   font-size: 15px;
   font-weight: 600;
 }
+.c-elsewhere {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.c-elsewhere-pic {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+.c-elsewhere .c-note {
+  margin: 0;
+  text-align: center;
+}
 .c-state .c-note {
   max-width: 360px;
   margin: 0 0 6px;
