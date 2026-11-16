@@ -31,7 +31,7 @@
   --rm-highlight-radius: 6px;
   --rm-sep-gap: 8px;
 
-  /* 색은 runners-tokens.css 에서 받는다. 켜진 스위치 초록과 상태 색(ok · high · full)만 여기서 정한다. */
+  /* 색은 runners-tokens.css 에서 받는다. 가득 참 빨강만 여기서 정한다. */
   --rm-text: var(--r-text);
   --rm-text-secondary: var(--r-text-muted);
   --rm-separator: var(--r-border);
@@ -41,22 +41,16 @@
   --rm-solid-bg: var(--r-window);
   --rm-primary: var(--r-primary);
   --rm-on-primary: var(--r-on-primary);
-  --rm-switch-on: #34c759;
+  --rm-switch-on: var(--r-active);
   --rm-selected: var(--r-selected-bg);
-  --rm-ok: #34c759;
-  --rm-high: #ff9f0a;
+  --rm-ok: var(--r-success);
+  --rm-high: var(--r-warning);
   --rm-full: #ff453a;
 
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   font-size: var(--rm-font);
   color: var(--rm-text);
   -webkit-font-smoothing: antialiased;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --rm-switch-on: #30d158;
-  }
 }
 
 html,
@@ -216,8 +210,8 @@ button.rm-item:hover {
 
 /* On/off switch at the right of a line. Sizes are the macOS 26 NSSwitch "small" control, measured by drawing one
    (2026-11-06): track 44 x 20, a pill knob 26 x 16 two in from the edge. The old 26 x 16 was the pre-26 "mini" one,
-   which the apps found too small. On is the system green (light #34c759, dark #30d158) with a white knob in every state,
-   the same in all five apps (2026-11-12). */
+   which the apps found too small. On is --r-active blue (light #007aff, dark #0a84ff, 2026-11-16; green from 2026-11-12
+   until then) with a white knob in every state, the same in all five apps. */
 .rm-switch {
   position: relative;
   cursor: pointer;
