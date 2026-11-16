@@ -79,12 +79,12 @@ body,
 
 .badge {
   flex: none;
-  padding: 0 5px;
-  border-radius: 4px;
-  font-size: 10px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: var(--rm-font-small);
   font-weight: 600;
   line-height: 15px;
-  color: #1d1d1f;
+  color: var(--r-on-warning);
 }
 
 .badge.ok {
@@ -206,7 +206,7 @@ body,
 .row-button {
   padding: 1px 8px;
   border: none;
-  border-radius: 5px;
+  border-radius: var(--rm-highlight-radius);
   /* Why: 흐린 바탕 위에서 읽히도록 채운 단추로 둔다. 어두운 화면에서는 바탕이 흰색이라 글자도 함께 뒤집힌다. */
   background: var(--rm-primary);
   color: var(--rm-on-primary);
