@@ -1,7 +1,7 @@
 ## 한국어
 
-- 켜진 스위치와 고른 탭이 파란색으로 바뀌고, 카드 둘레 선 · 상태 알약 · 빈 화면 그림을 RUNNERS 디자인 가이드에 맞췄습니다.
+- 로그인 전 화면, 다른 컴퓨터가 없을 때, 다른 곳이 연결해 여기가 멈췄을 때 나오는 판다 그림을 밝은 얼굴의 새 그림으로 바꿨습니다.
 
 ## English
 
-- Switches that are on and the chosen tab are now blue, and cards, status badges and empty screens follow the RUNNERS design guide.
+- The panda shown before you sign in, when there are no other computers, and when another place has connected and paused this one is now a new, cheerful picture.
