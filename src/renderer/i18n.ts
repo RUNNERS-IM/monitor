@@ -6,7 +6,9 @@ import i18next, { currentLocale, startI18n, t as translate } from '../shared/i18
 type Key = keyof typeof ko
 
 // Why: 개발 실행은 창마다 언어를 고를 수 있어(`?lang=ja`), 한 번 실행으로 모든 언어를 찍을 수 있다.
-const debugLang = import.meta.env.DEV ? new URLSearchParams(location.search).get('lang') : null
+// Why: DEV 는 `vite build` 에서 늘 거짓이라, 시험 촬영이 쓰는 `build --mode development` 에서도 켜지게 MODE 로 가른다.
+const debugLang =
+  import.meta.env.MODE === 'development' ? new URLSearchParams(location.search).get('lang') : null
 startI18n(debugLang ? [debugLang] : navigator.languages)
 setI18n(i18next)
 

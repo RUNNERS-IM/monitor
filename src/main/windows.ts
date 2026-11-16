@@ -10,16 +10,28 @@ const UPDATE_WIDTH = 400
 /** Space between the menu bar (or taskbar) and the panel. */
 const GAP = 4
 
-/** Dev only: `MONITOR_SOLID=1` turns the blur off so screenshots do not show the desktop behind the window. */
-const SOLID = !app.isPackaged && process.env.MONITOR_SOLID === '1'
+/** Dev only: the test shot mode (`RUNNERS_TEST_SHOTS`, kit runners/test-shots.ts). Its windows never come on screen. */
+const TEST_SHOTS = !app.isPackaged && !!process.env.RUNNERS_TEST_SHOTS?.trim()
+
+/** Dev only: `MONITOR_SOLID=1` turns the blur off so screenshots do not show the desktop behind the window.
+ *  Test shots are always solid, since a hidden window has no desktop behind it. */
+const SOLID = !app.isPackaged && (process.env.MONITOR_SOLID === '1' || TEST_SHOTS)
 
 /** Whether the OS blurs what is behind the panel; the page draws a solid background when it does not. */
 export const TRANSLUCENT = !SOLID && (process.platform === 'darwin' || process.platform === 'win32')
 
+/** The language the test shot mode is taking pictures in; every page opened after it is set uses it (`?lang=`). */
+let pageLang: string | null = null
+
+export function setPageLang(lang: string): void {
+  pageLang = lang
+}
+
 /** Dev only: `MONITOR_TEST_PLATFORM=win32|linux` adds `os=` so the page uses that system's words (src/renderer/os.ts). */
 function devQuery(query: string): string {
   const os = process.env.MONITOR_TEST_PLATFORM
-  return [query, os ? `os=${os}` : ''].filter(Boolean).join('&')
+  const lang = pageLang && !/(^|&)lang=/.test(query) ? `lang=${pageLang}` : ''
+  return [query, os ? `os=${os}` : '', lang].filter(Boolean).join('&')
 }
 
 function load(window: BrowserWindow, page: 'panel' | 'settings' | 'update', query = ''): void {
@@ -112,7 +124,7 @@ const SETTINGS_WIDTH = 760
 const SETTINGS_HEIGHT = 720
 
 /** Debug runs only: a page in a window that is never shown, at the panel's width or the Settings window's size,
- *  in one language (`?lang=`), for the homepage screenshots (MONITOR_SHOTS) and the capture runs (MONITOR_CAPTURE).
+ *  in the test shot language (`?lang=`), for the test shot mode (`RUNNERS_TEST_SHOTS`).
  *  `computers` is the Computers tab on its own page. */
 export function hiddenPage(
   page: 'panel' | 'computers' | 'settings',
@@ -211,15 +223,16 @@ const updateWindow = createUpdateWindow({
     window.on('page-title-updated', (event) => event.preventDefault())
     load(window, 'update')
     openUpdate = window
-    // Why: 찍는 실행은 일하는 사람 화면에 창을 띄우지 않는다(MONITOR_CAPTURE).
-    if (!app.isPackaged && process.env.MONITOR_CAPTURE) {
+    // Why: 시험 촬영은 일하는 사람 화면에 창을 띄우지 않는다(RUNNERS_TEST_SHOTS).
+    if (TEST_SHOTS) {
       window.show = () => undefined
       window.showInactive = () => undefined
       window.focus = () => undefined
     }
     return window
   },
-  focusApp: () => app.focus({ steal: true }),
+  // Why: 시험 촬영 중에는 사용자가 쓰던 앱에서 초점을 가져오지 않는다.
+  focusApp: () => !TEST_SHOTS && app.focus({ steal: true }),
   channel: 'monitor:updateOffer'
 })
 

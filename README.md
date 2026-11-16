@@ -68,6 +68,7 @@ For an Intel Mac build on Apple silicon, also run `pnpm native --target x86_64-a
 - `native/` is the one native module (napi-rs): system readings, the cleanup scan, quitting an app, pausing a runner and the tray picture.
 - Screen text lives in `locales/`; the page and the main process read the same files. Check them with `pnpm check:locales`.
 - Debug runs take `MONITOR_OPEN=panel|settings|settings:<tab>|update|update-progress` (`settings:general` picks a Settings tab; the last two show the update window with made-up notes), `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1` (made-up names for screenshots) and `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup`.
+- Test shot mode: a debug build started with `RUNNERS_TEST_SHOTS=<folder>` captures the menu-bar panel, the Computers window, the Settings tabs, the update window and the sign-in sheet with demo numbers, never showing a window, writes `<lang>-<light|dark>-<number>-<scope>-<screen>.png` and `shots.json`, then quits. Pick with `RUNNERS_TEST_LANG=ko,en` (default) and `RUNNERS_TEST_SCOPE=menu,main,settings,popups,account`. The rules are shared by all five RUNNERS apps (runners-app-kit `desktop/README.md`, "시험 촬영 모드"). Pages load from a debug build served through `ELECTRON_RENDERER_URL`.
 
 So far Monitor has been built and checked on macOS (Apple silicon) only. Windows and Linux builds have not been tried yet.
 

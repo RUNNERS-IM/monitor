@@ -213,3 +213,11 @@ html[data-window='settings'] body {
   gap: 8px;
   margin-top: 6px;
 }
+
+/* 로그아웃 상태의 계정 줄: 로그인한 줄의 얼굴 동그라미 자리에 밝은 판다를 둔다. */
+.s-signin-pic {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}

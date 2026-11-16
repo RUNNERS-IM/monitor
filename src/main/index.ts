@@ -9,15 +9,13 @@ import {
   ipcMain,
   nativeTheme,
   Notification,
-  screen,
   shell,
   type Tray
 } from 'electron'
-import { execFileSync } from 'node:child_process'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import * as account from './account'
-import { currentLocale, t } from './i18n'
+import { currentLocale, setLocale, t } from './i18n'
 import { osSuffix } from '../shared/os-words'
 import * as login from './login'
 import { buildMenu, forgetIcons, type Command, type MenuState } from './menu'
@@ -26,6 +24,14 @@ import { askLoop, askNow, demoPeers, peerList, setFast, topApps, type Usage } fr
 import * as relay from './relay'
 import { tailnet } from './tailnet'
 import { releaseNoteLines } from './runners/release-notes'
+import {
+  prepareTestShots,
+  readTestShots,
+  runTestShots,
+  type ShotWindow,
+  type TestShotPass,
+  type TestShotScope
+} from './runners/test-shots'
 import { readSettings, writeSettings } from './settings'
 import { noteCpu, noteFrontApp, suggestions, type Suggestion } from './suggest'
 import { createTray, showReading, type Level } from './tray'
@@ -39,6 +45,7 @@ import {
   placeUnderTray,
   showSettings,
   hiddenPage,
+  setPageLang,
   updateWindowOpen,
   TRANSLUCENT,
   updateOffer
@@ -73,7 +80,11 @@ const REOPEN_GUARD_MS = 300
 
 /** Debug runs only: everything below that reads MONITOR_* is ignored in a packaged app. */
 const DEV = !app.isPackaged
-const DEMO = DEV && !!process.env.MONITOR_DEMO
+// 시험 촬영 모드(RUNNERS_TEST_SHOTS=<폴더>, kit runners/test-shots.ts). 개발 실행에서만 켠다.
+const testShots = DEV ? readTestShots() : null
+prepareTestShots(testShots, app.commandLine)
+// Why: 시험 촬영은 늘 데모 숫자 · 데모 컴퓨터로 찍는다. 이 맥의 실제 이름이 사진에 남지 않고, 찍을 때마다 같은 화면이 나와 지난 사진과 견줄 수 있다.
+const DEMO = DEV && (!!process.env.MONITOR_DEMO || !!testShots)
 const DEMO_OS = 'macOS 26.5 Tahoe'
 // Why: 시험 실행은 `MONITOR_TEST_PLATFORM=win32|linux` 로 Mac 에서도 다른 운영체제의 글을 띄워 본다. 글만 바꾸고 동작은 그대로다.
 const WORDS_PLATFORM = (DEV && process.env.MONITOR_TEST_PLATFORM) || process.platform
@@ -666,8 +677,8 @@ function registerIpc(): void {
         throw new Error('unknown command')
       }
       // Safety: screenshot runs act only on test computers (`fake-…`), never on this one or a real one.
-      if (process.env.MONITOR_CAPTURE && !String(deviceId).startsWith('fake-')) {
-        throw new Error('capture runs act only on test computers')
+      if (testShots && !String(deviceId).startsWith('fake-')) {
+        throw new Error('test shot runs act only on test computers')
       }
       const given = (args ?? {}) as Record<string, unknown>
       const result =
@@ -774,18 +785,6 @@ function debugHooks(): void {
   if (theme === 'dark' || theme === 'light') {
     nativeTheme.themeSource = theme
   }
-  // `MONITOR_CAPTURE=<folder>` saves the panel and every Settings tab as PNGs without ever showing them, then quits.
-  // Why: screenshots for review must not pop windows up on the screen of the person working at this computer.
-  const captureTo = process.env.MONITOR_CAPTURE
-  if (captureTo) {
-    setTimeout(() => void captureHidden(captureTo), 8000)
-  }
-  // `MONITOR_DEMO=1 MONITOR_SHOTS=<folder>` saves the homepage pictures for every homepage language in both looks,
-  // never showing a window: popup (panel folded, "Worth doing now" on top), sessions (Jobs open) and computers.
-  const shotsTo = process.env.MONITOR_SHOTS
-  if (shotsTo && DEMO) {
-    setTimeout(() => void homepageShots(shotsTo), 8000)
-  }
   // `MONITOR_ACCOUNT=<email>:<password>` signs in at launch, so the relay can be tried against relay-dev
   // (monitor-app/scripts/relay-dev.mjs) without typing into a window.
   const signInAs = process.env.MONITOR_ACCOUNT
@@ -829,216 +828,125 @@ function debugNotes(): string[] | null {
   )
 }
 
-const HOMEPAGE_LANGS = [
-  'ar',
-  'de',
-  'en',
-  'es',
-  'fr',
-  'hi',
-  'id',
-  'it',
-  'ja',
-  'ko',
-  'nl',
-  'pl',
-  'pt',
-  'ru',
-  'th',
-  'vi',
-  'zh'
-]
-
-async function homepageShots(folder: string): Promise<void> {
-  const shots: [string, 'panel' | 'computers', string][] = [
-    ['popup', 'panel', ''],
-    ['sessions', 'panel', '&expand=work'],
-    ['computers', 'computers', '']
-  ]
-  for (const theme of ['dark', 'light'] as const) {
-    nativeTheme.themeSource = theme
-    for (const lang of HOMEPAGE_LANGS) {
-      // Why: the homepage says "zh" for simplified Chinese.
-      const code = lang === 'zh' ? 'zh-Hans' : lang
-      for (const [name, page, extra] of shots.filter(
-        ([n]) => !process.env.MONITOR_SHOTS_ONLY || n === process.env.MONITOR_SHOTS_ONLY
-      )) {
-        const window = hiddenPage(page, `lang=${code}${extra}`)
-        await sleep(page === 'computers' ? 2500 : 1800)
-        const image = await window.webContents.capturePage(undefined, { stayHidden: true })
-        writeFileSync(join(folder, `${name}-${lang}-${theme}.png`), image.toPNG())
-        window.destroy()
-      }
-    }
-  }
-  app.quit()
+/** 시험 촬영에서 고르지 않은 범위의 화면에 넘기는 자리. 찍지 않으므로 창을 열지 않는다. */
+const UNOPENED: ShotWindow = {
+  webContents: { capturePage: () => Promise.reject(new Error('unopened')) }
 }
 
-type CaptureStep =
-  | { card: string }
-  | { act: string }
-  | { go: true }
-  | { cancel: true }
-  | { type: [selector: string, text: string] }
-  | { press: string }
-  | { key: string }
-  | { size: [width: number, height: number] }
-  | { click: string }
-  | { open: 'panel' | SettingsTab }
-  | { wait: number }
-  | { shot: string }
-
-/** Presses buttons on a hidden page, one step at a time (see MONITOR_CAPTURE_STEPS). It starts on the Computers page;
- *  `open` swaps to the panel or a Settings tab. */
-async function captureSteps(
-  steps: CaptureStep[],
-  save: (window: BrowserWindow, name: string) => Promise<void>
-): Promise<void> {
-  setFast(true)
-  await sleep(6000)
-  let page = hiddenPage('computers', '', 900)
-  await sleep(3500)
-  const run = (code: string) => page.webContents.executeJavaScript(code) as Promise<unknown>
-  for (const step of steps) {
-    if (page.isDestroyed() && !('open' in step)) {
-      console.log('window closed, skipping', JSON.stringify(step))
-      continue
-    }
-    if ('open' in step) {
-      if (!page.isDestroyed()) {
-        page.destroy()
-      }
-      page =
-        step.open === 'panel'
-          ? hiddenPage('panel', '', 720)
-          : hiddenPage('settings', `tab=${step.open}`, 720)
-      await sleep(3000)
-    } else if ('size' in step) {
-      page.setContentSize(...step.size)
-      await sleep(500)
-    } else if ('key' in step) {
-      await run(
-        `document.dispatchEvent(new KeyboardEvent('keydown',{key:${JSON.stringify(step.key)},bubbles:true}))`
-      )
-    } else if ('click' in step) {
-      await run(`document.querySelector(${JSON.stringify(step.click)})?.click()`)
-    } else if ('card' in step) {
-      await run(
-        `[...document.querySelectorAll('.c-card')].find(c=>c.querySelector('.c-name').textContent.startsWith(${JSON.stringify(step.card)}))?.click()`
-      )
-    } else if ('act' in step) {
-      console.log(
-        'press',
-        step.act,
-        await run(
-          `(()=>{const b=document.querySelector(${JSON.stringify(`.c-detail [data-act="${step.act}"]`)});b?.click();return !!b})()`
-        )
-      )
-    } else if ('go' in step) {
-      await run(`document.querySelector('.c-confirm-go')?.click()`)
-    } else if ('cancel' in step) {
-      await run(`document.querySelector('.c-confirm-cancel')?.click()`)
-    } else if ('type' in step) {
-      // Why: React reads the value through the input's own setter, so a plain assignment would not reach the form.
-      await run(
-        `(()=>{const f=document.querySelector(${JSON.stringify(step.type[0])});if(!f)return;Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(f,${JSON.stringify(step.type[1])});f.dispatchEvent(new Event('input',{bubbles:true}))})()`
-      )
-    } else if ('press' in step) {
-      // Why: the sign-in sheet's buttons come first, since the window behind it has its own Sign In button.
-      console.log(
-        'press',
-        step.press,
-        await run(
-          `(()=>{const b=[...document.querySelectorAll('.ra-sheet button'),...document.querySelectorAll('button')].find(b=>b.textContent.trim()===${JSON.stringify(step.press)});b?.click();return !!b})()`
-        )
-      )
-    } else if ('wait' in step) {
-      await sleep(step.wait)
-    } else {
-      await save(page, step.shot)
-    }
-    await sleep(400)
-  }
-  if (!page.isDestroyed()) {
-    page.destroy()
-  }
-}
-
-async function captureHidden(folder: string): Promise<void> {
-  const save = async (window: BrowserWindow | null, name: string) => {
-    if (!window) {
+/** 시험 촬영 모드가 언어 · 테마마다 찍는 화면. 창은 보이지 않게 열어 찍고 닫는다.
+ *  Why: 번호는 이 차례로 붙으므로, 새 화면은 끝에 붙여야 지난 사진과 같은 번호로 견줄 수 있다. */
+async function testScenes(pass: TestShotPass): Promise<void> {
+  const click = (window: BrowserWindow, code: string) =>
+    window.webContents.executeJavaScript(
+      `(()=>{const b=${code};b?.click();return !!b})()`
+    ) as Promise<boolean>
+  const take = async (
+    scope: TestShotScope,
+    screen: string,
+    open: () => BrowserWindow | null,
+    settle: number,
+    before?: (window: BrowserWindow) => Promise<void>
+  ) => {
+    if (!pass.wants(scope)) {
+      await pass.shot(UNOPENED, scope, screen)
       return
     }
-    const image = await window.webContents.capturePage(undefined, { stayHidden: true })
-    writeFileSync(join(folder, `${name}.png`), image.toPNG())
-  }
-  panel?.webContents.send('monitor:shown')
-  await sleep(1500)
-  await save(panel, 'panel')
-  // Why: the Quit buttons sit inside the CPU and memory rows, so those are captured open as well.
-  for (const section of ['cpu', 'memory']) {
-    const page = hiddenPage('panel', `expand=${section}`, 1000)
-    await sleep(2500)
-    await save(page, `panel-${section}`)
-    page.destroy()
-  }
-  // `MONITOR_CAPTURE_MENU=1` pops the tray menu up near the top right for a moment and photographs that part of the
-  // screen, since a native menu cannot be captured like a page. It shows on screen for about a second.
-  if (process.env.MONITOR_CAPTURE_MENU) {
-    const { width } = screen.getPrimaryDisplay().bounds
-    const [x, y] = [width - 460, 60]
-    const spot = new BrowserWindow({ x, y, width: 1, height: 1, frame: false, transparent: true })
-    await sleep(400)
-    const menu = buildMenu(latest && held(latest), run)
-    menu.popup({ window: spot, x: 0, y: 0 })
-    await sleep(700)
-    execFileSync('screencapture', ['-x', `-R${x - 10},${y - 10},440,420`, join(folder, 'menu.png')])
-    menu.closePopup(spot)
-    spot.destroy()
-  }
-  // `MONITOR_CAPTURE_SIGNIN=1` captures the window with the sign-in sheet up, as the panel's account line opens it.
-  if (process.env.MONITOR_CAPTURE_SIGNIN) {
-    signInWanted = true
-  }
-  // `MONITOR_CAPTURE_STEPS=<json>` presses the Computers tab's buttons on a test computer and captures each step.
-  const stepsFile = process.env.MONITOR_CAPTURE_STEPS
-  if (stepsFile) {
-    await captureSteps(JSON.parse(readFileSync(stepsFile, 'utf8')) as CaptureStep[], save)
-    app.quit()
-    return
-  }
-  // Why: every Settings tab is captured, since each holds what used to be its own window or panel line.
-  for (const tab of ['computers', 'general', 'account', 'about']) {
-    const page = hiddenPage('settings', `tab=${tab}`, 720)
-    await sleep(tab === 'computers' ? 4000 : 2500)
-    await save(page, `settings-${tab}`)
-    // Why: turning the menu-bar icon off asks first, and that question is a screen of its own.
-    if (tab === 'general') {
-      await page.webContents.executeJavaScript(
-        `[...document.querySelectorAll('.switch')].at(-1)?.click()`
-      )
-      await sleep(600)
-      await save(page, 'settings-general-hide')
+    const window = open()
+    if (!window) {
+      pass.note(`${screen}: 창이 열리지 않음`)
+      // Why: 번호는 그대로 하나 차지해, 뒤 화면 번호가 밀리지 않는다.
+      await pass.shot(UNOPENED, scope, screen).catch(() => null)
+      return
     }
-    page.destroy()
+    await pass.wait(settle)
+    await before?.(window)
+    await pass.shot(window, scope, screen)
+    if (!window.isDestroyed()) {
+      window.destroy()
+    }
   }
-  for (const downloading of [false, true]) {
-    const prompt = askUpdate(
-      { version: '2.6.110701', notes: debugNotes(), downloading, percent: downloading ? 42 : 100 },
-      false
+  // 메뉴 막대 창: 접힌 모양과, 끄기 단추가 든 CPU · 메모리 줄, 작업 줄을 연 모양.
+  for (const [screen, icon] of [
+    ['패널', ''],
+    ['패널-CPU', 'lucide-cpu'],
+    ['패널-메모리', 'lucide-memory-stick'],
+    ['패널-작업', 'lucide-square-terminal']
+  ]) {
+    await take(
+      'menu',
+      screen,
+      () => hiddenPage('panel', '', 1000),
+      2500,
+      async (window) => {
+        // Why: 줄은 사람이 누르듯 눌러 연다. 창이 보이지 않아 열 때마다 접는 신호가 오지 않으므로 그대로 열려 있다.
+        if (
+          icon &&
+          !(await click(window, `document.querySelector('.summary-row:has(.${icon})')`))
+        ) {
+          pass.note(`${screen}: 줄이 없음`)
+        }
+        await pass.wait(900)
+      }
     )
-    await sleep(2500)
-    await save(updateWindowOpen(), downloading ? 'update-progress' : 'update')
-    prompt.close()
   }
-  app.quit()
+  // 모든 컴퓨터 창. Why: 데모는 로그인 전이라 앱 끄기 단추가 없어, 끄기를 묻는 칸은 찍지 않는다.
+  await take('main', '모든-컴퓨터', () => hiddenPage('settings', 'tab=computers', 720), 4000)
+  // 설정 창 탭. 메뉴 막대 아이콘을 끄면 먼저 묻는 칸도 한 화면이다.
+  await take('settings', '일반', () => hiddenPage('settings', 'tab=general', 720), 2500)
+  await take(
+    'settings',
+    '일반-아이콘-끄기-확인',
+    () => hiddenPage('settings', 'tab=general', 720),
+    2500,
+    async (window) => {
+      await click(window, `[...document.querySelectorAll('.switch')].at(-1)`)
+      await pass.wait(900)
+    }
+  )
+  await take('settings', '계정', () => hiddenPage('settings', 'tab=account', 720), 2500)
+  await take('settings', '정보', () => hiddenPage('settings', 'tab=about', 720), 2500)
+  // 업데이트를 묻는 창: 다 받은 뒤와 받는 중. 다음 판의 RELEASE_NOTES.md 를 보여 주고 아무것도 설치하지 않는다.
+  for (const downloading of [false, true]) {
+    let prompt = null as ReturnType<typeof askUpdate> | null
+    await take(
+      'popups',
+      downloading ? '업데이트-받는-중' : '업데이트',
+      () => {
+        prompt = askUpdate(
+          {
+            version: '2.6.110701',
+            notes: debugNotes(),
+            downloading,
+            percent: downloading ? 42 : 100
+          },
+          false
+        )
+        return updateWindowOpen()
+      },
+      2500
+    )
+    prompt?.close()
+  }
+  // 로그인 시트: 메뉴 막대 창의 계정 줄을 눌렀을 때처럼 모든 컴퓨터 창 위에 뜬다.
+  if (pass.account === 'signed-in') {
+    pass.note('로그인한 상태는 만들지 않는다. 계정 화면은 로그인 전 모양으로 찍는다')
+  }
+  await take(
+    'account',
+    '로그인',
+    () => {
+      signInWanted = true
+      return hiddenPage('settings', 'tab=computers', 720)
+    },
+    4000
+  )
 }
 
 /** Puts the tray icon up or takes it down, as Settings' "Show in menu bar" says. Left and right click both open the
  *  panel (shared decision 2026-11-07 2A); Linux trays only open a menu set beforehand, so Linux keeps the menu. */
 function updateTray(): void {
-  // Why: a capture run lasts about a minute and shows nothing, so a second menu-bar icon next to the installed Monitor only confuses.
-  const wanted = readSettings().showTrayIcon !== false && !(DEV && process.env.MONITOR_CAPTURE)
+  // Why: a test shot run lasts a few minutes and shows nothing, so a second menu-bar icon next to the installed Monitor only confuses.
+  const wanted = readSettings().showTrayIcon !== false && !testShots
   if (!wanted) {
     tray?.destroy()
     tray = null
@@ -1087,7 +995,7 @@ function start(): void {
   })
   updateTray()
   // Why: with the icon hidden nothing else on screen leads to Monitor, so launching it shows Settings (as Split does).
-  if (!tray && !(DEV && process.env.MONITOR_CAPTURE)) {
+  if (!tray && !testShots) {
     openSettings()
   }
   nativeTheme.on('updated', () => {
@@ -1113,6 +1021,25 @@ function start(): void {
   startUpdates()
   if (DEV) {
     debugHooks()
+  }
+  if (testShots) {
+    // Why: 첫 측정 · 데모 숫자가 나온 뒤에 찍는다. 그 전에는 패널이 빈 칸이다.
+    setTimeout(
+      () =>
+        void runTestShots({
+          config: testShots,
+          app,
+          nativeTheme,
+          async setLanguage(lang) {
+            setLocale(lang)
+            setPageLang(lang)
+            // Why: 데모 숫자의 이름(앱 · 폴더)은 다음 측정부터 새 언어로 나온다.
+            await sleep(REFRESH_MS + 500)
+          },
+          scenes: testScenes
+        }),
+      8000
+    )
   }
 }
 

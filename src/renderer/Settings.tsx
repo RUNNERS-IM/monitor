@@ -11,6 +11,7 @@ import type { AccountState, MenuCommand, MenuState, SettingsTab } from './native
 import { useAppIcon } from './app-icon'
 import { RunnersAbout, type RunnersT } from './runners-account/runners-about'
 import panda from './runners-account/assets/panda/face.webp'
+import pandaSignIn from './runners-account/assets/panda/signin.webp'
 import { accountText } from './runners-account/runners-account'
 import { SignIn } from './SignIn'
 import './runners-account/runners-window.css'
@@ -229,15 +230,25 @@ function Account() {
             </div>
           ) : (
             state && (
-              <Row title={t('settings.signedOut')} hint={t('settings.signedOutHint')}>
-                <button
-                  type="button"
-                  className="rw-button default"
-                  onClick={() => setSigningIn(true)}
-                >
-                  {t('account.signIn')}
-                </button>
-              </Row>
+              <div className="s-row">
+                <div className="s-row-line">
+                  <img className="s-signin-pic" src={pandaSignIn} alt="" draggable={false} />
+                  <div className="s-row-text">
+                    <span className="s-row-title">{t('settings.signedOut')}</span>
+                    <span className="s-row-hint">{t('settings.signedOutHint')}</span>
+                  </div>
+                  <div className="s-row-space" />
+                  <div className="s-row-control">
+                    <button
+                      type="button"
+                      className="rw-button default"
+                      onClick={() => setSigningIn(true)}
+                    >
+                      {t('account.signIn')}
+                    </button>
+                  </div>
+                </div>
+              </div>
             )
           )}
         </div>
