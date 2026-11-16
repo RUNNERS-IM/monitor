@@ -68,6 +68,7 @@ pnpm dist           # 지금 운영체제용 설치 파일을 dist.noindex/ 에 
 - `native/` 는 하나뿐인 네이티브 모듈(napi-rs)입니다. 컴퓨터 사용량 읽기, 정리할 거리 재기, 앱 끄기, 러너 멈추기, 트레이 그림 그리기를 합니다.
 - 화면 글자는 `locales/` 에 모여 있고 화면과 메인 프로세스가 같은 파일을 읽습니다. `pnpm check:locales` 로 빠진 키를 확인합니다.
 - 개발 실행은 `MONITOR_OPEN=panel|settings|settings:<탭>|update|update-progress`(`settings:general` 처럼 설정 창의 탭을 고르고, 뒤의 둘은 가짜 바뀐 점으로 업데이트 창을 띄움), `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1`(스크린샷용 가짜 이름), `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup` 를 받습니다.
+- 시험 촬영 모드: 개발 빌드를 `RUNNERS_TEST_SHOTS=<폴더>` 로 켜면 창을 띄우지 않고 메뉴 막대 창 · 모든 컴퓨터 창 · 설정 탭 · 업데이트 창 · 로그인 시트를 데모 숫자로 찍어 `<언어>-<light|dark>-<번호>-<범위>-<화면>.png` 와 `shots.json` 을 쓰고 꺼집니다. `RUNNERS_TEST_LANG=ko,en`(기본), `RUNNERS_TEST_SCOPE=menu,main,settings,popups,account` 로 고릅니다. 규칙은 RUNNERS 다섯 앱 공통입니다(runners-app-kit `desktop/README.md` 「시험 촬영 모드」). 화면은 `ELECTRON_RENDERER_URL` 로 띄운 개발 빌드에서 읽습니다.
 
 아직 macOS(애플 실리콘)에서만 빌드하고 확인했습니다. 윈도우·리눅스 판은 아직 시험해 보지 않았습니다.
 

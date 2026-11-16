@@ -1,4 +1,4 @@
-# runners-app-kit v0.1.40 b438c13. Do not edit these files here; change runners-app-kit and copy again.
+# runners-app-kit v0.1.42 8abbffd. Do not edit these files here; change runners-app-kit and copy again.
 5a2228a301755ac1990f4a4aabcc8882cfd68d279a84fe1dff4375164a451bd1  runners-account.tsx
 c4982d7e820bfc2e9f50bd2f38cd2e76d8221ddffac021ee81a82ad16436dbfb  runners-account-text.ts
 486c95263c75aac6874a692c39092bf5cd77e4931376ded47448eddcb5f0630a  runners-account.css
@@ -17,6 +17,12 @@ be5c6571b0209fc869e245b7481ae5509bd45367c9ce6686d9c413ba44329dad  runners-font.c
 7505395d0b767250eb87867a3c7b5a5f4ddde22c7c6249d54bfbdb03547a8468  runners-tokens.css
 9599f12fd42fc0bce1cd50b47a0c022e108d7aa64dd0d1bb0ed44f3282d900b4  assets/fonts/PretendardVariable.woff2
 71ac4237896dba241fe6191a50fb935a87613b03c7d4c4443754a1665deda425  assets/panda/face.webp
+1f1344eb9f94971c29ff2bd6111793e1e36719f1ec5ff0825cc3645ffb3fbdaf  assets/panda/signin.webp
+103abc050c2054bed71a0b13bd6b32820aa514a679aa111a7e28ee1af5b635ff  assets/panda/welcome.webp
+2bd93dbe0f33e6f92877b794a39c10eccc97dac7f95d2c95c7406173dc453c2d  assets/panda/empty.webp
+351eabf8d85d808265a549851360f697932b38db3ec4899a52bb49da9bee162c  assets/panda/no-computer.webp
+4ee29315910f50312f8b3e864ca6f4b8e11717f48d0358eae5454107acd4b406  assets/panda/done.webp
+bd39c501486e11feb4c09aaae51aaec744db2c80c3e84d88b78be5be2dfa4e9d  assets/panda/disconnected.webp
 056bc7e1298ac70fea9ef471544e2dda824aaecb1af2b11ae034067cdd8f3c95  assets/runners-apps/draw.png
 2b64b3a63ad0267fe51e97084f4dcbb966d1fc33af247010b930014f907a5a1e  assets/runners-apps/draw-dark.png
 60fd31cf001c1e3d0b94a1e08d5bd36cbefd767dfeb442bf3d650dec7d4b37d0  assets/runners-apps/monitor.png
