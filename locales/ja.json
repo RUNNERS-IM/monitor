@@ -96,7 +96,7 @@
   "update.install": "今すぐインストール",
   "update.later": "あとで",
   "update.done": "{{version}} にアップデートしました",
-  "update.showNotes": "新機能を見る",
+  "update.showNotes": "変更点を見る",
   "update.ok": "OK",
   "disk.cache": "キャッシュ",
   "disk.packages": "node_modules",

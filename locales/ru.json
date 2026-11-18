@@ -96,7 +96,7 @@
   "update.install": "Установить сейчас",
   "update.later": "Позже",
   "update.done": "Обновлено до {{version}}",
-  "update.showNotes": "Что нового",
+  "update.showNotes": "Посмотреть, что нового",
   "update.ok": "ОК",
   "disk.cache": "Кэши",
   "disk.packages": "node_modules",

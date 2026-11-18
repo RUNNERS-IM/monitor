@@ -95,7 +95,7 @@
   "update.installing": "इंस्टॉल हो रहा है…",
   "update.install": "अभी इंस्टॉल करें",
   "update.later": "बाद में",
-  "update.done": "{{version}} में अपडेट किया गया",
+  "update.done": "{{version}} पर अपडेट किया गया",
   "update.showNotes": "नया क्या है देखें",
   "update.ok": "ठीक है",
   "disk.cache": "कैश",

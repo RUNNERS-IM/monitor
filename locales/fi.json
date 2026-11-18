@@ -97,7 +97,7 @@
   "update.install": "Asenna nyt",
   "update.later": "Myöhemmin",
   "update.done": "Päivitetty versioon {{version}}",
-  "update.showNotes": "Katso uudet ominaisuudet",
+  "update.showNotes": "Katso uutta",
   "update.ok": "OK",
   "disk.cache": "Välimuistit",
   "disk.packages": "node_modules",

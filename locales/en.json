@@ -97,7 +97,7 @@
   "update.install": "Install Now",
   "update.later": "Later",
   "update.done": "Updated to {{version}}",
-  "update.showNotes": "See what's new",
+  "update.showNotes": "See What’s New",
   "update.ok": "OK",
   "disk.cache": "Caches",
   "disk.packages": "node_modules",
