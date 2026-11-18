@@ -1,6 +1,6 @@
-# runners-app-kit v0.1.43 9f062fc. Do not edit these files here; change runners-app-kit and copy again.
+# runners-app-kit v0.1.46 57f702d. Do not edit these files here; change runners-app-kit and copy again.
 9fa9819c04944da9d7ffb1eb05a68d3827f8cbdcdc913817e9636977d1123656  account.ts
-124a59beaa0b82fd0983c4b655d8e4e0151583d1e3e5904f6f87ba4c7e91ecdd  updates.ts
+c1fbd3e0bdf77f55be43e4768d606d7a2531460563f8f4acf01e220b3b0a43b9  updates.ts
 65313803725917f1daaaebfd899babad591b6dd365536b984fe09495e3601ab8  update-window.ts
 a41851a0e896963d924d9892a08c2b6c3a2e0b9d12b94986ecc27eb4c6f0e88b  release-notes.ts
 8027811c0b1fc93219fac59675e0399cd796f73696d338c608033c52b187a78f  login-item.ts

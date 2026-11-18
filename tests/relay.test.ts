@@ -135,3 +135,53 @@ test('자리를 빼앗기면 elsewhere 로 보이고 스스로 다시 붙지 않
   await new Promise((done) => setTimeout(done, 5))
   expect(sockets).toHaveLength(2)
 })
+
+test('휴대폰이 붙어 있으면 쓰는 중이다', async () => {
+  const { relay, socket } = await connected({})
+  expect(relay.inUse()).toBe(false)
+  socket.hear({
+    type: 'peers',
+    peers: [
+      { deviceId: 'b', name: 'm2-pro-2', role: 'host' },
+      { deviceId: 'p', name: 'iPhone', role: 'viewer' }
+    ]
+  })
+  await flush()
+  expect(relay.inUse()).toBe(true)
+})
+
+test('다른 컴퓨터가 5초마다 숫자를 물으면 쓰는 중이고, 30초마다면 아니다', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  const { relay, socket } = await connected({ 'usage.get': async () => null })
+  const ask = (id: string) =>
+    socket.hear({ type: 'command', from: 'b', fromRole: 'host', id, name: 'usage.get' })
+  ask('1')
+  vi.advanceTimersByTime(30_000)
+  ask('2')
+  await flush()
+  expect(relay.inUse()).toBe(false)
+  vi.advanceTimersByTime(5_000)
+  ask('3')
+  await flush()
+  expect(relay.inUse()).toBe(true)
+  vi.advanceTimersByTime(30_000)
+  expect(relay.inUse()).toBe(false)
+})
+
+test('다른 기기 명령을 하는 동안과 끝나고 2분은 쓰는 중이다', async () => {
+  vi.useFakeTimers({ toFake: ['Date'] })
+  let finish = () => {}
+  const { relay, socket } = await connected({
+    'cleanup.empty': () => new Promise((done) => (finish = () => done(null)))
+  })
+  socket.hear({ type: 'command', from: 'p', fromRole: 'viewer', id: 'c', name: 'cleanup.empty' })
+  await flush()
+  vi.advanceTimersByTime(10 * 60 * 1000)
+  expect(relay.inUse()).toBe(true)
+  finish()
+  await flush()
+  vi.advanceTimersByTime(60_000)
+  expect(relay.inUse()).toBe(true)
+  vi.advanceTimersByTime(61_000)
+  expect(relay.inUse()).toBe(false)
+})

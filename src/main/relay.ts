@@ -85,6 +85,33 @@ function statusOf(relay: Relay): RelayStatus {
   return status === 'offline' ? 'connecting' : status
 }
 
+/** 다른 기기 명령이 끝난 뒤 이만큼은 아직 쓰는 중으로 본다. 휴대폰에서 비우기를 누르고 결과를 보는 사이에 앱이 다시 켜지지 않게 한다. */
+const RECENT_COMMAND_MS = 2 * 60 * 1000
+/** 다른 컴퓨터는 평소 30초마다, 설정 창(모든 컴퓨터 탭)이 열려 있으면 5초마다 숫자를 묻는다(peers.ts). 이 사이로 이어 물으면 창이 열린 것이다. */
+const WATCHING_GAP_MS = 10 * 1000
+
+let runningCommands = 0
+let lastCommandAt = 0
+/** 다른 컴퓨터마다 숫자를 물은 마지막 두 때. */
+const usageAsks = new Map<string, [number, number]>()
+
+/** 다른 기기가 지금 이 컴퓨터를 쓰는 중인가. 참이면 새 판을 저절로 깔지 않는다(runners-wiki 2026-11-19 결정).
+ *  휴대폰 앱이 붙어 있거나, 다른 기기 명령을 하는 중이거나 막 끝냈거나, 다른 컴퓨터가 설정 창을 열어 보고 있을 때다. */
+export function inUse(now = Date.now()): boolean {
+  if ((core?.peers('viewer').length ?? 0) > 0) {
+    return true
+  }
+  if (runningCommands > 0 || now - lastCommandAt < RECENT_COMMAND_MS) {
+    return true
+  }
+  for (const [before, last] of usageAsks.values()) {
+    if (now - last < WATCHING_GAP_MS && last - before < WATCHING_GAP_MS) {
+      return true
+    }
+  }
+  return false
+}
+
 /** 명령은 먼저 「받음」을 돌려준다. 큰 폴더 비우기는 몇 분 걸릴 수 있어, 묻는 쪽이 1분 만에 포기하지 않고 같은 id 의 최종 답을 기다린다.
  *  다른 컴퓨터가 묻는 숫자는 바로 답이 오고, 받음을 모르는 옛 Monitor 도 숫자를 묻으므로 첫 답을 곧 결과로 준다. */
 function withReceipt(handler: Handler): RelayCommand {
@@ -98,7 +125,16 @@ function withReceipt(handler: Handler): RelayCommand {
         data: { pending: true }
       })
     }
-    return handler(args)
+    if (message.fromRole === 'host' && message.name === 'usage.get') {
+      const now = Date.now()
+      usageAsks.set(message.from ?? '', [usageAsks.get(message.from ?? '')?.[1] ?? 0, now])
+      return handler(args)
+    }
+    runningCommands += 1
+    return handler(args).finally(() => {
+      runningCommands -= 1
+      lastCommandAt = Date.now()
+    })
   }
 }
 

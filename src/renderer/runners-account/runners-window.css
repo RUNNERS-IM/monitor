@@ -182,3 +182,8 @@ body {
   outline-offset: 0;
   border-color: var(--r-accent);
 }
+
+/* 앱 아이콘을 밝기에 따라 바꾸는 <picture>. 감싼 상자가 없는 것처럼 두어 img 의 크기 · 여백 규칙이 그대로 먹게 한다. */
+.rw-picture {
+  display: contents;
+}

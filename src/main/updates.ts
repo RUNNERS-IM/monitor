@@ -2,7 +2,8 @@
 import { app, dialog, powerMonitor } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import { currentLocale, t } from './i18n'
-import { createUpdates, type Updates, type UpdaterLike } from './runners/updates'
+import { inUse } from './relay'
+import { createUpdates, type Updates } from './runners/updates'
 import { readSettings, writeSettings } from './settings'
 import { askUpdate } from './windows'
 
@@ -17,8 +18,12 @@ let made: Updates | null = null
 function updates(): Updates {
   made ??= createUpdates({
     isPackaged: app.isPackaged,
-    autoUpdater: autoUpdater as unknown as UpdaterLike,
+    autoUpdater,
     onResume: (listener) => powerMonitor.on('resume', listener),
+    appVersion: () => app.getVersion(),
+    idleSeconds: () => powerMonitor.getSystemIdleTime(),
+    // Why: 휴대폰이나 다른 컴퓨터가 이 Mac 을 보고 있을 때 앱이 다시 켜지면 연결이 끊기고 하던 명령이 멈춘다.
+    isBusy: inUse,
     readSettings,
     writeSettings,
     locale: currentLocale,

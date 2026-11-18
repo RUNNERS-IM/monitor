@@ -927,6 +927,38 @@ async function testScenes(pass: TestShotPass): Promise<void> {
     )
     prompt?.close()
   }
+  // 저절로 깔린 뒤 처음 열 때 한 번 뜨는 알림: 닫힌 채와 「바뀐 점 보기」를 누른 뒤.
+  for (const opened of [false, true]) {
+    let prompt = null as ReturnType<typeof askUpdate> | null
+    await take(
+      'popups',
+      opened ? '업데이트-완료-바뀐-점' : '업데이트-완료',
+      () => {
+        prompt = askUpdate(
+          {
+            version: '2.6.110701',
+            notes: debugNotes(),
+            downloading: false,
+            percent: 100,
+            installed: true
+          },
+          false
+        )
+        return updateWindowOpen()
+      },
+      2500,
+      opened
+        ? async (window) => {
+            await click(
+              window,
+              `document.querySelector('.update-buttons .rw-button:not(.default)')`
+            )
+            await pass.wait(900)
+          }
+        : undefined
+    )
+    prompt?.close()
+  }
   // 로그인 시트: 메뉴 막대 창의 계정 줄을 눌렀을 때처럼 모든 컴퓨터 창 위에 뜬다.
   if (pass.account === 'signed-in') {
     pass.note('로그인한 상태는 만들지 않는다. 계정 화면은 로그인 전 모양으로 찍는다')
