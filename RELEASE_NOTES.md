@@ -1,9 +1,9 @@
 ## 한국어
 
-- 로그인 전 화면, 다른 컴퓨터가 없을 때, 다른 곳이 연결해 여기가 멈췄을 때 나오는 판다 그림을 밝은 얼굴의 새 그림으로 바꿨습니다.
-- 업데이트 · 정보 창의 글이 낱말 중간에서 줄이 바뀌지 않게 했습니다.
+- 새 버전을 컴퓨터를 쓰지 않을 때나 Monitor 를 끌 때 저절로 설치합니다. 휴대폰이나 다른 컴퓨터가 이 Mac 을 보는 중이면 미룹니다.
+- 설정 › 일반에서 「업데이트 자동 설치」를 끄면 지금처럼 설치 전에 묻습니다.
 
 ## English
 
-- The panda before sign-in, with no other computers, or when this Mac is paused is now a cheerful new picture.
-- Korean text in the update and About windows now wraps between words.
+- New versions now install by themselves while you're away or when you quit Monitor, but wait while a phone or another computer is viewing this Mac.
+- Turn off "Install updates automatically" in Settings › General to be asked first.
