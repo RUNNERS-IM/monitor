@@ -75,6 +75,46 @@
   display: block;
 }
 
+/* 별명이 있으면 판다 옆에 이름을 붙인 알약 모양이 된다. 이름이 길면 줄임표로 자르고 전체는 메뉴 맨 위에 보인다. */
+.ra-named {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 180px;
+  height: 28px;
+  padding: 0;
+  padding-inline-end: 10px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--ra-track);
+  color: var(--ra-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ra-named:hover {
+  background: var(--r-control-hover);
+}
+
+.ra-named .ra-badge {
+  flex: none;
+  cursor: inherit;
+}
+
+.ra-named-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ra-named:focus-visible {
+  outline: 2px solid var(--ra-accent);
+  outline-offset: 2px;
+}
+
 .ra-badge.ra-large {
   width: 36px;
   height: 36px;

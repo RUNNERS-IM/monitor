@@ -94,15 +94,23 @@
   padding: 0 30px 0 14px;
 }
 
+/* 단추 글이 반 칸에 들어가면 반씩 나누고, 긴 글(러시아어 「Посмотреть, что нового」)은 그 단추만 넓어지며,
+   둘을 합쳐도 넘치면 위아래로 쌓는다. 창 폭보다 긴 글만 단추 안에서 줄을 바꾸고 단추가 그만큼 높아진다.
+   반 칸에 고정했더니 둘째 줄이 단추 밖으로 넘쳤다(2026-11-19 Draw). */
 .update-buttons {
   display: flex;
+  flex-wrap: wrap;
   align-self: stretch;
   gap: 8px;
   margin-top: 18px;
 }
 
 .update-buttons .rw-button {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: fit-content;
+  height: auto;
+  min-height: var(--rw-button-height);
+  padding-block: 4px;
   -webkit-app-region: no-drag;
 }
 
