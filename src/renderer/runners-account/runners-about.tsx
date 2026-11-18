@@ -15,6 +15,8 @@ export type RunnersAboutProps = {
   /** 창에 보일 이름. 예: Monitor */
   appName: string
   appIcon: string
+  /** 어두운 화면에서 쓸 블랙 판. 주면 화면 밝기를 따라 바뀐다(2026-11-11 결정: Dock 은 화이트 판, 앱 안은 밝기를 따라감). */
+  appIconDark?: string
   website: string
   github: string
   locale: string
@@ -34,7 +36,18 @@ export type RunnersAboutProps = {
 }
 
 export function RunnersAbout(props: RunnersAboutProps) {
-  const { appId, appName, appIcon, website, github, locale, t, openExternal, closeWindow } = props
+  const {
+    appId,
+    appName,
+    appIcon,
+    appIconDark,
+    website,
+    github,
+    locale,
+    t,
+    openExternal,
+    closeWindow
+  } = props
   const { version: readVersion, fitHeight, loadNotices, startWithNotices, embedded } = props
   const [version, setVersion] = useState('')
   const [notices, setNotices] = useState<string | null>(null)
@@ -79,7 +92,10 @@ export function RunnersAbout(props: RunnersAboutProps) {
   return (
     <main className={embedded ? 'about about-embedded' : 'about'} ref={root}>
       <header className="about-header">
-        <img className="about-icon" src={appIcon} alt="" draggable={false} />
+        <picture className="rw-picture">
+          {appIconDark && <source srcSet={appIconDark} media="(prefers-color-scheme: dark)" />}
+          <img className="about-icon" src={appIcon} alt="" draggable={false} />
+        </picture>
         <h1 className="about-name">{appName}</h1>
         <p className="about-line">{version ? t('about.line', { version }) : ' '}</p>
         <div className="about-links">

@@ -1,7 +1,9 @@
 // 업데이트 창: 가운데 앱 아이콘, 제목과 묻는 말, 새 소식 칸(다섯 줄이 넘으면 스크롤, 약속한 글 모양이 아니면 숨김),
 // 그 아래 [나중에] [지금 설치]. 메뉴에서 확인해 받는 중이면 단추 자리에 진행 막대가 있고, 다 받으면 단추로 바뀐다.
 // Enter 는 설치, Escape 는 나중에(받는 중에는 창만 닫히고, 다 받으면 창이 다시 뜬다). 설치를 누르면 앱이 끝날 때까지 단추를 막는다.
+// 저절로 깔린 뒤 처음 열 때는(offer.installed) 「○○ 로 업데이트했습니다」 한 줄과 [바뀐 점 보기] [확인] 만 있다. 새 소식은 누르면 펼친다.
 // 쓰는 번역 열쇠: update.title · update.ask({{version}}) · update.notes · update.later · update.install · update.installing · update.downloading({{percent}})
+//               update.done({{version}}) · update.showNotes · update.ok
 import { useEffect, useRef, useState } from 'react'
 import './runners-window.css'
 import './runners-update.css'
@@ -11,10 +13,14 @@ export type RunnersUpdateOffer = {
   notes: string[] | null
   downloading: boolean
   percent: number
+  /** 참이면 저절로 깔린 뒤 처음 열 때의 「업데이트했습니다」 알림이다. */
+  installed?: boolean
 }
 
 export type RunnersUpdateProps = {
   appIcon: string
+  /** 어두운 화면에서 쓸 블랙 판. 주면 화면 밝기를 따라 바뀐다(2026-11-11 결정: Dock 은 화이트 판, 앱 안은 밝기를 따라감). */
+  appIconDark?: string
   t: (key: string, args?: Record<string, string | number>) => string
   /** 창이 뜰 때 메인 프로세스에 있는 지금 상태. */
   offer: () => Promise<RunnersUpdateOffer | null>
@@ -24,9 +30,11 @@ export type RunnersUpdateProps = {
 }
 
 export function RunnersUpdate(props: RunnersUpdateProps) {
-  const { appIcon, t, offer: readOffer, onOffer, answer, fitHeight } = props
+  const { appIcon, appIconDark, t, offer: readOffer, onOffer, answer, fitHeight } = props
   const [offer, setOffer] = useState<RunnersUpdateOffer | null>(null)
   const [installing, setInstalling] = useState(false)
+  const [showNotes, setShowNotes] = useState(false)
+  const installed = offer?.installed === true
   const root = useRef<HTMLElement>(null)
   const installButton = useRef<HTMLButtonElement>(null)
   const list = useRef<HTMLUListElement>(null)
@@ -43,6 +51,11 @@ export function RunnersUpdate(props: RunnersUpdateProps) {
   busy.current = installing
 
   const install = () => {
+    // 알림 창에서 Enter 는 닫기다.
+    if (installed) {
+      answer('later')
+      return
+    }
     if (!ready.current) {
       return
     }
@@ -101,17 +114,26 @@ export function RunnersUpdate(props: RunnersUpdateProps) {
     const observer = new ResizeObserver(measure)
     observer.observe(node)
     return () => observer.disconnect()
-  }, [notes])
+  }, [notes, showNotes])
 
   // 새 소식은 한국어 아니면 영어다. 아랍어 화면에서 영어 줄의 마침표가 줄 맨 앞으로 가지 않게 방향을 정해 준다.
   const koreanNotes = notes?.some((line) => /[가-힣]/.test(line)) ?? false
   const percent = Math.max(0, Math.min(100, Math.floor(offer?.percent ?? 0)))
   return (
     <main className="update" ref={root}>
-      <img className="update-icon" src={appIcon} alt="" draggable={false} />
-      <h1 className="update-title">{t('update.title')}</h1>
-      <p className="update-ask">{offer ? t('update.ask', { version: offer.version }) : ' '}</p>
-      {notes && (
+      <picture className="rw-picture">
+        {appIconDark && <source srcSet={appIconDark} media="(prefers-color-scheme: dark)" />}
+        <img className="update-icon" src={appIcon} alt="" draggable={false} />
+      </picture>
+      {installed ? (
+        <h1 className="update-title">{t('update.done', { version: offer?.version ?? '' })}</h1>
+      ) : (
+        <>
+          <h1 className="update-title">{t('update.title')}</h1>
+          <p className="update-ask">{offer ? t('update.ask', { version: offer.version }) : ' '}</p>
+        </>
+      )}
+      {notes && (!installed || showNotes) && (
         <section className="update-notes">
           <h2 className="update-notes-title">{t('update.notes')}</h2>
           <ul
@@ -127,7 +149,23 @@ export function RunnersUpdate(props: RunnersUpdateProps) {
           </ul>
         </section>
       )}
-      {offer?.downloading ? (
+      {installed ? (
+        <div className="update-buttons">
+          {notes && !showNotes && (
+            <button type="button" className="rw-button" onClick={() => setShowNotes(true)}>
+              {t('update.showNotes')}
+            </button>
+          )}
+          <button
+            ref={installButton}
+            type="button"
+            className="rw-button default"
+            onClick={() => answer('later')}
+          >
+            {t('update.ok')}
+          </button>
+        </div>
+      ) : offer?.downloading ? (
         <div
           className="update-progress"
           role="progressbar"
