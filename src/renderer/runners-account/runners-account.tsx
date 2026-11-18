@@ -102,6 +102,8 @@ function LogOutIcon() {
 export function AccountButton(props: {
   lang: string
   account: string
+  /** The name beside the panda (account.nickname()). Without it the badge is the round panda alone. */
+  nickname?: string | null
   /** One line under the email, such as how many computers of the account are on. */
   line?: ReactNode
   items?: AccountMenuItem[]
@@ -143,16 +145,32 @@ export function AccountButton(props: {
 
   return (
     <div className="ra-menu-box" ref={box}>
-      <button
-        type="button"
-        className="ra-badge"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        title={props.account}
-        onClick={() => setOpen(!open)}
-      >
-        <BadgePanda />
-      </button>
+      {props.nickname ? (
+        <button
+          type="button"
+          className="ra-named"
+          aria-haspopup="menu"
+          aria-expanded={open}
+          title={props.account}
+          onClick={() => setOpen(!open)}
+        >
+          <span className="ra-badge" aria-hidden>
+            <BadgePanda />
+          </span>
+          <span className="ra-named-text">{props.nickname}</span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="ra-badge"
+          aria-haspopup="menu"
+          aria-expanded={open}
+          title={props.account}
+          onClick={() => setOpen(!open)}
+        >
+          <BadgePanda />
+        </button>
+      )}
       {open && (
         <div className="ra-menu" role="menu">
           <div className="ra-menu-head">
@@ -160,8 +178,11 @@ export function AccountButton(props: {
               <BadgePanda />
             </span>
             <span className="ra-menu-text">
-              <span className="ra-menu-email">{props.account}</span>
-              <span className="ra-hint">{accountText(props.lang, 'title')}</span>
+              {/* With a name, the name leads and the email takes the hint line. */}
+              <span className="ra-menu-email">{props.nickname || props.account}</span>
+              <span className="ra-hint">
+                {props.nickname ? props.account : accountText(props.lang, 'title')}
+              </span>
             </span>
           </div>
           {props.signedInFrom && (

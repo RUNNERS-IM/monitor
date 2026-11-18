@@ -5,6 +5,8 @@ import { dirname } from 'node:path'
 import { SHARED_LOGIN_APPS, type SharedLogin, type SharedLoginStore } from './shared-login'
 
 const TIMEOUT_MS = 15_000
+/** 서버(system-server account-profile)가 받는 별명 길이 */
+export const NICKNAME_MAX = 30
 
 export type AccountTokens = { accessToken: string; refreshToken: string }
 type Saved = {
@@ -14,6 +16,10 @@ type Saved = {
   generation?: number
   /** 다른 앱의 로그인을 따라 들어왔으면 그 앱의 서버 이름 */
   from?: string
+  /** 서버가 보여 줄 이름. 직접 정하지 않았으면 서버가 이메일 @ 앞부분을 준다. 옛 판이 저장한 로그인에는 없다. */
+  nickname?: string
+  /** nickname 이 사람이 직접 정한 별명인가 */
+  customNickname?: boolean
 }
 
 export type AccountSafeStorage = {
@@ -55,7 +61,11 @@ export class AccountApiError extends Error {
   }
 }
 
-type SignedIn = { user?: { email?: string }; tokens: AccountTokens }
+type SignedIn = { user?: { email?: string; nickname?: string }; tokens: AccountTokens }
+type Profile = { email: string; nickname: string; custom: boolean }
+
+/** 별명을 정하지 않은 계정에 보일 이름. 서버의 기본값(이메일 @ 앞부분)과 같다. */
+const emailName = (email: string) => email.split('@')[0] || email
 
 /** 서버 답을 공통 로그인 창이 읽는 코드로 바꾼다(runners-account.tsx 의 SignInProblem).
  *  404 · 'User not found' 계정 없음, 401 비밀번호 틀림, 400 비밀번호 모양, 409 이미 있는 계정, 422 틀린 숫자,
@@ -168,14 +178,20 @@ export function createAccount(options: AccountOptions) {
     }
   }
 
-  const post = async <T>(path: string, body: unknown): Promise<T> => {
+  const call = async <T>(
+    method: 'GET' | 'POST' | 'PATCH',
+    path: string,
+    body?: unknown,
+    token?: string
+  ): Promise<T> => {
     const res = await request(`${apiUrl}${path}`, {
-      method: 'POST',
+      method,
       headers: {
-        'Content-Type': 'application/json',
+        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(options.userAgent ? { 'User-Agent': options.userAgent } : {})
       },
-      body: JSON.stringify(body),
+      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       signal: AbortSignal.timeout(TIMEOUT_MS)
     })
     const text = await res.text()
@@ -194,6 +210,7 @@ export function createAccount(options: AccountOptions) {
       wrapped !== null && typeof wrapped === 'object' && 'code' in wrapped && 'data' in wrapped
     return (isWrapped ? wrapped.data : parsed) as T
   }
+  const post = <T>(path: string, body: unknown) => call<T>('POST', path, body)
 
   // 갱신 답을 기다리는 사이 로그아웃했거나 다른 계정으로 들어왔으면 그 답은 앞 로그인의 것이다. 저장하면 앞 로그인이 되살아나므로
   // 버리고, 지금 상태를 알린다.
@@ -224,13 +241,14 @@ export function createAccount(options: AccountOptions) {
   }
 
   // 비밀번호로 들어왔을 때. 번호를 올려 다른 앱이 따라오게 한다.
-  const signedInHere = async (email: string, tokens: AccountTokens) => {
+  const signedInHere = async (email: string, tokens: AccountTokens, nickname?: string) => {
+    const name = nickname ? { nickname } : {}
     if (!shared) {
-      store({ email, tokens })
+      store({ email, tokens, ...name })
       return
     }
     const generation = ((await readShared())?.generation ?? 0) + 1
-    store({ email, tokens, generation })
+    store({ email, tokens, generation, ...name })
     await writeShared({ generation, signedIn: sharedFields(email, tokens) })
   }
 
@@ -272,6 +290,8 @@ export function createAccount(options: AccountOptions) {
           generation: found.generation,
           ...(own ? {} : { from: slot.project })
         })
+        // 교환 · 갱신 답에는 별명이 없어 따로 받는다.
+        void loadProfile()
         if (own) {
           await writeShared({ ...found, signedIn: sharedFields(slot.email, tokens) })
         }
@@ -286,6 +306,53 @@ export function createAccount(options: AccountOptions) {
         }
         found = again
       }
+    }
+  }
+
+  // 액세스 토큰으로 부르고, 토큰이 만료돼 401 이면 한 번 갱신해서 다시 부른다.
+  const withToken = async <T>(send: (token: string) => Promise<T>): Promise<T> => {
+    const token = load()?.tokens.accessToken
+    if (!token) {
+      throw new Error('signedOut')
+    }
+    try {
+      return await send(token)
+    } catch (error) {
+      if (!(error instanceof AccountApiError) || error.status !== 401) {
+        throw error
+      }
+      const renewed = await refresh()
+      if (!renewed.ok) {
+        throw new Error(renewed.reason)
+      }
+      return send(renewed.token)
+    }
+  }
+
+  // 답을 기다리는 사이 로그아웃했거나 다른 계정으로 바뀌었으면 그 답은 버린다.
+  const keepProfile = (profile: Profile) => {
+    const now = load()
+    if (!now || now.email !== profile.email) {
+      return
+    }
+    if (now.nickname === profile.nickname && now.customNickname === profile.custom) {
+      return
+    }
+    store({ ...now, nickname: profile.nickname, customNickname: profile.custom })
+  }
+
+  const loadProfile = async (): Promise<void> => {
+    if (!load()) {
+      return
+    }
+    try {
+      keepProfile(
+        await withToken((token) =>
+          call<Profile>('GET', '/api/mobile/account/profile', undefined, token)
+        )
+      )
+    } catch {
+      // 별명을 못 받아도 로그인은 그대로다. 저장된 이름이나 이메일 앞부분을 보인다.
     }
   }
 
@@ -375,7 +442,8 @@ export function createAccount(options: AccountOptions) {
         projectName: project,
         ...(code ? { code } : {})
       }).catch(problem)
-      await signedInHere(res.user?.email ?? typed, res.tokens)
+      await signedInHere(res.user?.email ?? typed, res.tokens, res.user?.nickname)
+      void loadProfile()
     },
     /** 메일로 6자리 숫자를 보낸다. signup 은 가입용(이미 계정이 있으면 exists), reset 은 비밀번호 찾기용(없으면 none). */
     async sendCode(purpose: 'signup' | 'reset', email: string, locale?: string) {
@@ -397,7 +465,8 @@ export function createAccount(options: AccountOptions) {
         password,
         projectName: project
       }).catch(problem)
-      await signedInHere(res.user?.email ?? typed, res.tokens)
+      await signedInHere(res.user?.email ?? typed, res.tokens, res.user?.nickname)
+      void loadProfile()
     },
     async signOut() {
       const was = load()
@@ -411,43 +480,68 @@ export function createAccount(options: AccountOptions) {
       }
     },
     accessToken: () => load()?.tokens.accessToken ?? null,
+    /** 계정 단추 옆에 보일 이름. 직접 정한 별명, 없으면 이메일 @ 앞부분. 로그아웃이면 null. */
+    nickname(): string | null {
+      const now = load()
+      return now ? now.nickname || emailName(now.email) : null
+    },
+    /** 별명을 직접 정했는가. 정하지 않았으면 설정 칸을 비워 두고 기본 이름을 흐리게 보인다. */
+    customNickname: () => load()?.customNickname === true,
+    /** 서버에서 별명을 다시 받는다. 앱이 켜질 때 joinSharedLogin 뒤에 한 번 부른다(다른 앱에서 바꾼 별명을 따라간다).
+     *  로그인 · 다른 앱 로그인 따라오기 뒤에는 저절로 부른다. 실패해도 던지지 않는다. */
+    loadProfile,
+    /** 별명을 바꾼다. 앞뒤 공백은 지우고 30자까지다. 빈 글자면 기본 이름(이메일 앞부분)으로 돌아간다.
+     *  서버가 정한 이름을 돌려준다. 서버에 닿지 못하면 던진다. */
+    async setNickname(name: string): Promise<string> {
+      const nickname = name.trim().replace(/\s+/g, ' ')
+      if (nickname.length > NICKNAME_MAX) {
+        throw new Error('format')
+      }
+      const profile = await withToken((token) =>
+        call<Profile>('PATCH', '/api/mobile/account/profile', { nickname }, token)
+      )
+      keepProfile(profile)
+      return profile.nickname
+    },
     /** 새 액세스 토큰을 받는다. 서버가 리프레시 토큰을 거절(401)했을 때만 로그아웃한다.
      *  network 는 서버에 닿지 못했거나 잠깐 아픈 것이라 토큰을 그대로 둔다. 동시에 불러도 한 번만 간다. */
-    refresh(): Promise<AccountRefreshResult> {
-      refreshing ??= (async (): Promise<AccountRefreshResult> => {
-        const was = load()
-        if (!was) {
-          return { ok: false, reason: 'signedOut' }
+    refresh
+  }
+
+  function refresh(): Promise<AccountRefreshResult> {
+    refreshing ??= (async (): Promise<AccountRefreshResult> => {
+      const was = load()
+      if (!was) {
+        return { ok: false, reason: 'signedOut' }
+      }
+      try {
+        const tokens = await post<AccountTokens>('/api/mobile/auth/refresh', {
+          refreshToken: was.tokens.refreshToken
+        })
+        if (load() !== was) {
+          // 아무도 쓰지 않을 새 토큰이라 서버에서도 끝낸다.
+          void post('/api/mobile/auth/logout', { refreshToken: tokens.refreshToken }).catch(
+            () => undefined
+          )
+          return afterAccountChange()
         }
-        try {
-          const tokens = await post<AccountTokens>('/api/mobile/auth/refresh', {
-            refreshToken: was.tokens.refreshToken
-          })
-          if (load() !== was) {
-            // 아무도 쓰지 않을 새 토큰이라 서버에서도 끝낸다.
-            void post('/api/mobile/auth/logout', { refreshToken: tokens.refreshToken }).catch(
-              () => undefined
-            )
-            return afterAccountChange()
-          }
-          const now = { ...was, tokens }
-          store(now)
-          await refreshedHere(now)
-          return { ok: true, token: tokens.accessToken }
-        } catch (error) {
-          if (load() !== was) {
-            return afterAccountChange()
-          }
-          if (error instanceof AccountApiError && error.status === 401) {
-            store(null)
-            return { ok: false, reason: 'rejected' }
-          }
-          return { ok: false, reason: 'network' }
+        const now = { ...was, tokens }
+        store(now)
+        await refreshedHere(now)
+        return { ok: true, token: tokens.accessToken }
+      } catch (error) {
+        if (load() !== was) {
+          return afterAccountChange()
         }
-      })().finally(() => {
-        refreshing = null
-      })
-      return refreshing
-    }
+        if (error instanceof AccountApiError && error.status === 401) {
+          store(null)
+          return { ok: false, reason: 'rejected' }
+        }
+        return { ok: false, reason: 'network' }
+      }
+    })().finally(() => {
+      refreshing = null
+    })
+    return refreshing
   }
 }
