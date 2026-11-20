@@ -200,5 +200,20 @@
   "settings.tabAbout": "حول",
   "settings.signedOut": "لم تسجّل الدخول",
   "settings.signedOutHint": "سجّل الدخول لترى هذا الكمبيوتر من أجهزتك الأخرى ومن تطبيق الهاتف.",
-  "settings.tabAccount": "الحساب"
+  "settings.tabAccount": "الحساب",
+  "demo.browser": "متصفح الويب",
+  "demo.messenger": "المراسلة",
+  "demo.ai": "أداة ذكاء اصطناعي",
+  "demo.design": "أداة التصميم",
+  "demo.code": "محرر الشيفرة",
+  "demo.simulator": "المحاكي",
+  "demo.containers": "الحاويات",
+  "demo.terminal": "الطرفية",
+  "demo.meeting": "مكالمة فيديو",
+  "demo.slides": "العروض التقديمية",
+  "demo.designMac": "ماك التصميم",
+  "demo.buildMac": "ماك البناء",
+  "demo.meetingMac": "ماك غرفة الاجتماعات",
+  "demo.serverMac": "ماك الخادم",
+  "demo.laptop": "حاسوب محمول"
 }

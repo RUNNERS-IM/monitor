@@ -192,5 +192,20 @@
   "settings.tabAbout": "เกี่ยวกับ",
   "settings.signedOut": "ยังไม่ได้ลงชื่อเข้าใช้",
   "settings.signedOutHint": "ลงชื่อเข้าใช้เพื่อดูคอมพิวเตอร์เครื่องนี้จากคอมพิวเตอร์เครื่องอื่นและแอปบนมือถือ",
-  "settings.tabAccount": "บัญชี"
+  "settings.tabAccount": "บัญชี",
+  "demo.browser": "เว็บเบราว์เซอร์",
+  "demo.messenger": "แอปแชท",
+  "demo.ai": "เครื่องมือ AI",
+  "demo.design": "เครื่องมือออกแบบ",
+  "demo.code": "โปรแกรมแก้ไขโค้ด",
+  "demo.simulator": "ซิมูเลเตอร์",
+  "demo.containers": "คอนเทนเนอร์",
+  "demo.terminal": "เทอร์มินัล",
+  "demo.meeting": "วิดีโอคอล",
+  "demo.slides": "งานนำเสนอ",
+  "demo.designMac": "Mac ออกแบบ",
+  "demo.buildMac": "Mac บิลด์",
+  "demo.meetingMac": "Mac ห้องประชุม",
+  "demo.serverMac": "Mac เซิร์ฟเวอร์",
+  "demo.laptop": "โน้ตบุ๊ก"
 }

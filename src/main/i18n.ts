@@ -35,3 +35,9 @@ export function setLocale(lang: string): void {
   start()
   void i18next.changeLanguage(firstLocale([lang]))
 }
+
+/** 앱 언어와 다른 언어의 글. 데모 이름처럼 창마다 언어(`?lang=`)가 다를 때 쓴다. */
+export function tFor(lang: string, key: string): string {
+  start()
+  return i18next.getFixedT(firstLocale([lang]))(key)
+}

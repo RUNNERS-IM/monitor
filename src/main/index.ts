@@ -16,6 +16,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import * as account from './account'
 import { currentLocale, setLocale, t } from './i18n'
+import { demoAppName } from './demo-names'
 import { osSuffix } from '../shared/os-words'
 import * as login from './login'
 import { buildMenu, forgetIcons, type Command, type MenuState } from './menu'
@@ -132,6 +133,13 @@ function held(snap: Snapshot): Snapshot & { level: Level } {
 }
 /** Debug runs only: the same reading with made-up names, shown in the panel for public screenshots. */
 let latestDemo: Snapshot | null = null
+
+/** 데모 숫자의 다른 회사 앱 이름(Google Chrome 등)을 앱 언어의 일반 이름으로 바꾼다(demo-names.ts). */
+function withDemoNames(snap: Snapshot): Snapshot {
+  const rename = (apps: Snapshot['topMemory']) =>
+    apps.map((app) => ({ ...app, name: demoAppName(app.name, currentLocale()) }))
+  return { ...snap, topMemory: rename(snap.topMemory), topCpu: rename(snap.topCpu) }
+}
 type CleanupResult = {
   total: number
   kinds?: { kind: string; bytes: number }[]
@@ -429,7 +437,7 @@ async function sampleLoop(): Promise<void> {
       latest = snap
       if (DEMO) {
         const demo = sampler!.demoSnapshot(currentLocale() === 'ko')
-        latestDemo = demo ? (JSON.parse(demo) as Snapshot) : null
+        latestDemo = demo ? withDemoNames(JSON.parse(demo) as Snapshot) : null
       }
       // Why: in a demo run the menu-bar icon shows the made-up numbers too, so it matches the panel in a screenshot.
       if (tray) {
@@ -663,9 +671,7 @@ function registerIpc(): void {
   // Why: demo names follow the page's language (`?lang=` in screenshot runs), not the app's.
   ipcMain.handle('monitor:peers', (event) =>
     DEMO
-      ? demoPeers(
-          (new URL(event.sender.getURL()).searchParams.get('lang') ?? currentLocale()) === 'ko'
-        )
+      ? demoPeers(new URL(event.sender.getURL()).searchParams.get('lang') ?? currentLocale())
       : peerList()
   )
   // Why: the window's buttons send what a phone sends: to the computer chosen, or to this one's own commands (null).

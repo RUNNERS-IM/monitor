@@ -194,5 +194,20 @@
   "settings.tabAbout": "परिचय",
   "settings.signedOut": "साइन इन नहीं है",
   "settings.signedOutHint": "साइन इन करें, ताकि यह कंप्यूटर आपके दूसरे कंप्यूटरों और फ़ोन ऐप में दिखे।",
-  "settings.tabAccount": "खाता"
+  "settings.tabAccount": "खाता",
+  "demo.browser": "वेब ब्राउज़र",
+  "demo.messenger": "मैसेंजर",
+  "demo.ai": "AI टूल",
+  "demo.design": "डिज़ाइन टूल",
+  "demo.code": "कोड एडिटर",
+  "demo.simulator": "सिम्युलेटर",
+  "demo.containers": "कंटेनर",
+  "demo.terminal": "टर्मिनल",
+  "demo.meeting": "वीडियो कॉल",
+  "demo.slides": "प्रेज़ेंटेशन",
+  "demo.designMac": "डिज़ाइन Mac",
+  "demo.buildMac": "बिल्ड Mac",
+  "demo.meetingMac": "मीटिंग रूम Mac",
+  "demo.serverMac": "सर्वर Mac",
+  "demo.laptop": "लैपटॉप"
 }

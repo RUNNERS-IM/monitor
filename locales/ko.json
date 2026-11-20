@@ -192,5 +192,20 @@
   "settings.tabAbout": "정보",
   "settings.signedOut": "로그인하지 않음",
   "settings.signedOutHint": "로그인하면 내 다른 컴퓨터와 휴대폰 앱에서 이 컴퓨터를 볼 수 있습니다.",
-  "settings.tabAccount": "계정"
+  "settings.tabAccount": "계정",
+  "demo.browser": "웹 브라우저",
+  "demo.messenger": "메신저",
+  "demo.ai": "AI 도구",
+  "demo.design": "디자인 도구",
+  "demo.code": "코드 편집기",
+  "demo.simulator": "시뮬레이터",
+  "demo.containers": "컨테이너",
+  "demo.terminal": "터미널",
+  "demo.meeting": "화상 회의",
+  "demo.slides": "발표 도구",
+  "demo.designMac": "디자인 맥",
+  "demo.buildMac": "빌드 맥",
+  "demo.meetingMac": "회의실 맥",
+  "demo.serverMac": "서버 맥",
+  "demo.laptop": "노트북"
 }

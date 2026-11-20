@@ -195,5 +195,20 @@
   "settings.tabAbout": "Acerca de",
   "settings.signedOut": "Sin iniciar sesión",
   "settings.signedOutHint": "Inicia sesión para ver este ordenador desde tus otros ordenadores y la app del móvil.",
-  "settings.tabAccount": "Cuenta"
+  "settings.tabAccount": "Cuenta",
+  "demo.browser": "Navegador web",
+  "demo.messenger": "Mensajería",
+  "demo.ai": "Herramienta de IA",
+  "demo.design": "Herramienta de diseño",
+  "demo.code": "Editor de código",
+  "demo.simulator": "Simulador",
+  "demo.containers": "Contenedores",
+  "demo.terminal": "Terminal",
+  "demo.meeting": "Videollamada",
+  "demo.slides": "Presentaciones",
+  "demo.designMac": "Mac de diseño",
+  "demo.buildMac": "Mac de compilación",
+  "demo.meetingMac": "Mac de la sala de reuniones",
+  "demo.serverMac": "Mac servidor",
+  "demo.laptop": "Portátil"
 }

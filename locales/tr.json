@@ -192,5 +192,20 @@
   "settings.tabAbout": "Hakkında",
   "settings.signedOut": "Giriş yapılmadı",
   "settings.signedOutHint": "Bu bilgisayarı diğer bilgisayarlarınızdan ve telefon uygulamasından görmek için giriş yapın.",
-  "settings.tabAccount": "Hesap"
+  "settings.tabAccount": "Hesap",
+  "demo.browser": "Web tarayıcı",
+  "demo.messenger": "Mesajlaşma",
+  "demo.ai": "Yapay zekâ aracı",
+  "demo.design": "Tasarım aracı",
+  "demo.code": "Kod düzenleyici",
+  "demo.simulator": "Simülatör",
+  "demo.containers": "Konteynerler",
+  "demo.terminal": "Terminal",
+  "demo.meeting": "Görüntülü görüşme",
+  "demo.slides": "Sunumlar",
+  "demo.designMac": "Tasarım Mac’i",
+  "demo.buildMac": "Derleme Mac’i",
+  "demo.meetingMac": "Toplantı odası Mac’i",
+  "demo.serverMac": "Sunucu Mac’i",
+  "demo.laptop": "Dizüstü"
 }

@@ -196,5 +196,20 @@
   "settings.tabAbout": "Tietoja",
   "settings.signedOut": "Et ole kirjautunut",
   "settings.signedOutHint": "Kirjaudu, niin näet tämän tietokoneen muilta tietokoneiltasi ja puhelinsovelluksesta.",
-  "settings.tabAccount": "Tili"
+  "settings.tabAccount": "Tili",
+  "demo.browser": "Verkkoselain",
+  "demo.messenger": "Viestisovellus",
+  "demo.ai": "Tekoälytyökalu",
+  "demo.design": "Suunnittelutyökalu",
+  "demo.code": "Koodieditori",
+  "demo.simulator": "Simulaattori",
+  "demo.containers": "Kontit",
+  "demo.terminal": "Pääte",
+  "demo.meeting": "Videopuhelu",
+  "demo.slides": "Esitykset",
+  "demo.designMac": "Suunnittelu-Mac",
+  "demo.buildMac": "Käännös-Mac",
+  "demo.meetingMac": "Neuvotteluhuoneen Mac",
+  "demo.serverMac": "Palvelin-Mac",
+  "demo.laptop": "Kannettava"
 }

@@ -192,5 +192,20 @@
   "settings.tabAbout": "Giới thiệu",
   "settings.signedOut": "Chưa đăng nhập",
   "settings.signedOutHint": "Đăng nhập để xem máy tính này từ các máy tính khác của bạn và ứng dụng điện thoại.",
-  "settings.tabAccount": "Tài khoản"
+  "settings.tabAccount": "Tài khoản",
+  "demo.browser": "Trình duyệt web",
+  "demo.messenger": "Ứng dụng nhắn tin",
+  "demo.ai": "Công cụ AI",
+  "demo.design": "Công cụ thiết kế",
+  "demo.code": "Trình sửa mã",
+  "demo.simulator": "Trình mô phỏng",
+  "demo.containers": "Container",
+  "demo.terminal": "Terminal",
+  "demo.meeting": "Gọi video",
+  "demo.slides": "Trình chiếu",
+  "demo.designMac": "Mac thiết kế",
+  "demo.buildMac": "Mac build",
+  "demo.meetingMac": "Mac phòng họp",
+  "demo.serverMac": "Mac máy chủ",
+  "demo.laptop": "Laptop"
 }

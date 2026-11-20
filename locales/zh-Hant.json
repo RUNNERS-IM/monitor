@@ -192,5 +192,20 @@
   "settings.tabAbout": "關於",
   "settings.signedOut": "未登入",
   "settings.signedOutHint": "登入後，可在你的其他電腦和手機應用程式上查看這台電腦。",
-  "settings.tabAccount": "帳號"
+  "settings.tabAccount": "帳號",
+  "demo.browser": "網頁瀏覽器",
+  "demo.messenger": "聊天工具",
+  "demo.ai": "AI 工具",
+  "demo.design": "設計工具",
+  "demo.code": "程式碼編輯器",
+  "demo.simulator": "模擬器",
+  "demo.containers": "容器",
+  "demo.terminal": "終端機",
+  "demo.meeting": "視訊會議",
+  "demo.slides": "簡報",
+  "demo.designMac": "設計用 Mac",
+  "demo.buildMac": "建置用 Mac",
+  "demo.meetingMac": "會議室 Mac",
+  "demo.serverMac": "伺服器 Mac",
+  "demo.laptop": "筆記型電腦"
 }
