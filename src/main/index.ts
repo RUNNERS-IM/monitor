@@ -728,10 +728,12 @@ function registerIpc(): void {
   })
   ipcMain.on('monitor:closeWindow', (event) => BrowserWindow.fromWebContents(event.sender)?.close())
   ipcMain.handle('monitor:updateOffer', () => updateOffer())
-  ipcMain.handle('monitor:account', () => ({
-    email: account.current(),
-    status: relay.currentStatus()
-  }))
+  ipcMain.handle('monitor:account', () =>
+    // Why: 스토어 사진처럼 로그인한 모습이 필요한 시험 촬영은 진짜 계정 없이 예시 주소로 로그인된 것처럼 그린다.
+    testShots?.account === 'signed-in'
+      ? { email: 'name@example.com', status: 'connected' }
+      : { email: account.current(), status: relay.currentStatus() }
+  )
   // Why: IPC 로 던진 오류는 메시지 앞에 꼬리가 붙어, 로그인 창이 읽는 코드만 답으로 돌려준다.
   const signInProblem = async (work: () => Promise<unknown>) => {
     try {
@@ -961,7 +963,7 @@ async function testScenes(pass: TestShotPass): Promise<void> {
   }
   // 로그인 시트: 메뉴 막대 창의 계정 줄을 눌렀을 때처럼 모든 컴퓨터 창 위에 뜬다.
   if (pass.account === 'signed-in') {
-    pass.note('로그인한 상태는 만들지 않는다. 계정 화면은 로그인 전 모양으로 찍는다')
+    pass.note('로그인한 상태는 예시 주소(name@example.com)로 그린다. 로그인 시트도 그 위에 뜬다')
   }
   await take(
     'account',
