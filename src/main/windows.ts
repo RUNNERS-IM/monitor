@@ -64,6 +64,27 @@ function solidWindow(): string {
   return nativeTheme.shouldUseDarkColors ? '#0a0a0a' : '#ffffff'
 }
 
+/** 창 안을 그리는 프로세스(renderer)가 꺼지면 같은 페이지를 다시 불러온다.
+ *  Why: 메뉴 막대 창은 앱을 켤 때 한 번만 만들고 숨겼다 보였다만 해서, renderer 가 한 번 꺼지면 앱을 다시 켤 때까지 빈 창이 된다.
+ *  계속 꺼지는 페이지를 끝없이 다시 부르지 않게 1분에 세 번까지만 다시 부른다. */
+function reloadWhenGone(window: BrowserWindow, page: 'panel' | 'settings', query = ''): void {
+  const recent: number[] = []
+  window.webContents.on('render-process-gone', (_event, details) => {
+    if (details.reason === 'clean-exit' || window.isDestroyed()) {
+      return
+    }
+    const now = Date.now()
+    while (recent.length > 0 && now - recent[0] > 60_000) {
+      recent.shift()
+    }
+    if (recent.length >= 3) {
+      return
+    }
+    recent.push(now)
+    load(window, page, query)
+  })
+}
+
 export function createPanel(): BrowserWindow {
   const panel = new BrowserWindow({
     width: PANEL_WIDTH,
@@ -90,6 +111,7 @@ export function createPanel(): BrowserWindow {
     visibleOnFullScreen: true,
     skipTransformProcessType: true
   })
+  reloadWhenGone(panel, 'panel')
   load(panel, 'panel')
   return panel
 }
@@ -192,6 +214,7 @@ export function showSettings(tab: SettingsTab | undefined, onOpen: (open: boolea
     settings = null
     onOpen(false)
   })
+  reloadWhenGone(settings, 'settings', tab ? `tab=${tab}` : '')
   load(settings, 'settings', tab ? `tab=${tab}` : '')
 }
 
