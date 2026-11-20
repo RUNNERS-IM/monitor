@@ -16,6 +16,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import * as account from './account'
 import { currentLocale, setLocale, t } from './i18n'
+import { demoAppName } from './demo-names'
 import { osSuffix } from '../shared/os-words'
 import * as login from './login'
 import { buildMenu, forgetIcons, type Command, type MenuState } from './menu'
@@ -132,6 +133,13 @@ function held(snap: Snapshot): Snapshot & { level: Level } {
 }
 /** Debug runs only: the same reading with made-up names, shown in the panel for public screenshots. */
 let latestDemo: Snapshot | null = null
+
+/** 데모 숫자의 다른 회사 앱 이름(Google Chrome 등)을 앱 언어의 일반 이름으로 바꾼다(demo-names.ts). */
+function withDemoNames(snap: Snapshot): Snapshot {
+  const rename = (apps: Snapshot['topMemory']) =>
+    apps.map((app) => ({ ...app, name: demoAppName(app.name, currentLocale()) }))
+  return { ...snap, topMemory: rename(snap.topMemory), topCpu: rename(snap.topCpu) }
+}
 type CleanupResult = {
   total: number
   kinds?: { kind: string; bytes: number }[]
@@ -429,7 +437,7 @@ async function sampleLoop(): Promise<void> {
       latest = snap
       if (DEMO) {
         const demo = sampler!.demoSnapshot(currentLocale() === 'ko')
-        latestDemo = demo ? (JSON.parse(demo) as Snapshot) : null
+        latestDemo = demo ? withDemoNames(JSON.parse(demo) as Snapshot) : null
       }
       // Why: in a demo run the menu-bar icon shows the made-up numbers too, so it matches the panel in a screenshot.
       if (tray) {
@@ -663,9 +671,7 @@ function registerIpc(): void {
   // Why: demo names follow the page's language (`?lang=` in screenshot runs), not the app's.
   ipcMain.handle('monitor:peers', (event) =>
     DEMO
-      ? demoPeers(
-          (new URL(event.sender.getURL()).searchParams.get('lang') ?? currentLocale()) === 'ko'
-        )
+      ? demoPeers(new URL(event.sender.getURL()).searchParams.get('lang') ?? currentLocale())
       : peerList()
   )
   // Why: the window's buttons send what a phone sends: to the computer chosen, or to this one's own commands (null).
@@ -728,10 +734,12 @@ function registerIpc(): void {
   })
   ipcMain.on('monitor:closeWindow', (event) => BrowserWindow.fromWebContents(event.sender)?.close())
   ipcMain.handle('monitor:updateOffer', () => updateOffer())
-  ipcMain.handle('monitor:account', () => ({
-    email: account.current(),
-    status: relay.currentStatus()
-  }))
+  ipcMain.handle('monitor:account', () =>
+    // Why: 스토어 사진처럼 로그인한 모습이 필요한 시험 촬영은 진짜 계정 없이 예시 주소로 로그인된 것처럼 그린다.
+    testShots?.account === 'signed-in'
+      ? { email: 'name@example.com', status: 'connected' }
+      : { email: account.current(), status: relay.currentStatus() }
+  )
   // Why: IPC 로 던진 오류는 메시지 앞에 꼬리가 붙어, 로그인 창이 읽는 코드만 답으로 돌려준다.
   const signInProblem = async (work: () => Promise<unknown>) => {
     try {
@@ -961,7 +969,7 @@ async function testScenes(pass: TestShotPass): Promise<void> {
   }
   // 로그인 시트: 메뉴 막대 창의 계정 줄을 눌렀을 때처럼 모든 컴퓨터 창 위에 뜬다.
   if (pass.account === 'signed-in') {
-    pass.note('로그인한 상태는 만들지 않는다. 계정 화면은 로그인 전 모양으로 찍는다')
+    pass.note('로그인한 상태는 예시 주소(name@example.com)로 그린다. 로그인 시트도 그 위에 뜬다')
   }
   await take(
     'account',

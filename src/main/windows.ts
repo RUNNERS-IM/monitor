@@ -140,6 +140,15 @@ export function placeUnderTray(panel: BrowserWindow, tray: Tray | null): void {
   panel.setPosition(x, y, false)
 }
 
+/** 시험 촬영 전용: `RUNNERS_TEST_SIZE=1440x900` 이면 설정 · 모든 컴퓨터 창을 그 크기로 찍는다.
+ *  Why: Mac App Store 사진은 2880x1800(1440x900 의 2배) 같은 정해진 크기만 받는다. */
+const STORE_SIZE = ((): { width: number; height: number } | null => {
+  const match = TEST_SHOTS
+    ? /^(\d+)x(\d+)$/.exec(process.env.RUNNERS_TEST_SIZE?.trim() ?? '')
+    : null
+  return match ? { width: Number(match[1]), height: Number(match[2]) } : null
+})()
+
 let settings: BrowserWindow | null = null
 // Why: the Computers tab needs room for its cards and the chosen computer's two columns, so wider than Split's 656.
 const SETTINGS_WIDTH = 760
@@ -153,10 +162,11 @@ export function hiddenPage(
   query: string,
   height?: number
 ): BrowserWindow {
+  const store = page === 'panel' ? null : STORE_SIZE
   const window = new BrowserWindow({
-    width: page === 'panel' ? PANEL_WIDTH : SETTINGS_WIDTH,
+    width: store?.width ?? (page === 'panel' ? PANEL_WIDTH : SETTINGS_WIDTH),
     // Why: taller than the real window, so no language's last box is cut; the picture is trimmed afterwards.
-    height: height ?? (page === 'panel' ? 360 : SETTINGS_HEIGHT + 400),
+    height: store?.height ?? height ?? (page === 'panel' ? 360 : SETTINGS_HEIGHT + 400),
     useContentSize: true,
     show: false,
     frame: page === 'computers',

@@ -192,5 +192,20 @@
   "settings.tabAbout": "О программе",
   "settings.signedOut": "Вход не выполнен",
   "settings.signedOutHint": "Войдите, чтобы видеть этот компьютер с других Ваших компьютеров и в приложении для телефона.",
-  "settings.tabAccount": "Аккаунт"
+  "settings.tabAccount": "Аккаунт",
+  "demo.browser": "Веб-браузер",
+  "demo.messenger": "Мессенджер",
+  "demo.ai": "ИИ-инструмент",
+  "demo.design": "Редактор дизайна",
+  "demo.code": "Редактор кода",
+  "demo.simulator": "Симулятор",
+  "demo.containers": "Контейнеры",
+  "demo.terminal": "Терминал",
+  "demo.meeting": "Видеозвонок",
+  "demo.slides": "Презентации",
+  "demo.designMac": "Mac для дизайна",
+  "demo.buildMac": "Mac для сборки",
+  "demo.meetingMac": "Mac в переговорной",
+  "demo.serverMac": "Mac-сервер",
+  "demo.laptop": "Ноутбук"
 }

@@ -196,5 +196,20 @@
   "settings.tabAbout": "Info",
   "settings.signedOut": "Accesso non effettuato",
   "settings.signedOutHint": "Accedi per vedere questo computer dagli altri tuoi computer e dall’app per telefono.",
-  "settings.tabAccount": "Account"
+  "settings.tabAccount": "Account",
+  "demo.browser": "Browser web",
+  "demo.messenger": "Messaggistica",
+  "demo.ai": "Strumento IA",
+  "demo.design": "Strumento di design",
+  "demo.code": "Editor di codice",
+  "demo.simulator": "Simulatore",
+  "demo.containers": "Container",
+  "demo.terminal": "Terminale",
+  "demo.meeting": "Videochiamata",
+  "demo.slides": "Presentazioni",
+  "demo.designMac": "Mac design",
+  "demo.buildMac": "Mac di build",
+  "demo.meetingMac": "Mac sala riunioni",
+  "demo.serverMac": "Mac server",
+  "demo.laptop": "Portatile"
 }

@@ -926,7 +926,10 @@ function App() {
               // Why: Monitor shows how much is running, never what a session is called or doing (shared decision 2026-11-02
               // "[PROGRAM] 앱 연동 걷기" 4A); sessions belong to Prompt.
               text={t('panel.claudeRow', {
-                name: session.human ? 'claude' : t('panel.claudeJob'),
+                // Why: 데모 실행은 claude 줄 이름을 일반 이름(AI 도구 등)으로 바꿔 보내, 이 줄도 그 이름을 따른다.
+                name: session.human
+                  ? (snap.topMemory.find((app) => app.sessions != null)?.name ?? 'claude')
+                  : t('panel.claudeJob'),
                 time: formatDuration(session.runningSecs)
               })}
               state={t(session.busy ? 'panel.claudeBusy' : 'panel.claudeIdle')}

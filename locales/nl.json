@@ -195,5 +195,20 @@
   "settings.tabAbout": "Over",
   "settings.signedOut": "Niet ingelogd",
   "settings.signedOutHint": "Log in om deze computer te zien vanaf uw andere computers en de telefoon-app.",
-  "settings.tabAccount": "Account"
+  "settings.tabAccount": "Account",
+  "demo.browser": "Webbrowser",
+  "demo.messenger": "Berichtenapp",
+  "demo.ai": "AI-tool",
+  "demo.design": "Ontwerptool",
+  "demo.code": "Code-editor",
+  "demo.simulator": "Simulator",
+  "demo.containers": "Containers",
+  "demo.terminal": "Terminal",
+  "demo.meeting": "Videogesprek",
+  "demo.slides": "Presentaties",
+  "demo.designMac": "Ontwerp-Mac",
+  "demo.buildMac": "Build-Mac",
+  "demo.meetingMac": "Vergaderruimte-Mac",
+  "demo.serverMac": "Server-Mac",
+  "demo.laptop": "Laptop"
 }

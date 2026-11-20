@@ -192,5 +192,20 @@
   "settings.tabAbout": "Tentang",
   "settings.signedOut": "Belum masuk",
   "settings.signedOutHint": "Masuk untuk melihat komputer ini dari komputer Anda yang lain dan aplikasi ponsel.",
-  "settings.tabAccount": "Akun"
+  "settings.tabAccount": "Akun",
+  "demo.browser": "Peramban web",
+  "demo.messenger": "Perpesanan",
+  "demo.ai": "Alat AI",
+  "demo.design": "Alat desain",
+  "demo.code": "Editor kode",
+  "demo.simulator": "Simulator",
+  "demo.containers": "Kontainer",
+  "demo.terminal": "Terminal",
+  "demo.meeting": "Panggilan video",
+  "demo.slides": "Presentasi",
+  "demo.designMac": "Mac desain",
+  "demo.buildMac": "Mac build",
+  "demo.meetingMac": "Mac ruang rapat",
+  "demo.serverMac": "Mac server",
+  "demo.laptop": "Laptop"
 }

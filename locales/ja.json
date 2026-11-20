@@ -192,5 +192,20 @@
   "settings.tabAbout": "情報",
   "settings.signedOut": "サインインしていません",
   "settings.signedOutHint": "サインインすると、ほかのコンピュータやスマホアプリからこのコンピュータを確認できます。",
-  "settings.tabAccount": "アカウント"
+  "settings.tabAccount": "アカウント",
+  "demo.browser": "Web ブラウザ",
+  "demo.messenger": "メッセンジャー",
+  "demo.ai": "AI ツール",
+  "demo.design": "デザインツール",
+  "demo.code": "コードエディタ",
+  "demo.simulator": "シミュレータ",
+  "demo.containers": "コンテナ",
+  "demo.terminal": "ターミナル",
+  "demo.meeting": "ビデオ通話",
+  "demo.slides": "プレゼンテーション",
+  "demo.designMac": "デザイン用 Mac",
+  "demo.buildMac": "ビルド用 Mac",
+  "demo.meetingMac": "会議室の Mac",
+  "demo.serverMac": "サーバ用 Mac",
+  "demo.laptop": "ノートパソコン"
 }

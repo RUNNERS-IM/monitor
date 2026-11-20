@@ -196,5 +196,20 @@
   "settings.tabAbout": "À propos",
   "settings.signedOut": "Non connecté",
   "settings.signedOutHint": "Connectez-vous pour voir cet ordinateur depuis vos autres ordinateurs et l’app du téléphone.",
-  "settings.tabAccount": "Compte"
+  "settings.tabAccount": "Compte",
+  "demo.browser": "Navigateur web",
+  "demo.messenger": "Messagerie",
+  "demo.ai": "Outil d’IA",
+  "demo.design": "Outil de design",
+  "demo.code": "Éditeur de code",
+  "demo.simulator": "Simulateur",
+  "demo.containers": "Conteneurs",
+  "demo.terminal": "Terminal",
+  "demo.meeting": "Appel vidéo",
+  "demo.slides": "Présentations",
+  "demo.designMac": "Mac design",
+  "demo.buildMac": "Mac de compilation",
+  "demo.meetingMac": "Mac de la salle de réunion",
+  "demo.serverMac": "Mac serveur",
+  "demo.laptop": "Portable"
 }

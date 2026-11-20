@@ -196,5 +196,20 @@
   "settings.tabAbout": "Über",
   "settings.signedOut": "Nicht angemeldet",
   "settings.signedOutHint": "Melden Sie sich an, um diesen Computer auf Ihren anderen Computern und in der Handy-App zu sehen.",
-  "settings.tabAccount": "Konto"
+  "settings.tabAccount": "Konto",
+  "demo.browser": "Webbrowser",
+  "demo.messenger": "Messenger",
+  "demo.ai": "KI-Tool",
+  "demo.design": "Design-Tool",
+  "demo.code": "Code-Editor",
+  "demo.simulator": "Simulator",
+  "demo.containers": "Container",
+  "demo.terminal": "Terminal",
+  "demo.meeting": "Videoanruf",
+  "demo.slides": "Präsentationen",
+  "demo.designMac": "Design-Mac",
+  "demo.buildMac": "Build-Mac",
+  "demo.meetingMac": "Besprechungsraum-Mac",
+  "demo.serverMac": "Server-Mac",
+  "demo.laptop": "Laptop"
 }

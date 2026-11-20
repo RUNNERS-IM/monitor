@@ -4,6 +4,7 @@
 // runners on them with the phones' commands, after asking in its own window (decision 2026-11-07 1A, 3B).
 // Commands for numbers come back at once; the others first hear 「받음」 and then wait for the result (kit relay-core).
 import * as relay from './relay'
+import { demoAppName, demoComputerName } from './demo-names'
 
 /** How often the other computers are asked: slowly with nothing open, quickly while Settings (with its Computers tab) is open. */
 const SLOW_MS = 30 * 1000
@@ -148,7 +149,7 @@ export function topApps<T extends { name: string; memory: number }>(
 }
 
 /** Debug runs only: made-up computers for the homepage screenshots, with no real names or numbers. */
-export function demoPeers(korean: boolean): Peer[] {
+export function demoPeers(lang: string): Peer[] {
   const gb = 1024 ** 3
   const make = (
     name: string,
@@ -176,16 +177,16 @@ export function demoPeers(korean: boolean): Peer[] {
       diskTotal: 1000 * gb,
       slowMemory: slow,
       slowCpu: false,
-      topMemory: apps.map(([app, size]) => ({ name: app, memory: size * gb })),
+      topMemory: apps.map(([app, size]) => ({ name: demoAppName(app, lang), memory: size * gb })),
       claudeSessions: claude,
       runnersBusy: busy,
       runnersIdle: 1 - busy,
       cleanable: 38.4 * gb
     }
   })
-  const office = korean
-    ? ['디자인 맥', '빌드 맥', '회의실 맥', '서버 맥']
-    : ['Design Mac', 'Build Mac', 'Meeting Room Mac', 'Server Mac']
+  const office = (['designMac', 'buildMac', 'meetingMac', 'serverMac'] as const).map((computer) =>
+    demoComputerName(computer, lang)
+  )
   return [
     make(
       office[1],
@@ -245,7 +246,7 @@ export function demoPeers(korean: boolean): Peer[] {
     ),
     {
       deviceId: 'laptop',
-      name: korean ? '노트북' : 'Laptop',
+      name: demoComputerName('laptop', lang),
       state: 'offline',
       usage: null,
       at: null
