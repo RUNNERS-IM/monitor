@@ -415,7 +415,11 @@ function Detail({
         </div>
         <div>
           <div className="c-sec">&nbsp;</div>
-          <Line label={t('panel.memory')} value={`${gb(u.memoryUsed)} / ${gb(u.memoryTotal)}`} />
+          {/* Why: 아랍어처럼 오른쪽에서 읽는 화면에서 「쓴 양 / 전체」가 뒤집히지 않게 패널처럼 왼쪽→오른쪽으로 묶는다. */}
+          <Line
+            label={t('panel.memory')}
+            value={`\u2066${gb(u.memoryUsed)} / ${gb(u.memoryTotal)}\u2069`}
+          />
           <Line
             label={t('panel.disk')}
             value={`${gb(u.diskTotal - u.diskUsed)} ${t('computers.free')}`}
