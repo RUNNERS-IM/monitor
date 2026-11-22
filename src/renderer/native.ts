@@ -89,6 +89,7 @@ export const resetPassword = (email: string, code: string, password: string) =>
 export const takeSignIn = () => api().takeSignIn()
 export const onSignIn = (listener: () => void) => api().onSignIn(listener)
 export const signOut = () => api().signOut()
+export const setNickname = (name: string) => api().setNickname(name)
 export const reconnect = () => api().reconnect()
 
 /** 운영체제가 창 뒤를 흐리게 그리는 곳에서 메뉴 막대 패널만 투명하게 둔다. */

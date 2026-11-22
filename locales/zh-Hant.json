@@ -207,5 +207,11 @@
   "demo.buildMac": "建置用 Mac",
   "demo.meetingMac": "會議室 Mac",
   "demo.serverMac": "伺服器 Mac",
-  "demo.laptop": "筆記型電腦"
+  "demo.laptop": "筆記型電腦",
+  "account.nickname": "暱稱",
+  "account.nicknameHint": "顯示在熊貓旁邊和其他 RUNNERS App 中的名字。留空則使用電子郵件 @ 前面的部分。",
+  "account.nicknameLong": "暱稱最多 30 個字元。",
+  "account.save": "儲存",
+  "account.saved": "已儲存",
+  "account.network": "無法連線到伺服器，請稍後再試。"
 }

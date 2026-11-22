@@ -211,5 +211,11 @@
   "demo.buildMac": "Mac de compilation",
   "demo.meetingMac": "Mac de la salle de réunion",
   "demo.serverMac": "Mac serveur",
-  "demo.laptop": "Portable"
+  "demo.laptop": "Portable",
+  "account.nickname": "Pseudo",
+  "account.nicknameHint": "Affiché à côté du panda et dans les autres apps RUNNERS. Laissez vide pour utiliser la partie de l’e-mail avant @.",
+  "account.nicknameLong": "Un pseudo peut contenir 30 caractères au maximum.",
+  "account.save": "Enregistrer",
+  "account.saved": "Enregistré",
+  "account.network": "Impossible de joindre le serveur. Réessayez dans un instant."
 }

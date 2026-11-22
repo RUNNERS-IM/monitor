@@ -36,7 +36,7 @@ import {
 import { readSettings, writeSettings } from './settings'
 import { noteCpu, noteFrontApp, suggestions, type Suggestion } from './suggest'
 import { createTray, showReading, type Level } from './tray'
-import type { Emptied, QuitReport, SettingsTab } from '../preload/api'
+import type { AccountState, Emptied, QuitReport, SettingsTab } from '../preload/api'
 import { diskPercent, type Snapshot } from './types'
 import { checkNow, startUpdates } from './updates'
 import {
@@ -626,6 +626,26 @@ const COMPUTER_COMMANDS = new Set(['app.quit', 'cleanup.empty', 'runner.pause', 
 const SIGN_IN_PROBLEMS = ['bad', 'none', 'format', 'exists', 'code', 'many']
 const COMMAND_ANSWER_MS = 20 * 1000
 
+/** What the panel's account line and Settings show. */
+function accountState(status: AccountState['status']): AccountState {
+  // Why: 스토어 사진처럼 로그인한 모습이 필요한 시험 촬영은 진짜 계정 없이 예시 주소로 로그인된 것처럼 그린다.
+  if (testShots?.account === 'signed-in') {
+    return { email: 'name@example.com', nickname: 'name', custom: false, status: 'connected' }
+  }
+  return {
+    email: account.current(),
+    nickname: account.nickname(),
+    custom: account.customNickname(),
+    status
+  }
+}
+
+function sendAccount(status: AccountState['status']): void {
+  for (const window of BrowserWindow.getAllWindows()) {
+    window.webContents.send('monitor:account', accountState(status))
+  }
+}
+
 /** Set when Settings is opened to sign in, and taken by its Computers tab once it has loaded. */
 let signInWanted = false
 
@@ -734,12 +754,7 @@ function registerIpc(): void {
   })
   ipcMain.on('monitor:closeWindow', (event) => BrowserWindow.fromWebContents(event.sender)?.close())
   ipcMain.handle('monitor:updateOffer', () => updateOffer())
-  ipcMain.handle('monitor:account', () =>
-    // Why: 스토어 사진처럼 로그인한 모습이 필요한 시험 촬영은 진짜 계정 없이 예시 주소로 로그인된 것처럼 그린다.
-    testShots?.account === 'signed-in'
-      ? { email: 'name@example.com', status: 'connected' }
-      : { email: account.current(), status: relay.currentStatus() }
-  )
+  ipcMain.handle('monitor:account', () => accountState(relay.currentStatus()))
   // Why: IPC 로 던진 오류는 메시지 앞에 꼬리가 붙어, 로그인 창이 읽는 코드만 답으로 돌려준다.
   const signInProblem = async (work: () => Promise<unknown>) => {
     try {
@@ -778,6 +793,15 @@ function registerIpc(): void {
     return wanted
   })
   ipcMain.handle('monitor:signOut', () => account.signOut())
+  // 비우고 저장하면 이메일 @ 앞부분으로 돌아간다. 30자를 넘으면 "format", 서버에 닿지 못하면 "network".
+  ipcMain.handle('monitor:setNickname', async (_event, name: unknown) => {
+    try {
+      await account.setNickname(String(name ?? ''))
+      return null
+    } catch (error) {
+      return error instanceof Error && error.message === 'format' ? 'format' : 'network'
+    }
+  })
   ipcMain.handle('monitor:reconnect', () => relay.reconnect())
   ipcMain.on('monitor:answerUpdate', (_event, answer: unknown) =>
     answerUpdate(answer === 'install' ? 'install' : 'later')
@@ -1051,13 +1075,15 @@ function start(): void {
   // Why: the panel's account line and Settings show whether this computer is on the relay as it
   // changes, and the other computers are asked as soon as it joins rather than up to 30 seconds later.
   relay.onStatus((status) => {
-    for (const window of BrowserWindow.getAllWindows()) {
-      window.webContents.send('monitor:account', { email: account.current(), status })
-    }
+    sendAccount(status)
     if (status === 'connected') {
       askNow()
     }
   })
+  // 로그인 · 로그아웃과 별명이 바뀔 때도 패널 계정 줄과 설정 창이 따라간다.
+  account.onChange(() => sendAccount(relay.currentStatus()))
+  // 다른 앱에서 바꾼 별명을 켤 때 따라간다. 로그아웃이면 아무것도 하지 않고, 실패해도 던지지 않는다.
+  void account.loadProfile()
   startUpdates()
   if (DEV) {
     debugHooks()

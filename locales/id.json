@@ -207,5 +207,11 @@
   "demo.buildMac": "Mac build",
   "demo.meetingMac": "Mac ruang rapat",
   "demo.serverMac": "Mac server",
-  "demo.laptop": "Laptop"
+  "demo.laptop": "Laptop",
+  "account.nickname": "Nama panggilan",
+  "account.nicknameHint": "Tampil di samping panda dan di aplikasi RUNNERS lain. Kosongkan untuk memakai bagian email sebelum @.",
+  "account.nicknameLong": "Nama panggilan paling banyak 30 karakter.",
+  "account.save": "Simpan",
+  "account.saved": "Tersimpan",
+  "account.network": "Tidak dapat menjangkau server. Coba lagi sebentar lagi."
 }

@@ -207,5 +207,11 @@
   "demo.buildMac": "Mac build",
   "demo.meetingMac": "Mac phòng họp",
   "demo.serverMac": "Mac máy chủ",
-  "demo.laptop": "Laptop"
+  "demo.laptop": "Laptop",
+  "account.nickname": "Biệt danh",
+  "account.nicknameHint": "Hiện cạnh gấu trúc và trong các ứng dụng RUNNERS khác. Để trống để dùng phần email trước @.",
+  "account.nicknameLong": "Biệt danh tối đa 30 ký tự.",
+  "account.save": "Lưu",
+  "account.saved": "Đã lưu",
+  "account.network": "Không kết nối được máy chủ. Hãy thử lại sau giây lát."
 }

@@ -210,5 +210,11 @@
   "demo.buildMac": "Mac de compilación",
   "demo.meetingMac": "Mac de la sala de reuniones",
   "demo.serverMac": "Mac servidor",
-  "demo.laptop": "Portátil"
+  "demo.laptop": "Portátil",
+  "account.nickname": "Apodo",
+  "account.nicknameHint": "Se muestra junto al panda y en las demás apps de RUNNERS. Déjalo vacío para usar la parte del correo antes de @.",
+  "account.nicknameLong": "El apodo puede tener hasta 30 caracteres.",
+  "account.save": "Guardar",
+  "account.saved": "Guardado",
+  "account.network": "No se pudo llegar al servidor. Inténtalo de nuevo en un momento."
 }

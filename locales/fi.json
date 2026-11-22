@@ -211,5 +211,11 @@
   "demo.buildMac": "Käännös-Mac",
   "demo.meetingMac": "Neuvotteluhuoneen Mac",
   "demo.serverMac": "Palvelin-Mac",
-  "demo.laptop": "Kannettava"
+  "demo.laptop": "Kannettava",
+  "account.nickname": "Lempinimi",
+  "account.nicknameHint": "Näkyy pandan vieressä ja muissa RUNNERS-apeissa. Jätä tyhjäksi, niin käytetään sähköpostin @-merkkiä edeltävää osaa.",
+  "account.nicknameLong": "Lempinimessä voi olla enintään 30 merkkiä.",
+  "account.save": "Tallenna",
+  "account.saved": "Tallennettu",
+  "account.network": "Palvelimeen ei saatu yhteyttä. Yritä hetken päästä uudelleen."
 }

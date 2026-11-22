@@ -221,3 +221,14 @@ html[data-window='settings'] body {
   height: 48px;
   object-fit: contain;
 }
+/* 설정 › 계정 별명 줄: 입력칸과 저장 단추를 한 줄에 둔다(Draw 와 같은 모양). */
+.s-nickname {
+  gap: 8px;
+}
+.s-nickname .ra-field {
+  width: 180px;
+}
+/* 설명 줄에 대신 뜨는 알림(별명 30자 넘김 등)은 Draw 설정 칸과 같은 kit 위험 글 색이다. */
+.s-row-hint.ra-error {
+  color: var(--r-danger-text);
+}

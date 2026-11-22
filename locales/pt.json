@@ -210,5 +210,11 @@
   "demo.buildMac": "Mac de build",
   "demo.meetingMac": "Mac da sala de reunião",
   "demo.serverMac": "Mac servidor",
-  "demo.laptop": "Notebook"
+  "demo.laptop": "Notebook",
+  "account.nickname": "Apelido",
+  "account.nicknameHint": "Aparece ao lado do panda e nos outros apps RUNNERS. Deixe vazio para usar a parte do e-mail antes do @.",
+  "account.nicknameLong": "O apelido pode ter até 30 caracteres.",
+  "account.save": "Salvar",
+  "account.saved": "Salvo",
+  "account.network": "Não foi possível alcançar o servidor. Tente de novo em instantes."
 }
