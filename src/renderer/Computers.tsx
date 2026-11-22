@@ -573,6 +573,7 @@ export default function Computers() {
           <AccountButton
             lang={locale}
             account={state.email}
+            nickname={state.nickname}
             line={<AccountLine state={state} others={cards.filter((c) => !c.self)} />}
             items={
               state.status === 'elsewhere'

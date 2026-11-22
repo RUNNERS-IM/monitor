@@ -210,5 +210,11 @@
   "demo.buildMac": "Mac do kompilacji",
   "demo.meetingMac": "Mac w sali spotkań",
   "demo.serverMac": "Mac serwer",
-  "demo.laptop": "Laptop"
+  "demo.laptop": "Laptop",
+  "account.nickname": "Pseudonim",
+  "account.nicknameHint": "Widoczny obok pandy i w innych aplikacjach RUNNERS. Zostaw puste, aby użyć części adresu e-mail przed @.",
+  "account.nicknameLong": "Pseudonim może mieć najwyżej 30 znaków.",
+  "account.save": "Zapisz",
+  "account.saved": "Zapisano",
+  "account.network": "Nie udało się połączyć z serwerem. Spróbuj za chwilę."
 }

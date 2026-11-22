@@ -34,3 +34,8 @@ export const sendCode = (purpose: 'signup' | 'reset', email: string, locale: str
 export const resetPassword = (email: string, code: string, password: string) =>
   account().resetPassword(email, code, password)
 export const signOut = () => account().signOut()
+// 별명(2026-11-19 결정 2B): 계정 서버에 두어 모든 RUNNERS 앱이 같은 이름을 보인다. 설정 › 계정 칸에서 고친다.
+export const nickname = () => account().nickname()
+export const customNickname = () => account().customNickname()
+export const loadProfile = () => account().loadProfile()
+export const setNickname = (name: string) => account().setNickname(name)

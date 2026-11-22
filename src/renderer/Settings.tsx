@@ -170,6 +170,84 @@ function General() {
   )
 }
 
+// kit NICKNAME_MAX 와 같은 값. 넘으면 서버에 보내기 전에 왼쪽 설명 줄로 알린다.
+const NICKNAME_MAX = 30
+
+/** 별명 줄(2026-11-19 결정 2B): 모든 RUNNERS 앱이 같이 쓰는 이름이고 계정 서버에 둔다. 비우고 저장하면 이메일 @ 앞부분으로
+ *  돌아간다. 칸 · 단추 · 문구는 Draw 설정 › 계정 칸과 같다(2026-11-21 「다섯 앱 같게」 1A). */
+function Nickname({ state }: { state: AccountState }) {
+  const shown = state.custom ? (state.nickname ?? '') : ''
+  const [draft, setDraft] = useState(shown)
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'long' | 'failed'>('idle')
+
+  // Why: 탭을 연 뒤 서버에서 받은 별명이 칸을 채운다. 다만 고치는 중이면 덮지 않는다.
+  useEffect(() => {
+    if (status === 'idle' || status === 'saved') {
+      setDraft(shown)
+    }
+  }, [shown]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const changed = draft.trim() !== shown
+  const save = () => {
+    if (draft.trim().length > NICKNAME_MAX) {
+      setStatus('long')
+      return
+    }
+    setStatus('saving')
+    void native
+      .setNickname(draft)
+      .then((problem) =>
+        setStatus(problem === null ? 'saved' : problem === 'format' ? 'long' : 'failed')
+      )
+  }
+  const note =
+    status === 'long'
+      ? t('account.nicknameLong')
+      : status === 'failed'
+        ? t('account.network')
+        : null
+
+  return (
+    <div className="s-row">
+      <div className="s-row-line">
+        <div className="s-row-text">
+          <span className="s-row-title">{t('account.nickname')}</span>
+          <span className={note ? 's-row-hint ra-error' : 's-row-hint'}>
+            {note ?? t('account.nicknameHint')}
+          </span>
+        </div>
+        <div className="s-row-space" />
+        <div className="s-row-control s-nickname">
+          <input
+            className="ra-field account-nickname"
+            value={draft}
+            maxLength={NICKNAME_MAX + 10}
+            placeholder={state.email?.split('@')[0] ?? ''}
+            aria-label={t('account.nickname')}
+            onChange={(event) => {
+              setDraft(event.target.value)
+              setStatus('idle')
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && changed) {
+                save()
+              }
+            }}
+          />
+          <button
+            type="button"
+            className="rw-button"
+            disabled={!changed || status === 'saving'}
+            onClick={save}
+          >
+            {t(status === 'saved' && !changed ? 'account.saved' : 'account.save')}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function Account() {
   const [state, setState] = useState<AccountState | null>(null)
   const [signingIn, setSigningIn] = useState(false)
@@ -202,11 +280,11 @@ function Account() {
                   <img src={panda} alt="" draggable={false} />
                 </span>
                 <div className="s-row-text">
-                  <span className="s-row-title">{email}</span>
+                  <span className="s-row-title">{state.nickname ?? email}</span>
                   <span className="s-row-hint">
-                    {t(
+                    {`${email} · ${t(
                       `account.status.${state.status === 'signedOut' ? 'connecting' : state.status}`
-                    )}
+                    )}`}
                   </span>
                 </div>
                 <div className="s-row-space" />
@@ -228,29 +306,36 @@ function Account() {
                 </button>
               </div>
             </div>
-          ) : (
-            state && (
-              <div className="s-row">
-                <div className="s-row-line">
-                  <img className="s-signin-pic" src={pandaSignIn} alt="" draggable={false} />
-                  <div className="s-row-text">
-                    <span className="s-row-title">{t('settings.signedOut')}</span>
-                    <span className="s-row-hint">{t('settings.signedOutHint')}</span>
-                  </div>
-                  <div className="s-row-space" />
-                  <div className="s-row-control">
-                    <button
-                      type="button"
-                      className="rw-button default"
-                      onClick={() => setSigningIn(true)}
-                    >
-                      {t('account.signIn')}
-                    </button>
+          ) : null}
+          {email && (
+            <>
+              <div className="s-card-separator" />
+              <Nickname state={state} />
+            </>
+          )}
+          {email
+            ? null
+            : state && (
+                <div className="s-row">
+                  <div className="s-row-line">
+                    <img className="s-signin-pic" src={pandaSignIn} alt="" draggable={false} />
+                    <div className="s-row-text">
+                      <span className="s-row-title">{t('settings.signedOut')}</span>
+                      <span className="s-row-hint">{t('settings.signedOutHint')}</span>
+                    </div>
+                    <div className="s-row-space" />
+                    <div className="s-row-control">
+                      <button
+                        type="button"
+                        className="rw-button default"
+                        onClick={() => setSigningIn(true)}
+                      >
+                        {t('account.signIn')}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )
-          )}
+              )}
         </div>
         {state?.status === 'elsewhere' && (
           <p className="s-section-hint">{t('account.elsewhereNote')}</p>

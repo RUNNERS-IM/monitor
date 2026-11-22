@@ -207,5 +207,11 @@
   "demo.buildMac": "Derleme Mac’i",
   "demo.meetingMac": "Toplantı odası Mac’i",
   "demo.serverMac": "Sunucu Mac’i",
-  "demo.laptop": "Dizüstü"
+  "demo.laptop": "Dizüstü",
+  "account.nickname": "Takma ad",
+  "account.nicknameHint": "Pandanın yanında ve diğer RUNNERS uygulamalarında görünür. E-postanın @ öncesini kullanmak için boş bırakın.",
+  "account.nicknameLong": "Takma ad en fazla 30 karakter olabilir.",
+  "account.save": "Kaydet",
+  "account.saved": "Kaydedildi",
+  "account.network": "Sunucuya ulaşılamadı. Biraz sonra yeniden deneyin."
 }

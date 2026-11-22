@@ -20,6 +20,10 @@ export type SettingsTab = 'computers' | 'general' | 'account' | 'about'
  *  computers and the phone app). */
 export type AccountState = {
   email: string | null
+  /** The name beside the panda: the nickname set by hand, otherwise the part of the email before @. */
+  nickname: string | null
+  /** Whether the nickname was set by hand. Settings leaves the field empty when it was not. */
+  custom: boolean
   status: 'signedOut' | 'connecting' | 'connected' | 'elsewhere'
 }
 
@@ -183,6 +187,9 @@ export type MonitorApi = {
   onSignIn: (listener: () => void) => () => void
   /** 사용 통계를 아직 묻지 않았는가(ask)와 동의했는가(granted). */
   signOut: () => Promise<void>
+  /** Sets the account's nickname, shared by every RUNNERS app; an empty name goes back to the part of the email before @.
+   *  Null when saved, "format" when over 30 letters, "network" when the server could not be reached. */
+  setNickname: (name: string) => Promise<null | 'format' | 'network'>
   /** Joins the relay again after another connection with this computer's id took its place. */
   reconnect: () => Promise<void>
 }

@@ -207,5 +207,11 @@
   "demo.buildMac": "ビルド用 Mac",
   "demo.meetingMac": "会議室の Mac",
   "demo.serverMac": "サーバ用 Mac",
-  "demo.laptop": "ノートパソコン"
+  "demo.laptop": "ノートパソコン",
+  "account.nickname": "ニックネーム",
+  "account.nicknameHint": "パンダの横とほかの RUNNERS アプリに表示される名前です。空にするとメールの @ より前を使います。",
+  "account.nicknameLong": "ニックネームは30文字までです。",
+  "account.save": "保存",
+  "account.saved": "保存しました",
+  "account.network": "サーバーに接続できませんでした。しばらくしてからもう一度お試しください。"
 }

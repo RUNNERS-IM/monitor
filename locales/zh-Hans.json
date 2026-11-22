@@ -207,5 +207,11 @@
   "demo.buildMac": "构建用 Mac",
   "demo.meetingMac": "会议室 Mac",
   "demo.serverMac": "服务器 Mac",
-  "demo.laptop": "笔记本电脑"
+  "demo.laptop": "笔记本电脑",
+  "account.nickname": "昵称",
+  "account.nicknameHint": "显示在熊猫旁边和其他 RUNNERS 应用中的名字。留空则使用邮箱 @ 前面的部分。",
+  "account.nicknameLong": "昵称最多 30 个字符。",
+  "account.save": "保存",
+  "account.saved": "已保存",
+  "account.network": "无法连接服务器，请稍后再试。"
 }

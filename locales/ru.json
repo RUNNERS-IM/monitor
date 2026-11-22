@@ -207,5 +207,11 @@
   "demo.buildMac": "Mac для сборки",
   "demo.meetingMac": "Mac в переговорной",
   "demo.serverMac": "Mac-сервер",
-  "demo.laptop": "Ноутбук"
+  "demo.laptop": "Ноутбук",
+  "account.nickname": "Никнейм",
+  "account.nicknameHint": "Показывается рядом с пандой и в других приложениях RUNNERS. Оставьте пустым, чтобы использовать часть почты до @.",
+  "account.nicknameLong": "Никнейм может быть не длиннее 30 символов.",
+  "account.save": "Сохранить",
+  "account.saved": "Сохранено",
+  "account.network": "Не удалось связаться с сервером. Попробуйте чуть позже."
 }

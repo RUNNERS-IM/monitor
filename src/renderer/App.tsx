@@ -202,7 +202,7 @@ function SummaryRow({
 }
 
 /** The panel's top line: the RUNNERS account. Signed out, it opens Settings' Computers tab with the sign-in sheet;
- *  signed in, it shows the email with the badge and how the connection stands, and opens the same window
+ *  signed in, it shows the nickname (or the email) with the badge and how the connection stands, and opens the same window
  *  (shared decision 2026-11-05 "네 앱 계정 · 연결 통일" 2A: one way in, the same look in the four apps). */
 function AccountRow() {
   const [state, setState] = useState<AccountState | null>(null)
@@ -243,7 +243,7 @@ function AccountRow() {
       <span className="ra-badge account-badge" aria-hidden>
         <img src={panda} alt="" draggable={false} />
       </span>
-      <span className="rm-label">{state.email}</span>
+      <span className="rm-label">{state.nickname ?? state.email}</span>
       <span className="rm-trailing">
         {status && (
           <span className={`value ${state.status === 'elsewhere' ? 'rm-high' : ''}`}>{status}</span>

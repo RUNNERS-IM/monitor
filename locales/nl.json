@@ -210,5 +210,11 @@
   "demo.buildMac": "Build-Mac",
   "demo.meetingMac": "Vergaderruimte-Mac",
   "demo.serverMac": "Server-Mac",
-  "demo.laptop": "Laptop"
+  "demo.laptop": "Laptop",
+  "account.nickname": "Bijnaam",
+  "account.nicknameHint": "Staat naast de panda en in de andere RUNNERS-apps. Laat leeg om het deel van je e-mail vóór @ te gebruiken.",
+  "account.nicknameLong": "Een bijnaam mag maximaal 30 tekens hebben.",
+  "account.save": "Bewaar",
+  "account.saved": "Bewaard",
+  "account.network": "Kan de server niet bereiken. Probeer het zo opnieuw."
 }

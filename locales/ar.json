@@ -215,5 +215,11 @@
   "demo.buildMac": "ماك البناء",
   "demo.meetingMac": "ماك غرفة الاجتماعات",
   "demo.serverMac": "ماك الخادم",
-  "demo.laptop": "حاسوب محمول"
+  "demo.laptop": "حاسوب محمول",
+  "account.nickname": "الاسم المستعار",
+  "account.nicknameHint": "يظهر بجانب الباندا وفي تطبيقات RUNNERS الأخرى. اتركه فارغًا لاستخدام الجزء الذي قبل @ في بريدك.",
+  "account.nicknameLong": "يمكن أن يصل الاسم المستعار إلى 30 حرفًا.",
+  "account.save": "حفظ",
+  "account.saved": "تم الحفظ",
+  "account.network": "تعذّر الوصول إلى الخادم. حاول مرة أخرى بعد قليل."
 }

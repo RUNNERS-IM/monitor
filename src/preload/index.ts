@@ -62,6 +62,7 @@ const api: MonitorApi = {
     return () => ipcRenderer.off('monitor:signIn', relay)
   },
   signOut: () => ipcRenderer.invoke('monitor:signOut'),
+  setNickname: (name) => ipcRenderer.invoke('monitor:setNickname', name),
   reconnect: () => ipcRenderer.invoke('monitor:reconnect')
 }
 

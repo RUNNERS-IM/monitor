@@ -211,5 +211,11 @@
   "demo.buildMac": "Build-Mac",
   "demo.meetingMac": "Besprechungsraum-Mac",
   "demo.serverMac": "Server-Mac",
-  "demo.laptop": "Laptop"
+  "demo.laptop": "Laptop",
+  "account.nickname": "Spitzname",
+  "account.nicknameHint": "Wird neben dem Panda und in den anderen RUNNERS-Apps angezeigt. Leer lassen, um den Teil der E-Mail vor @ zu verwenden.",
+  "account.nicknameLong": "Ein Spitzname darf höchstens 30 Zeichen haben.",
+  "account.save": "Sichern",
+  "account.saved": "Gesichert",
+  "account.network": "Der Server ist nicht erreichbar. Versuche es gleich noch einmal."
 }

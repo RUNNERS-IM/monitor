@@ -209,5 +209,11 @@
   "demo.buildMac": "Build Mac",
   "demo.meetingMac": "Meeting Room Mac",
   "demo.serverMac": "Server Mac",
-  "demo.laptop": "Laptop"
+  "demo.laptop": "Laptop",
+  "account.nickname": "Nickname",
+  "account.nicknameHint": "Shown beside the panda and in the other RUNNERS apps. Leave it empty to use the part of your email before @.",
+  "account.nicknameLong": "A nickname can be up to 30 characters.",
+  "account.save": "Save",
+  "account.saved": "Saved",
+  "account.network": "Could not reach the server. Try again in a moment."
 }
