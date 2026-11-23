@@ -45,7 +45,7 @@
   --rm-selected: var(--r-selected-bg);
   --rm-ok: var(--r-success);
   --rm-high: var(--r-warning);
-  --rm-full: #ff453a;
+  --rm-full: var(--r-full);
 
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   font-size: var(--rm-font);

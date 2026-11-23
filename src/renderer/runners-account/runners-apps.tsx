@@ -1,4 +1,5 @@
 // 「RUNNERS의 다른 앱」 · 「RUNNERS의 서비스」 카드. 모든 앱이 같은 모양이다.
+import { useId } from 'react'
 import type { RunnersAppGroup } from './runners-apps-data'
 import { pickName, pickText } from './runners-apps-data'
 import './runners-apps.css'
@@ -14,13 +15,15 @@ export type RunnersAppsProps = {
 }
 
 export function RunnersApps({ groups, locale, getLabel, onOpen }: RunnersAppsProps) {
+  // 한 화면에 목록이 둘 있어도(디자인 사이트의 밝은 · 어두운 견본) 제목 id 가 겹치지 않게 부품마다 다른 앞말을 붙인다
+  const base = useId()
   if (groups.length === 0) {
     return null
   }
   return (
     <div className="runners-apps">
       {groups.map((group) => {
-        const titleId = `runners-apps-${group.id}`
+        const titleId = `${base}-${group.id}`
         return (
           <section key={group.id} className="runners-apps-group" aria-labelledby={titleId}>
             <h3 id={titleId} className="runners-apps-title">
