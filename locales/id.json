@@ -68,7 +68,6 @@
   "summary.background": "Latar belakang {{count}}",
   "summary.runnersIdle": "{{count}} runner menunggu",
   "summary.runnersBusy": "{{count}} runner sedang build",
-  "summary.runnersMixed": "Runner {{count}} ({{busy}} build · {{idle}} menunggu)",
   "summary.runnersOff": "Runner mati: {{count}}",
   "status.slowMemory": "Lambat · memori",
   "status.slowCpu": "Lambat · CPU",

@@ -69,7 +69,6 @@
   "summary.background": "Achtergrond {{count}}",
   "summary.runnersIdle": "Runners wachtend: {{count}}",
   "summary.runnersBusy": "Runners aan het bouwen: {{count}}",
-  "summary.runnersMixed": "Runners {{count}} ({{busy}} in build · {{idle}} wachtend)",
   "summary.runnersOff": "Runners uit: {{count}}",
   "status.slowMemory": "Traag · geheugen",
   "status.slowCpu": "Traag · CPU",

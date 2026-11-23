@@ -68,7 +68,6 @@
   "summary.background": "백그라운드 {{count}}",
   "summary.runnersIdle": "러너 {{count}} 대기",
   "summary.runnersBusy": "러너 {{count}} 빌드 중",
-  "summary.runnersMixed": "러너 {{count}}({{busy}} 빌드 · {{idle}} 대기)",
   "summary.runnersOff": "러너 {{count}} 꺼 둠",
   "status.slowMemory": "느림 · 메모리",
   "status.slowCpu": "느림 · CPU",

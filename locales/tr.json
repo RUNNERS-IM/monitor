@@ -68,7 +68,6 @@
   "summary.background": "Arka planda {{count}}",
   "summary.runnersIdle": "{{count}} çalıştırıcı boşta",
   "summary.runnersBusy": "{{count}} çalıştırıcı derliyor",
-  "summary.runnersMixed": "Runner'lar {{count}} ({{busy}} derliyor · {{idle}} boşta)",
   "summary.runnersOff": "Kapalı runner: {{count}}",
   "status.slowMemory": "Yavaş · bellek",
   "status.slowCpu": "Yavaş · CPU",

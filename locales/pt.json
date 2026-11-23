@@ -69,7 +69,6 @@
   "summary.background": "Em segundo plano {{count}}",
   "summary.runnersIdle": "Runners ociosos: {{count}}",
   "summary.runnersBusy": "Runners compilando: {{count}}",
-  "summary.runnersMixed": "Runners {{count}} ({{busy}} compilando · {{idle}} em espera)",
   "summary.runnersOff": "Runners desligados: {{count}}",
   "status.slowMemory": "Lento · memória",
   "status.slowCpu": "Lento · CPU",

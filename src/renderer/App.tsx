@@ -784,19 +784,13 @@ function App() {
     ...(snap.heavyJob ? [t('summary.heavy')] : []),
     ...(people > 0 ? [t('summary.claude', { count: people })] : []),
     ...(jobs > 0 ? [t('summary.background', { count: jobs })] : []),
-    ...(busyRunners > 0 && idleRunners > 0
-      ? [
-          t('summary.runnersMixed', {
-            count: busyRunners + idleRunners,
-            busy: busyRunners,
-            idle: idleRunners
-          })
-        ]
-      : busyRunners > 0
-        ? [t('summary.runnersBusy', { count: busyRunners })]
-        : idleRunners > 0
-          ? [t('summary.runnersIdle', { count: idleRunners })]
-          : []),
+    // Why: 「러너 2 (빌드 1 · 대기 1)」은 영어 · 러시아어 등에서 줄 끝이 잘려 숫자가 안 보였다. 빌드 중인 수만 두고
+    // 대기 수는 펼친 칸의 러너 목록에서 본다.
+    ...(busyRunners > 0
+      ? [t('summary.runnersBusy', { count: busyRunners })]
+      : idleRunners > 0
+        ? [t('summary.runnersIdle', { count: idleRunners })]
+        : []),
     ...(working.length === 0 && offRunners > 0
       ? [t('summary.runnersOff', { count: offRunners })]
       : [])
@@ -811,7 +805,8 @@ function App() {
       <div className="rm-separator" />
       <MenuHead
         name={snap.host}
-        sub={snap.os}
+        // Why: 영어 · 독일어처럼 상태 배지가 긴 언어에서 「macOS 26.5 Tah…」로 잘려, 이름(Tahoe)은 빼고 판 번호만 둔다.
+        sub={snap.os.replace(/^(macOS [\d.]+) \D.*$/, '$1')}
         // Why: a "normal" badge on every open said nothing, so the badge shows only when something is wrong.
         badge={
           slow ? (

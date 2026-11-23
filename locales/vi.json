@@ -68,7 +68,6 @@
   "summary.background": "Chạy nền {{count}}",
   "summary.runnersIdle": "{{count}} runner đang chờ",
   "summary.runnersBusy": "{{count}} runner đang build",
-  "summary.runnersMixed": "Runner {{count}} ({{busy}} đang dựng · {{idle}} chờ)",
   "summary.runnersOff": "Runner đã tắt: {{count}}",
   "status.slowMemory": "Chậm · bộ nhớ",
   "status.slowCpu": "Chậm · CPU",
