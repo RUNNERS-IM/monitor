@@ -1,100 +1,61 @@
-# Monitor
+<p align="center">
+  <img src="https://runners.im/images/apps/monitor/icon.webp" width="96" alt="Monitor">
+</p>
+<h1 align="center">Monitor</h1>
+<p align="center"><b>Why it's slow, right in the menu bar.</b><br>See who is using your CPU, memory and disk, then quit or clean up right there.</p>
+<p align="center">
+  <a href="https://runners.im/en/monitor"><b>Download for Mac</b></a> ·
+  <a href="https://runners.im/en/monitor">runners.im/en/monitor</a> ·
+  <a href="README.ko.md">한국어</a>
+</p>
+<p align="center"><sub>Free · macOS 12 or later · Apple silicon · Intel · Windows · Linux · 20 languages</sub></p>
 
-**English** · [한국어](README.ko.md)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://runners.im/images/apps/monitor/stage-en-dark.webp">
+  <img src="https://runners.im/images/apps/monitor/stage-en-light.webp" alt="The Monitor panel below the menu bar, with the memory row open: a colored bar and list of apps, claude sessions, system and cache">
+</picture>
 
-See how busy your computers are from the menu bar or system tray: CPU, memory, disk, running claude sessions and GitHub Actions runners.
+## What it does
 
-Monitor is made by RUNNERS-IM for the computers in our office. It is built with [Electron](https://www.electronjs.org) and one small native module in Rust (`native/`), the same toolchain as RUNNERS' other desktop apps, so one code base builds for macOS (Apple silicon and Intel), Windows and Linux.
-
-## What it shows
-
-Click the number in the menu bar (macOS) or the tray icon (Windows, Linux) to open the panel.
-
-| Item            | What it means                                                                                               |
-| :-------------- | :---------------------------------------------------------------------------------------------------------- |
-| CPU             | Average use of all cores                                                                                    |
-| Memory          | Memory in use and the total. The menu bar number is this value                                              |
-| Disk            | Space used on the disk the system starts from (`/` on macOS and Linux, the system drive on Windows)         |
-| claude sessions | Number of running `claude` processes                                                                        |
-| GitHub runner   | **Building** when a job is running, **Idle** when a runner is waiting, **None** when no runner is installed |
-
-The panel is also Monitor's menu: a left or a right click on the icon opens it, and under the readings are Settings… (⌘,), Help & Feedback and Quit Monitor. Settings has four tabs: Computers (every computer on the account), General (Open at Login, Check for Updates Automatically, Show in menu bar, Check for Updates), Account and About. Linux trays only open a menu set beforehand, so there the same commands come as a menu.
-
-The panel and menu follow the language set for your computer. Monitor speaks 20 languages: Arabic, Chinese (Simplified), Chinese (Traditional), Dutch, English, Finnish, French, German, Hindi, Indonesian, Italian, Japanese, Korean, Polish, Portuguese, Russian, Spanish, Thai, Turkish and Vietnamese.
+<table>
+<tr>
+<td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="https://runners.im/images/apps/monitor/expand-en-dark.webp"><img src="https://runners.im/images/apps/monitor/expand-en-light.webp" alt="Two panels with the CPU and disk rows open"></picture><br><b>See what fills it, at a glance</b><br>Open the CPU, memory or disk row for a bar split by colour and a list: apps, claude sessions, system, cache, compression and swap.</td>
+<td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="https://runners.im/images/apps/monitor/quit-en-dark.webp"><img src="https://runners.im/images/apps/monitor/quit-en-light.webp" alt="Quit buttons next to heavy apps"></picture><br><b>Quit a heavy app right there</b><br>Quit works like ⌘Q, so an app with unsaved work asks first. Dev servers left running stop right away.</td>
+</tr>
+<tr>
+<td><picture><source media="(prefers-color-scheme: dark)" srcset="https://runners.im/images/apps/monitor/empty-en-dark.webp"><img src="https://runners.im/images/apps/monitor/empty-en-light.webp" alt="The disk row open with Empty buttons"></picture><br><b>A full disk, emptied with one button</b><br>Caches, build folders, node_modules, the Trash and unused Docker images, measured by kind. Projects used in the last 7 days are kept.</td>
+<td><picture><source media="(prefers-color-scheme: dark)" srcset="https://runners.im/images/apps/monitor/popup-en-dark.webp"><img src="https://runners.im/images/apps/monitor/popup-en-light.webp" alt="The panel when memory is short"></picture><br><b>Colour and alerts when it slows down</b><br>Green when all is well, orange when slow, red when memory is very short, with one alert a day per reason.</td>
+</tr>
+<tr>
+<td><picture><source media="(prefers-color-scheme: dark)" srcset="https://runners.im/images/apps/monitor/sessions-en-dark.webp"><img src="https://runners.im/images/apps/monitor/sessions-en-light.webp" alt="Status of claude sessions and GitHub runners"></picture><br><b>claude sessions and GitHub runners</b><br>How many claude sessions are running and for how long, and whether this computer's runner is building, waiting or paused.</td>
+<td><picture><source media="(prefers-color-scheme: dark)" srcset="https://runners.im/images/apps/monitor/menubar-en-dark.webp"><img src="https://runners.im/images/apps/monitor/menubar-en-light.webp" alt="The Monitor icon and memory use in the menu bar"></picture><br><b>Always in the menu bar</b><br>Three bars and your memory use sit in the menu bar; click for the panel. Signed in with a RUNNERS account, Settings › Computers shows your other computers too.</td>
+</tr>
+</table>
 
 ## Install
-
-macOS (Apple silicon and Intel), with Homebrew:
 
 ```sh
 brew install --cask runners-im/tap/monitor
 ```
 
-Or download from [GitHub Releases](https://github.com/RUNNERS-IM/monitor/releases/latest): `Monitor-<version>-mac-arm64.dmg` (Apple silicon) or `-mac-x64.dmg` (Intel) for macOS, `-setup.exe` for Windows, `.AppImage`, `.deb` or `.rpm` for Linux. The Windows installer is not code signed yet, so Windows shows a SmartScreen warning the first time.
+Or download the latest `Monitor-<version>-mac-arm64.dmg` (Apple silicon) or `-mac-x64.dmg` (Intel) from [Releases](https://github.com/RUNNERS-IM/monitor/releases/latest). Windows (`-setup.exe`, not code-signed yet) and Linux (`.AppImage` · `.deb` · `.rpm`) builds are on the same page.
 
-Monitor lives only in the menu bar (no Dock icon). Open it once after installing; from then on it opens at login and checks for a new version once a day, asking before it installs one. Both can be turned off in the menu.
+Monitor lives in the menu bar only, with no Dock icon. Open it once; after that it starts at login and checks for updates once a day. Both can be turned off in Settings › General.
 
-## Roadmap
+## Shortcuts
 
-Done:
-
-- Tray app for this computer: CPU, memory, disk, claude sessions and runner state
-- Panel with the macOS blur (Acrylic on Windows), light and dark mode
-- Shared menu order with Split and Prompt
-- 20 languages (the same set as Split)
-
-Next:
-
-- A list of the other computers in the office in the same panel
-- Signed releases, automatic updates and installers for macOS, Windows and Linux
-- AWS EC2 servers
-
-Issues and pull requests are welcome in this repository.
-
-## Building from source
-
-Requires [Rust](https://rustup.rs), Node.js 24 and pnpm.
-
-```sh
-pnpm install
-pnpm native         # build the native module (native/) for this computer
-pnpm dev            # run with live reload
-pnpm dist           # build an installer for this OS into dist.noindex/
-```
-
-For an Intel Mac build on Apple silicon, also run `pnpm native --target x86_64-apple-darwin` (after `rustup target add x86_64-apple-darwin`).
-
-- `src/main/` is the main process (tray, panel window, sampling loop, updates), `src/preload/` the bridge the page talks through, `src/renderer/` the panel and Settings window. Parts shared by the RUNNERS apps are copies from runners-app-kit (`src/main/runners/`, `src/renderer/runners-account/`, the root configs); `pnpm check:account` fails when a copy changed, so change them in the kit.
-- `native/` is the one native module (napi-rs): system readings, the cleanup scan, quitting an app, pausing a runner and the tray picture.
-- Screen text lives in `locales/`; the page and the main process read the same files. Check them with `pnpm check:locales`.
-- Debug runs take `MONITOR_OPEN=panel|settings|settings:<tab>|update|update-progress` (`settings:general` picks a Settings tab; the last two show the update window with made-up notes), `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1` (made-up names for screenshots) and `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup`.
-- Test shot mode: a debug build started with `RUNNERS_TEST_SHOTS=<folder>` captures the menu-bar panel, the Computers window, the Settings tabs, the update window and the sign-in sheet with demo numbers, never showing a window, writes `<lang>-<light|dark>-<number>-<scope>-<screen>.png` and `shots.json`, then quits. Pick with `RUNNERS_TEST_LANG=ko,en` (default) and `RUNNERS_TEST_SCOPE=menu,main,settings,popups,account`. The rules are shared by all five RUNNERS apps (runners-app-kit `desktop/README.md`, "시험 촬영 모드"). Pages load from a debug build served through `ELECTRON_RENDERER_URL`.
-
-So far Monitor has been built and checked on macOS (Apple silicon) only. Windows and Linux builds have not been tried yet.
-
-## Releasing
-
-Merging into the `release` branch builds and publishes a release (`.github/workflows/release.yml`). Before that, write
-this release's changes in `RELEASE_NOTES.md`. It becomes the GitHub release text, and the update window shows its list
-under "What's new":
-
-```md
-## 한국어
-
-- 한 줄에 바뀐 점 하나씩, 합니다체로 씁니다.
-
-## English
-
-- One change per line.
-```
-
-Korean screens read the `## 한국어` list, every other language the `## English` one. The version bump
-(`scripts/bump-release.sh`) stops when either list is empty or the file is the same as the last release's.
+| Shortcut | What it does                 |
+| :------- | :--------------------------- |
+| ⌘,       | Open Settings from the panel |
 
 ## Privacy
 
 Monitor has no ads and no analytics. It sends error reports, with names and addresses hidden, so errors can be fixed. See [PRIVACY.md](PRIVACY.md).
 
-## License
+## Development
 
-Copyright (c) 2026 Runners Co., Ltd. All rights reserved. The source is published for reading only; see [LICENSE.md](LICENSE.md).
+See [docs/development.md](docs/development.md).
+
+---
+
+<p align="center"><a href="https://runners.im"><picture><source media="(prefers-color-scheme: dark)" srcset="https://runners.im/icons/logos/RUNNERS_H_W.svg"><img src="https://runners.im/icons/logos/RUNNERS_H.svg" height="20" alt="RUNNERS"></picture></a><br><sub>Made by RUNNERS · Source available, all rights reserved (<a href="LICENSE.md">LICENSE.md</a>)</sub></p>
