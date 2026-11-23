@@ -2,7 +2,7 @@
 // 「[REMOTE] 개발 - 네 앱 계정 · 연결 통일」 2A 4A and 「… 연결 요금 · 웹 · 세션 역할」 2A, 2026-11-05):
 // - signed out, the app shows one Sign In button where its main content goes, and that button opens <SignInSheet>;
 // - signed in, <AccountButton> is a round badge with the RUNNERS panda at the window's top right that opens the
-//   account menu (the email, one line the app chooses, the app's own items, then Log Out).
+//   account menu (the email, one line the app chooses, the app's own items, then Sign Out).
 // The source lives in runners-app-kit/desktop; each app copies this folder unchanged and runs check.mjs before it
 // builds. It needs only React: the R mark and icons are drawn here, and the words come from runners-account-text.ts.
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'

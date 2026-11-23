@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // 시스템 서버의 앱 로그인과 relay(docs/relay.md)를 이 컴퓨터 안에서 흉내 낸다. 진짜 서버 없이 컴퓨터판과 휴대폰판을 함께 시험하려는 것이다.
 // 진짜 서버가 받을 비밀번호(영문과 숫자를 섞어 6~20자)면 어떤 이메일로도 로그인되고, 계정은 그 이메일이다.
+// 비밀번호가 WRONG_PASSWORD(wrong1234)면 401 로 거절해 「틀린 비밀번호」 장면을 찍을 수 있다.
+// 별명(GET · PATCH /api/mobile/account/profile)은 계정마다 메모리에 두고, 정하지 않았으면 이메일 @ 앞부분이다.
 // 성공 답은 진짜 서버처럼 { code, data } 로 감싼다. 푸시는 보내지 않고 찍기만 한다. 모두 메모리에만 있다.
 //
 //   node scripts/relay-dev.mjs [포트]                    (기본 8787, PORT 환경 변수도 받음)
@@ -20,6 +22,16 @@ const tokens = new Map()
 const rooms = new Map()
 /** account|project -> Map<deviceId, last state data> */
 const lastState = new Map()
+/** account -> 직접 정한 별명 */
+const nicknames = new Map()
+const WRONG_PASSWORD = 'wrong1234'
+const NICKNAME_MAX = 30
+
+const profileOf = (account) => ({
+  email: account,
+  nickname: nicknames.get(account) ?? account.split('@')[0],
+  custom: nicknames.has(account)
+})
 
 function issue(account, project) {
   const accessToken = `dev-access-${randomUUID()}`
@@ -51,8 +63,11 @@ const server = createServer((req, res) => {
       ) {
         return json(res, 400, { error: 'bad request' })
       }
+      if (req.url === '/api/mobile/auth/login' && body.password === WRONG_PASSWORD) {
+        return json(res, 401, { error: 'wrong password' })
+      }
       return json(res, 200, {
-        user: { id: body.email, email: body.email },
+        user: { id: body.email, email: body.email, nickname: profileOf(body.email).nickname },
         tokens: issue(body.email, body.projectName)
       })
     }
@@ -74,6 +89,24 @@ const server = createServer((req, res) => {
       }
       console.log('push token registered', body.platform, body.projectName)
       return json(res, 200, {})
+    }
+    if (req.url === '/api/mobile/account/profile') {
+      const found = tokens.get(bearer)
+      if (found?.kind !== 'access') {
+        return json(res, 401, { error: 'expired' })
+      }
+      if (req.method === 'PATCH') {
+        const nickname = String(body.nickname ?? '').trim()
+        if (nickname.length > NICKNAME_MAX) {
+          return json(res, 400, { error: 'too long' })
+        }
+        if (nickname) {
+          nicknames.set(found.account, nickname)
+        } else {
+          nicknames.delete(found.account)
+        }
+      }
+      return json(res, 200, profileOf(found.account))
     }
     json(res, 404, { error: 'not found' })
   })
