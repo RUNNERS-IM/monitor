@@ -68,7 +68,6 @@
   "summary.background": "バックグラウンド {{count}}",
   "summary.runnersIdle": "ランナー {{count}} 待機中",
   "summary.runnersBusy": "ランナー {{count}} ビルド中",
-  "summary.runnersMixed": "ランナー {{count}}(ビルド {{busy}} · 待機 {{idle}})",
   "summary.runnersOff": "ランナー {{count}} オフ",
   "status.slowMemory": "低速 · メモリ",
   "status.slowCpu": "低速 · CPU",

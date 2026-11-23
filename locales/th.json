@@ -68,7 +68,6 @@
   "summary.background": "เบื้องหลัง {{count}}",
   "summary.runnersIdle": "รันเนอร์ {{count}} รอ",
   "summary.runnersBusy": "รันเนอร์ {{count}} กำลังบิลด์",
-  "summary.runnersMixed": "รันเนอร์ {{count}} (บิลด์ {{busy}} · รอ {{idle}})",
   "summary.runnersOff": "รันเนอร์ปิดอยู่ {{count}}",
   "status.slowMemory": "ช้า · หน่วยความจำ",
   "status.slowCpu": "ช้า · CPU",

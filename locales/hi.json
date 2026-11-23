@@ -68,7 +68,6 @@
   "summary.background": "बैकग्राउंड {{count}}",
   "summary.runnersIdle": "रनर {{count}} प्रतीक्षा में",
   "summary.runnersBusy": "रनर {{count}} बिल्ड कर रहे हैं",
-  "summary.runnersMixed": "रनर {{count}} ({{busy}} बिल्ड · {{idle}} खाली)",
   "summary.runnersOff": "बंद रनर: {{count}}",
   "status.slowMemory": "धीमा · मेमोरी",
   "status.slowCpu": "धीमा · CPU",

@@ -68,7 +68,6 @@
   "summary.background": "背景 {{count}}",
   "summary.runnersIdle": "執行器 {{count}} 閒置",
   "summary.runnersBusy": "執行器 {{count}} 建置中",
-  "summary.runnersMixed": "Runner {{count}}({{busy}} 建置中 · {{idle}} 閒置)",
   "summary.runnersOff": "Runner {{count}} 已關閉",
   "status.slowMemory": "變慢 · 記憶體",
   "status.slowCpu": "變慢 · CPU",

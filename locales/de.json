@@ -69,7 +69,6 @@
   "summary.background": "Hintergrund {{count}}",
   "summary.runnersIdle": "{{count}} Runner bereit",
   "summary.runnersBusy": "{{count}} Runner im Build",
-  "summary.runnersMixed": "Runner {{count}} ({{busy}} im Build · {{idle}} bereit)",
   "summary.runnersOff": "Runner aus: {{count}}",
   "status.slowMemory": "Langsam · Speicher",
   "status.slowCpu": "Langsam · CPU",

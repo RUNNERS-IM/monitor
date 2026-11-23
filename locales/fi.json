@@ -69,7 +69,6 @@
   "summary.background": "Taustalla {{count}}",
   "summary.runnersIdle": "Runnereita odottaa: {{count}}",
   "summary.runnersBusy": "Runnereita rakentaa: {{count}}",
-  "summary.runnersMixed": "Ajajat {{count}} ({{busy}} kääntämässä · {{idle}} odottamassa)",
   "summary.runnersOff": "Ajajat pois: {{count}}",
   "status.slowMemory": "Hidas · muisti",
   "status.slowCpu": "Hidas · CPU",

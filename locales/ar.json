@@ -68,7 +68,6 @@
   "summary.background": "في الخلفية {{count}}",
   "summary.runnersIdle": "مشغّلات في الانتظار: {{count}}",
   "summary.runnersBusy": "مشغّلات قيد البناء: {{count}}",
-  "summary.runnersMixed": "المشغّلات {{count}} ({{busy}} تبني · {{idle}} تنتظر)",
   "summary.runnersOff": "مشغّلات متوقفة: {{count}}",
   "status.slowMemory": "بطء · الذاكرة",
   "status.slowCpu": "بطء · CPU",
