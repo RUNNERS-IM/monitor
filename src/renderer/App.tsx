@@ -320,7 +320,8 @@ function formatClock(unixSecs: number): string {
 }
 
 // Why: one colour per app in the "who uses it" bar; claude keeps purple so it reads the same every time.
-const APP_COLOURS = ['#ff9f0a', '#bf5af2', '#64d2ff', '#30d158']
+// 앱이 다섯 개 넘게 나와도 같은 색이 두 번 나오지 않게 일곱 색을 둔다(시스템 · 캐시의 회색과도 겹치지 않음).
+const APP_COLOURS = ['#ff9f0a', '#bf5af2', '#64d2ff', '#30d158', '#ff375f', '#5e5ce6', '#ac8e68']
 const CLAUDE_COLOUR = '#bf5af2'
 
 type Part = {
@@ -333,7 +334,6 @@ type Part = {
   empty?: CleanupKind
 }
 
-/** Colours for the apps in order: claude always purple, the others take the next free colour. */
 /** A dev server is named with its repository, so two of them (or one next to "node") can be told apart. */
 function appLabel(app: {
   name: string
@@ -345,6 +345,7 @@ function appLabel(app: {
   return dev && app.folder ? `${app.name} · ${app.folder}` : app.name
 }
 
+/** Colours for the apps in order: claude always purple, the others take the next free colour. */
 function appParts(
   apps: AppUse[],
   size: (app: AppUse) => number,

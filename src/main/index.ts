@@ -89,7 +89,7 @@ const DEMO = DEV && (!!process.env.MONITOR_DEMO || !!testShots)
 const DEMO_OS = 'macOS 26.5 Tahoe'
 // Why: 시험 실행은 `MONITOR_TEST_PLATFORM=win32|linux` 로 Mac 에서도 다른 운영체제의 글을 띄워 본다. 글만 바꾸고 동작은 그대로다.
 const WORDS_PLATFORM = (DEV && process.env.MONITOR_TEST_PLATFORM) || process.platform
-const DEMO_VERSION = '2.6.1102'
+const DEMO_VERSION = '2.6.110201'
 // Why: a debug run keeps its own data folder, so it runs next to the installed Monitor (which holds the
 // single-instance lock on the shared folder) and never signs it in or out.
 if (DEV) {
@@ -540,7 +540,7 @@ async function emptyKind(kind: string): Promise<Emptied> {
 }
 
 /** What this computer tells the account's other Monitors: names and numbers only. */
-function usage(from: Snapshot | null = latest): Usage | null {
+function usage(from: Snapshot | null = latest, cleanup = latestCleanup): Usage | null {
   if (!from) {
     return null
   }
@@ -563,7 +563,7 @@ function usage(from: Snapshot | null = latest): Usage | null {
     claudeSessions: snap.claudeSessions?.length ?? 0,
     runnersBusy: running.filter((r) => r.busy).length,
     runnersIdle: running.filter((r) => !r.busy).length,
-    cleanable: latestCleanup?.total ?? null
+    cleanable: cleanup?.total ?? null
   }
 }
 
@@ -575,26 +575,26 @@ async function computerName(): Promise<string> {
 
 /** What the phone app shows for this computer: the same numbers as the Computers tab, plus what can be
  *  emptied by kind and the runners by name, so the phone can offer those commands. */
-function phoneState(): unknown {
-  const mine = usage()
-  if (!mine || !latest) {
+function phoneState(from: Snapshot | null = latest, cleanup = latestCleanup): unknown {
+  const mine = usage(from, cleanup)
+  if (!mine || !from) {
     return null
   }
   return {
     ...mine,
     // Why: the phone offers Quit only where this panel does, and says whether the app asks to save first.
-    topMemory: mine.topMemory.map((a, i) => ({ ...a, quit: latest!.topMemory[i]?.quit ?? null })),
-    topCpu: latest.topCpu
+    topMemory: mine.topMemory.map((a, i) => ({ ...a, quit: from.topMemory[i]?.quit ?? null })),
+    topCpu: from.topCpu
       .slice(0, 5)
       .map((a) => ({ name: a.name, cpuPercent: a.cpuPercent, quit: a.quit })),
     // Why: the Computers tab of another computer offers commands only to a Monitor that takes them (4A).
     hostCommands: true,
     // Why: another computer shows what this panel would suggest; the folder is left out, since no path leaves the computer.
-    suggestions: suggestions(latest, latestCleanup).map((s) =>
+    suggestions: suggestions(from, cleanup).map((s) =>
       s.action === 'quit' ? { ...s, folder: undefined } : s
     ),
-    cleanupKinds: latestCleanup?.kinds ?? [],
-    runners: latest.runners.map((r) => ({
+    cleanupKinds: cleanup?.kinds ?? [],
+    runners: from.runners.map((r) => ({
       name: r.name,
       busy: r.busy,
       off: r.off ?? false,
@@ -688,10 +688,13 @@ function registerIpc(): void {
   ipcMain.handle('monitor:resumeRunner', (_event, name: string) => {
     return resumeRunner(String(name))
   })
-  // Why: demo names follow the page's language (`?lang=` in screenshot runs), not the app's.
+  // Why: demo names follow the page's language (`?lang=` in screenshot runs), not the app's. Signed out, the demo
+  // shows no other computers either, as a real signed-out Monitor does (peerList is empty then).
   ipcMain.handle('monitor:peers', (event) =>
     DEMO
-      ? demoPeers(new URL(event.sender.getURL()).searchParams.get('lang') ?? currentLocale())
+      ? accountState(relay.currentStatus()).email
+        ? demoPeers(new URL(event.sender.getURL()).searchParams.get('lang') ?? currentLocale())
+        : []
       : peerList()
   )
   // Why: the window's buttons send what a phone sends: to the computer chosen, or to this one's own commands (null).
@@ -717,8 +720,12 @@ function registerIpc(): void {
   )
   // Why: the cards are named as Tailscale names the computers (m1-pro-2), not by the system host name.
   ipcMain.handle('monitor:selfUsage', async () => {
+    // Why: 데모(시험 촬영 · 스토어 사진)도 실제와 같은 길로 만들어, 끄기 단추 · 정리할 거리가 패널과 같게 나온다.
     if (DEMO) {
-      return usage(latestDemo)
+      return phoneState(
+        latestDemo,
+        JSON.parse(native.demoCleanup() ?? 'null') as CleanupResult | null
+      )
     }
     const mine = phoneState() as Usage | null
     const net = await tailnet()
@@ -728,7 +735,7 @@ function registerIpc(): void {
     openComputers(signIn === true)
   )
   ipcMain.handle('monitor:translucent', () => TRANSLUCENT)
-  ipcMain.handle('monitor:version', () => app.getVersion())
+  ipcMain.handle('monitor:version', () => (DEMO ? DEMO_VERSION : app.getVersion()))
   ipcMain.handle('monitor:menuState', () => menuState())
   ipcMain.handle('monitor:command', (_event, command: Command) => {
     run(command)
