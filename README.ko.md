@@ -1,99 +1,61 @@
-# Monitor
+<p align="center">
+  <img src="https://runners.im/images/apps/monitor/icon.webp" width="96" alt="Monitor">
+</p>
+<h1 align="center">Monitor</h1>
+<p align="center"><b>왜 느려졌는지 메뉴 막대에서.</b><br>CPU · 메모리 · 디스크를 누가 얼마나 쓰는지 보고, 그 자리에서 끄고 비웁니다.</p>
+<p align="center">
+  <a href="https://runners.im/monitor"><b>Mac 용 받기</b></a> ·
+  <a href="https://runners.im/monitor">runners.im/monitor</a> ·
+  <a href="README.md">English</a>
+</p>
+<p align="center"><sub>무료 · macOS 12 이상 · Apple silicon · Intel · Windows · Linux · 20개 언어</sub></p>
 
-[English](README.md) · **한국어**
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://runners.im/images/apps/monitor/stage-ko-dark.webp">
+  <img src="https://runners.im/images/apps/monitor/stage-ko-light.webp" alt="메뉴 막대 아래 열린 Monitor 패널: 메모리 줄을 펼쳐 앱 · claude 세션 · 시스템 · 캐시로 나눈 색 막대와 목록">
+</picture>
 
-메뉴 막대나 트레이에서 컴퓨터가 얼마나 바쁜지 봅니다. CPU, 메모리, 디스크, 돌고 있는 claude 세션, GitHub Actions 러너 상태가 나옵니다.
+## 하는 일
 
-Monitor는 RUNNERS-IM이 사무실 컴퓨터를 보려고 만드는 앱입니다. [Electron](https://www.electronjs.org) 과 Rust 로 짠 작은 네이티브 모듈 하나(`native/`)로 만들어서(RUNNERS의 다른 데스크톱 앱과 같은 도구), 코드 하나로 macOS(애플 실리콘·인텔), 윈도우, 리눅스 판을 만듭니다.
-
-## 보여 주는 것
-
-메뉴 막대의 숫자(macOS)나 트레이 아이콘(윈도우·리눅스)을 누르면 패널이 열립니다.
-
-| 항목        | 뜻                                                                                      |
-| :---------- | :-------------------------------------------------------------------------------------- |
-| CPU         | 모든 코어의 평균 사용률                                                                 |
-| 메모리      | 쓰고 있는 메모리와 전체 메모리. 메뉴 막대 숫자가 이 값입니다                            |
-| 디스크      | 시스템이 켜지는 디스크의 사용량(macOS·리눅스는 `/`, 윈도우는 시스템 드라이브)           |
-| claude 세션 | 돌고 있는 `claude` 프로세스 수                                                          |
-| GitHub 러너 | 작업이 돌고 있으면 **빌드 중**, 러너가 기다리고 있으면 **대기**, 러너가 없으면 **없음** |
-
-패널이 곧 Monitor의 메뉴입니다. 아이콘을 왼쪽 · 오른쪽 어느 쪽으로 눌러도 패널이 열리고, 사용량 아래에 설정… (⌘,), 도움말 · 피드백, Monitor 종료가 있습니다. 설정 창은 탭 네 개입니다: 컴퓨터(같은 계정의 모든 컴퓨터), 일반(로그인할 때 열기 · 업데이트 자동 확인 · 메뉴 막대에 아이콘 표시 · 업데이트 확인), 계정, 정보. 리눅스는 트레이가 미리 정한 메뉴만 열 수 있어 같은 명령이 메뉴로 나옵니다.
-
-패널과 메뉴는 컴퓨터에 설정된 언어를 따릅니다. 20개 언어를 지원합니다: 한국어, 영어, 일본어, 중국어(간체), 중국어(번체), 독일어, 프랑스어, 스페인어, 포르투갈어, 이탈리아어, 네덜란드어, 핀란드어, 폴란드어, 러시아어, 터키어, 아랍어, 힌디어, 태국어, 베트남어, 인도네시아어.
+<table>
+<tr>
+<td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="https://runners.im/images/apps/monitor/expand-ko-dark.webp"><img src="https://runners.im/images/apps/monitor/expand-ko-light.webp" alt="CPU 줄과 디스크 줄을 펼친 패널 두 개"></picture><br><b>누르면 무엇이 얼마나 차 있는지</b><br>CPU · 메모리 · 디스크 줄을 펼치면 색을 나눈 막대와 목록이 나옵니다. 앱 · claude 세션 · 시스템 · 캐시 · 압축 · 스왑까지 나눠 봅니다.</td>
+<td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="https://runners.im/images/apps/monitor/quit-ko-dark.webp"><img src="https://runners.im/images/apps/monitor/quit-ko-light.webp" alt="무거운 앱 옆의 끄기 단추"></picture><br><b>무거운 앱은 그 자리에서 끄기</b><br>‘끄기’는 ⌘Q 와 같아서 저장하지 않은 작업이 있으면 앱이 먼저 묻습니다. 오래 켜 둔 개발 서버는 바로 끕니다.</td>
+</tr>
+<tr>
+<td><picture><source media="(prefers-color-scheme: dark)" srcset="https://runners.im/images/apps/monitor/empty-ko-dark.webp"><img src="https://runners.im/images/apps/monitor/empty-ko-light.webp" alt="디스크 줄을 펼친 모습과 비우기 단추"></picture><br><b>꽉 찬 디스크, 단추 하나로 비우기</b><br>캐시 · 빌드 폴더 · node_modules · 휴지통 · 안 쓰는 Docker 이미지를 종류별로 잽니다. 최근 7일 안에 쓴 프로젝트는 남깁니다.</td>
+<td><picture><source media="(prefers-color-scheme: dark)" srcset="https://runners.im/images/apps/monitor/popup-ko-dark.webp"><img src="https://runners.im/images/apps/monitor/popup-ko-light.webp" alt="메모리가 모자랄 때의 패널"></picture><br><b>느려지면 색과 알림으로</b><br>괜찮으면 초록, 느리면 주황, 메모리가 아주 모자라면 빨강이 되고, 이유마다 하루 한 번 알림을 보냅니다.</td>
+</tr>
+<tr>
+<td><picture><source media="(prefers-color-scheme: dark)" srcset="https://runners.im/images/apps/monitor/sessions-ko-dark.webp"><img src="https://runners.im/images/apps/monitor/sessions-ko-light.webp" alt="claude 세션과 GitHub 러너의 상태"></picture><br><b>claude 세션과 GitHub 러너도 한눈에</b><br>돌고 있는 claude 세션이 몇 개인지 얼마나 돌았는지, 이 컴퓨터의 러너가 빌드 중 · 대기 · 멈춤인지 보여 줍니다.</td>
+<td><picture><source media="(prefers-color-scheme: dark)" srcset="https://runners.im/images/apps/monitor/menubar-ko-dark.webp"><img src="https://runners.im/images/apps/monitor/menubar-ko-light.webp" alt="메뉴 막대의 Monitor 아이콘과 메모리 사용률"></picture><br><b>늘 메뉴 막대에</b><br>막대 셋과 메모리 사용률이 메뉴 막대에 있고, 누르면 패널이 열립니다. RUNNERS 계정으로 로그인하면 설정 › 컴퓨터에서 다른 컴퓨터도 봅니다.</td>
+</tr>
+</table>
 
 ## 설치
-
-macOS(애플 실리콘·인텔)는 Homebrew 로 설치합니다:
 
 ```sh
 brew install --cask runners-im/tap/monitor
 ```
 
-또는 [GitHub Releases](https://github.com/RUNNERS-IM/monitor/releases/latest) 에서 받습니다. macOS 는 `Monitor-<버전>-mac-arm64.dmg`(애플 실리콘) 나 `-mac-x64.dmg`(인텔), 윈도우는 `-setup.exe`, 리눅스는 `.AppImage`·`.deb`·`.rpm` 입니다. 윈도우 설치 파일은 아직 코드 서명이 없어서 처음 열 때 SmartScreen 경고가 뜹니다.
+또는 [Releases](https://github.com/RUNNERS-IM/monitor/releases/latest) 에서 `Monitor-<버전>-mac-arm64.dmg`(Apple silicon) 나 `-mac-x64.dmg`(Intel) 를 받습니다. 윈도우(`-setup.exe`, 아직 코드 서명 없음)와 리눅스(`.AppImage` · `.deb` · `.rpm`) 판도 같은 곳에 있습니다.
 
-Monitor는 메뉴 막대에만 있고 Dock 아이콘이 없습니다. 설치한 뒤 한 번 열어 주세요. 그다음부터는 로그인할 때 저절로 켜지고, 하루에 한 번 새 버전을 확인해서 설치하기 전에 물어봅니다. 둘 다 메뉴에서 끌 수 있습니다.
+Monitor 는 Dock 아이콘 없이 메뉴 막대에만 있습니다. 한 번 열어 두면 그다음부터 로그인할 때 저절로 켜지고, 하루에 한 번 새 버전을 확인합니다. 둘 다 설정 › 일반에서 끌 수 있습니다.
 
-## 계획
+## 단축키
 
-끝난 것:
-
-- 이 컴퓨터 한 대를 보는 트레이 앱: CPU, 메모리, 디스크, claude 세션, 러너 상태
-- macOS 흐림 효과(윈도우는 Acrylic)를 쓴 패널, 라이트·다크 모드
-- Split·Prompt 와 같은 메뉴 순서
-- 20개 언어 (Split 과 같은 목록)
-
-다음:
-
-- 같은 패널에서 사무실의 다른 컴퓨터 목록 보기
-- 서명된 배포, 자동 업데이트, macOS·윈도우·리눅스 설치 파일
-- AWS EC2 서버
-
-이슈와 풀 리퀘스트는 이 저장소에 남겨 주세요.
-
-## 소스에서 빌드
-
-[Rust](https://rustup.rs), Node.js 24, pnpm 이 필요합니다.
-
-```sh
-pnpm install
-pnpm native         # 네이티브 모듈(native/)을 이 컴퓨터용으로 빌드
-pnpm dev            # 고치면 바로 다시 켜지는 개발 실행
-pnpm dist           # 지금 운영체제용 설치 파일을 dist.noindex/ 에 만들기
-```
-
-애플 실리콘 맥에서 인텔 맥용을 만들려면 `rustup target add x86_64-apple-darwin` 뒤에 `pnpm native --target x86_64-apple-darwin` 도 돌립니다.
-
-- `src/main/` 은 메인 프로세스(트레이, 패널 창, 3초마다 재기, 업데이트), `src/preload/` 는 화면이 메인 프로세스와 말하는 통로, `src/renderer/` 는 패널과 설정 창입니다. RUNNERS 앱 공통 부품은 runners-app-kit 에서 복사한 것입니다(`src/main/runners/`, `src/renderer/runners-account/`, 뿌리의 설정 파일). 복사본을 고치면 `pnpm check:account` 가 실패하므로 kit 에서 고칩니다.
-- `native/` 는 하나뿐인 네이티브 모듈(napi-rs)입니다. 컴퓨터 사용량 읽기, 정리할 거리 재기, 앱 끄기, 러너 멈추기, 트레이 그림 그리기를 합니다.
-- 화면 글자는 `locales/` 에 모여 있고 화면과 메인 프로세스가 같은 파일을 읽습니다. `pnpm check:locales` 로 빠진 키를 확인합니다.
-- 개발 실행은 `MONITOR_OPEN=panel|settings|settings:<탭>|update|update-progress`(`settings:general` 처럼 설정 창의 탭을 고르고, 뒤의 둘은 가짜 바뀐 점으로 업데이트 창을 띄움), `MONITOR_THEME=dark|light`, `MONITOR_DEMO=1`(스크린샷용 가짜 이름), `VITE_MONITOR_EXPAND=cpu|memory|disk|work|cleanup` 를 받습니다.
-- 시험 촬영 모드: 개발 빌드를 `RUNNERS_TEST_SHOTS=<폴더>` 로 켜면 창을 띄우지 않고 메뉴 막대 창 · 모든 컴퓨터 창 · 설정 탭 · 업데이트 창 · 로그인 시트를 데모 숫자로 찍어 `<언어>-<light|dark>-<번호>-<범위>-<화면>.png` 와 `shots.json` 을 쓰고 꺼집니다. `RUNNERS_TEST_LANG=ko,en`(기본), `RUNNERS_TEST_SCOPE=menu,main,settings,popups,account` 로 고릅니다. 규칙은 RUNNERS 다섯 앱 공통입니다(runners-app-kit `desktop/README.md` 「시험 촬영 모드」). 화면은 `ELECTRON_RENDERER_URL` 로 띄운 개발 빌드에서 읽습니다.
-
-아직 macOS(애플 실리콘)에서만 빌드하고 확인했습니다. 윈도우·리눅스 판은 아직 시험해 보지 않았습니다.
-
-## 배포
-
-`release` 브랜치에 합치면 배포 판을 빌드해 올립니다(`.github/workflows/release.yml`). 그 전에 이번 판의 바뀐 점을
-`RELEASE_NOTES.md` 에 적습니다. 이 파일이 GitHub 릴리스 본문이 되고, 업데이트 창의 "바뀐 점" 칸이 그 목록을 보여 줍니다.
-
-```md
-## 한국어
-
-- 한 줄에 바뀐 점 하나씩, 합니다체로 씁니다.
-
-## English
-
-- One change per line.
-```
-
-한국어 화면은 `## 한국어` 목록을, 다른 언어는 모두 `## English` 목록을 읽습니다. 버전 올리기(`scripts/bump-release.sh`)는
-두 목록 중 하나가 비었거나 지난 판의 파일과 같으면 멈춥니다.
+| 단축키 | 하는 일            |
+| :----- | :----------------- |
+| ⌘,     | 패널에서 설정 열기 |
 
 ## 개인정보
 
 Monitor 에는 광고와 사용 통계 수집이 없습니다. 오류를 고치려고 이름 · 주소를 가린 오류 보고를 보냅니다. [PRIVACY.md](PRIVACY.md) 를 보세요.
 
-## 라이선스
+## 개발
 
-Copyright (c) 2026 Runners Co., Ltd. All rights reserved. 코드는 읽어 볼 수 있게 공개했을 뿐이고, 허락 없이 복사 · 수정 · 재배포할 수 없습니다. [LICENSE.md](LICENSE.md) 를 보세요.
+[docs/development.ko.md](docs/development.ko.md) 를 보세요.
+
+---
+
+<p align="center"><a href="https://runners.im"><picture><source media="(prefers-color-scheme: dark)" srcset="https://runners.im/icons/logos/RUNNERS_H_W.svg"><img src="https://runners.im/icons/logos/RUNNERS_H.svg" height="20" alt="RUNNERS"></picture></a><br><sub>RUNNERS 가 만듭니다 · 코드는 읽기용 공개, 모든 권리 보유(<a href="LICENSE.md">LICENSE.md</a>)</sub></p>
