@@ -43,7 +43,7 @@ const pct = (used: number, total: number) => (total > 0 ? Math.round((used * 100
 const gb = formatGb
 const clock = (ms: number) =>
   new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-const slowOf = (u: PeerUsage | null) => !!u && (u.slowMemory || u.slowCpu)
+const slowOf = (u: PeerUsage | null) => !!u && (u.slowMemory || u.slowCpu || !!u.slowHeat)
 /** Why: the panel colours memory by macOS's pressure level, and a Mac uses most of its memory on purpose, so this
  *  window does the same; otherwise one Mac looked fine in the panel and slow here. */
 const memoryTone = (u: PeerUsage) =>
@@ -88,7 +88,13 @@ function CardView({
   onChoose: () => void
 }) {
   const u = card.usage
-  const status = u?.slowMemory ? t('status.slowMemory') : u?.slowCpu ? t('status.slowCpu') : null
+  const status = u?.slowMemory
+    ? t('status.slowMemory')
+    : u?.slowCpu
+      ? t('status.slowCpu')
+      : u?.slowHeat
+        ? t('status.slowHeat')
+        : null
   return (
     <button
       type="button"

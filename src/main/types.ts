@@ -37,6 +37,8 @@ export type Snapshot = {
   diskTotal: number
   slowMemory: boolean
   slowCpu: boolean
+  /** macOS 가 열 때문에 CPU 를 늦추는 중(index.ts hotNow). 네이티브 측정에는 없고 메인 프로세스가 채운다. */
+  slowHeat?: boolean
   topCpu: AppUse[]
   topMemory: AppUse[]
   runners: Runner[]

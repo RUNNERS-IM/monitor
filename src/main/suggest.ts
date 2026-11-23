@@ -111,7 +111,8 @@ export function suggestions(
         .map((app) => quit('memory', app))
     )
   }
-  if (snap.slowCpu && out.length < MAX_QUIT) {
+  // Why: 열도 CPU 를 오래 쓴 앱에서 나오므로, 발열일 때도 CPU 를 가장 많이 쓰는 앱 끄기를 권한다.
+  if ((snap.slowCpu || snap.slowHeat) && out.length < MAX_QUIT) {
     const app = snap.topCpu.find(
       (app) =>
         app.quit != null &&

@@ -44,7 +44,7 @@ function status(snap: Snapshot & { level?: 'fine' | 'warn' | 'bad' }): {
   // Why: the same held level as the icon and the panel badge (red when memory pressure is critical, orange otherwise).
   const level =
     snap.level ??
-    (!(snap.slowMemory || snap.slowCpu)
+    (!(snap.slowMemory || snap.slowCpu || snap.slowHeat)
       ? 'fine'
       : snap.memoryPressure === 'critical'
         ? 'bad'

@@ -9,7 +9,7 @@ export type Settings = {
   /** The day (`2026-10-30`) "Later" was chosen in the update dialog, so the daily check does not ask again that day. */
   updateLaterOn: string | null
   /** The day (`Sat Oct 31 2026`) each slow-computer notice was last shown. Why: once a day, even across restarts. */
-  noticedOn: Partial<Record<'memory' | 'cpu', string>>
+  noticedOn: Partial<Record<'memory' | 'cpu' | 'heat', string>>
   /** When (Unix ms) the daily update check last reached GitHub. Why: a timer stops while the Mac sleeps, so a laptop kept
    *  closed went days without a check; this lets launch and wake check when a day has passed. */
   updateCheckedAt?: number
