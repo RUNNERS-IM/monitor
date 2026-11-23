@@ -168,7 +168,7 @@ export function demoPeers(lang: string): Peer[] {
     usage: {
       host: name,
       os: 'macOS 26.5 Tahoe',
-      version: '2.6.1102',
+      version: '2.6.110201',
       cpuPercent: cpu,
       memoryUsed: (mem / 100) * 32 * gb,
       memoryTotal: 32 * gb,
