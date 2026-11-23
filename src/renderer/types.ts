@@ -66,6 +66,8 @@ export type Snapshot = {
   swapUsed: number
   slowMemory: boolean
   slowCpu: boolean
+  /** macOS 가 열 때문에 CPU 를 늦추는 중. 옛 메인 프로세스는 보내지 않는다. */
+  slowHeat?: boolean
   cpuHistory: number[]
   memoryHistory: number[]
   topCpu: AppUse[]

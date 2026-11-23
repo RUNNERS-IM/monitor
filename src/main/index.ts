@@ -9,6 +9,7 @@ import {
   ipcMain,
   nativeTheme,
   Notification,
+  powerMonitor,
   shell,
   type Tray
 } from 'electron'
@@ -100,7 +101,7 @@ if (DEV && process.env.MONITOR_LANG) {
   app.commandLine.appendSwitch('lang', process.env.MONITOR_LANG)
 }
 
-type Reason = 'memory' | 'cpu'
+type Reason = 'memory' | 'cpu' | 'heat'
 /** What the panel gets: the reading plus what only the app knows. */
 type PanelSnapshot = Snapshot & { suggestions: Suggestion[]; level: Level }
 
@@ -121,13 +122,14 @@ let tailnetName: string | null = null
  *  Tailscale name as the host, the name the Computers tab and the phones use (the system name otherwise). */
 function held(snap: Snapshot): Snapshot & { level: Level } {
   if (DEMO) {
-    return { ...snap, level: snap.slowMemory || snap.slowCpu ? 'warn' : 'fine' }
+    return { ...snap, level: snap.slowMemory || snap.slowCpu || snap.slowHeat ? 'warn' : 'fine' }
   }
   return {
     ...snap,
     host: tailnetName ?? snap.host,
     slowMemory: heldNow.held.includes('memory'),
     slowCpu: heldNow.held.includes('cpu'),
+    slowHeat: heldNow.held.includes('heat'),
     level: heldNow.level
   }
 }
@@ -198,8 +200,23 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 function reasons(snap: Snapshot): [Reason, boolean][] {
   return [
     ['memory', snap.slowMemory],
-    ['cpu', snap.slowCpu]
+    ['cpu', snap.slowCpu],
+    ['heat', !!snap.slowHeat]
   ]
+}
+
+/** macOS 가 열 때문에 CPU 를 늦추는 중인가(발열 상태 serious · critical). 다른 운영체제는 알 길이 없어 늘 false.
+ *  Why: 메모리 · CPU 숫자가 멀쩡한데 느린 경우의 흔한 원인이라, 숫자만 보면 까닭을 못 찾는다. */
+function hotNow(): boolean {
+  // Why: 개발 실행은 `MONITOR_TEST_HEAT=1` 로 뜨거운 Mac 을 흉내 내 배지 · 설명 줄을 찍어 본다.
+  if (DEV && process.env.MONITOR_TEST_HEAT) {
+    return true
+  }
+  if (process.platform !== 'darwin') {
+    return false
+  }
+  const state = powerMonitor.getCurrentThermalState()
+  return state === 'serious' || state === 'critical'
 }
 
 const today = () => new Date().toDateString()
@@ -246,6 +263,7 @@ function notifyIfSlow(snap: Snapshot, held: Reason[], suggested: Suggestion[]): 
       continue
     }
     writeSettings({ noticedOn: { ...noticedOn, [reason]: today() } })
+    // Why: 열은 CPU 를 오래 쓴 앱에서 나오므로 발열 알림도 CPU 를 많이 쓰는 앱을 적는다.
     const apps =
       reason === 'memory'
         ? snap.topMemory
@@ -422,6 +440,7 @@ async function sampleLoop(): Promise<void> {
     const started = Date.now()
     try {
       const snap = JSON.parse(await sampler!.sample()) as Snapshot
+      snap.slowHeat = hotNow()
       heldNow = trackSlow(snap)
       void tailnet()
         .then((net) => (tailnetName = net?.self.name ?? null))
@@ -437,7 +456,9 @@ async function sampleLoop(): Promise<void> {
       latest = snap
       if (DEMO) {
         const demo = sampler!.demoSnapshot(currentLocale() === 'ko')
-        latestDemo = demo ? withDemoNames(JSON.parse(demo) as Snapshot) : null
+        latestDemo = demo
+          ? { ...withDemoNames(JSON.parse(demo) as Snapshot), slowHeat: snap.slowHeat }
+          : null
       }
       // Why: in a demo run the menu-bar icon shows the made-up numbers too, so it matches the panel in a screenshot.
       if (tray) {
@@ -558,6 +579,7 @@ function usage(from: Snapshot | null = latest, cleanup = latestCleanup): Usage |
     diskTotal: snap.diskTotal,
     slowMemory: snap.slowMemory,
     slowCpu: snap.slowCpu,
+    slowHeat: !!snap.slowHeat,
     level: snap.level,
     topMemory: topApps(snap.topMemory),
     claudeSessions: snap.claudeSessions?.length ?? 0,

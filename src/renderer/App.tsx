@@ -257,7 +257,7 @@ function AccountRow() {
 /** One line for the account's other computers: the slow ones by name, or that all are fine. Opens the window. */
 function OthersRow({ peers }: { peers: Peer[] }) {
   const slow = peers
-    .filter((p) => p.usage && (p.usage.slowMemory || p.usage.slowCpu))
+    .filter((p) => p.usage && (p.usage.slowMemory || p.usage.slowCpu || p.usage.slowHeat))
     .map((p) => p.name)
   const answering = peers.filter((p) => p.state === 'ok').length
   const value =
@@ -754,7 +754,7 @@ function App() {
     }
     setOpen((now) => (now === section ? null : section))
   }
-  const slow = snap.slowMemory || snap.slowCpu
+  const slow = snap.slowMemory || snap.slowCpu || snap.slowHeat
   const memory = percent(snap.memoryUsed, snap.memoryTotal)
   const disk = percent(snap.diskUsed, snap.diskTotal)
   const memoryTone = PRESSURE_LEVEL[snap.memoryPressure]
@@ -795,7 +795,7 @@ function App() {
       ? [t('summary.runnersOff', { count: offRunners })]
       : [])
   ].join(' · ')
-  const status = snap.slowMemory ? 'slowMemory' : 'slowCpu'
+  const status = snap.slowMemory ? 'slowMemory' : snap.slowCpu ? 'slowCpu' : 'slowHeat'
   const cpuTone = level(snap.cpuPercent)
   const diskTone = level(disk)
 
@@ -845,6 +845,7 @@ function App() {
         <div className="rm-note">{t('panel.cpuDetail')}</div>
         <Breakdown {...cpuBreakdown} label={t('panel.cpu')} />
         {snap.slowCpu && <div className="rm-note">{t('slow.cpu')}</div>}
+        {snap.slowHeat && <div className="rm-note">{t('slow.heat')}</div>}
         {spotlightBusy && <div className="rm-note">{t('slow.spotlight')}</div>}
         {quitNote(cpuBreakdown.parts)}
       </SummaryRow>

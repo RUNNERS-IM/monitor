@@ -80,6 +80,7 @@ export type PeerUsage = {
   diskTotal: number
   slowMemory: boolean
   slowCpu: boolean
+  slowHeat?: boolean
   topMemory: { name: string; memory: number; quit?: 'app' | 'process' | null }[]
   claudeSessions: number
   runnersBusy: number

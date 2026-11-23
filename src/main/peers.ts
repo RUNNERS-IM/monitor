@@ -28,6 +28,8 @@ export type Usage = {
   diskTotal: number
   slowMemory: boolean
   slowCpu: boolean
+  /** 열 때문에 느려짐. 옛 Monitor 는 보내지 않는다. */
+  slowHeat?: boolean
   /** The icon's level, held for a minute like slowMemory and slowCpu: "fine", "warn" or "bad" (memory critical).
    *  Optional because older Monitors do not send it. */
   level?: 'fine' | 'warn' | 'bad'
@@ -134,7 +136,9 @@ export function askNow(): void {
 /** The other computers, slow ones first, then by name. Empty when signed out. */
 export function peerList(): Peer[] {
   const rank = (peer: Peer) =>
-    peer.usage && (peer.usage.slowMemory || peer.usage.slowCpu) && peer.state !== 'offline'
+    peer.usage &&
+    (peer.usage.slowMemory || peer.usage.slowCpu || peer.usage.slowHeat) &&
+    peer.state !== 'offline'
       ? 0
       : peer.state === 'ok'
         ? 1
