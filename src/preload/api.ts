@@ -81,7 +81,13 @@ export type PeerUsage = {
   slowMemory: boolean
   slowCpu: boolean
   slowHeat?: boolean
-  topMemory: { name: string; memory: number; quit?: 'app' | 'process' | null }[]
+  topMemory: {
+    name: string
+    memory: number
+    quit?: 'app' | 'process' | null
+    /** AI 세션 묶음 줄이면 그 개수. 패널처럼 「AI 세션 N개」로 보이게 한다. 옛 컴퓨터는 보내지 않는다. */
+    sessions?: number | null
+  }[]
   claudeSessions: number
   runnersBusy: number
   runnersIdle: number
