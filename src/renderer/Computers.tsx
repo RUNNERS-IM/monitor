@@ -49,6 +49,11 @@ const slowOf = (u: PeerUsage | null) => !!u && (u.slowMemory || u.slowCpu || !!u
 const memoryTone = (u: PeerUsage) =>
   u.memoryPressure === 'critical' ? 'full' : u.memoryPressure === 'warn' ? 'high' : 'ok'
 
+/** 패널과 같은 이름: AI 세션 묶음 줄은 「AI 세션 N개」, 나머지는 앱 이름. */
+function appName(app: { name: string; sessions?: number | null }): string {
+  return app.sessions != null ? t('slow.claudeSessions', { count: app.sessions }) : app.name
+}
+
 function Bar({ value, tone: given }: { value: number; tone?: 'ok' | 'high' | 'full' }) {
   const tone = given ?? (value >= 90 ? 'full' : value >= 75 ? 'high' : 'ok')
   return (
@@ -379,10 +384,11 @@ function Detail({
         <div>
           <div className="c-sec">{t('computers.apps')}</div>
           {u.topMemory.map((app) => {
+            const label = appName(app)
             const action = app.quit ? quitAction(app.name, app.quit, remote) : null
             return (
               <div key={app.name} className="c-line">
-                <span>{app.name}</span>
+                <span>{label}</span>
                 <b>{gb(app.memory)}</b>
                 {can && action && (
                   <ActButton action={action} busy={busy(action)} onPress={onPress} />
@@ -392,7 +398,7 @@ function Detail({
           })}
           {can && noQuit.length > 0 && (
             <div className="c-why">
-              {t('computers.noQuit', { names: noQuit.map((app) => app.name).join(', ') })}
+              {t('computers.noQuit', { names: noQuit.map(appName).join(', ') })}
             </div>
           )}
           {can && (u.runners ?? []).length > 0 && (

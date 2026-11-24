@@ -33,7 +33,13 @@ export type Usage = {
   /** The icon's level, held for a minute like slowMemory and slowCpu: "fine", "warn" or "bad" (memory critical).
    *  Optional because older Monitors do not send it. */
   level?: 'fine' | 'warn' | 'bad'
-  topMemory: { name: string; memory: number; quit?: 'app' | 'process' | null }[]
+  topMemory: {
+    name: string
+    memory: number
+    quit?: 'app' | 'process' | null
+    /** AI 세션 묶음 줄이면 그 개수. 패널처럼 「AI 세션 N개」로 보이게 한다. 옛 컴퓨터는 보내지 않는다. */
+    sessions?: number | null
+  }[]
   claudeSessions: number
   runnersBusy: number
   runnersIdle: number
@@ -146,10 +152,15 @@ export function peerList(): Peer[] {
   return [...peers.values()].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name))
 }
 
-export function topApps<T extends { name: string; memory: number }>(
+export function topApps<T extends { name: string; memory: number; sessions?: number | null }>(
   apps: T[]
-): { name: string; memory: number }[] {
-  return apps.slice(0, TOP_APPS).map((app) => ({ name: app.name, memory: app.memory }))
+): { name: string; memory: number; sessions?: number }[] {
+  return apps.slice(0, TOP_APPS).map((app) => ({
+    name: app.name,
+    memory: app.memory,
+    // Why: 패널은 이 줄을 「AI 세션 N개」로 부르는데 모든 컴퓨터 창 · 휴대폰은 앱 이름(claude)으로 불러 같은 줄이 둘로 보였다.
+    ...(app.sessions != null ? { sessions: app.sessions } : {})
+  }))
 }
 
 /** Debug runs only: made-up computers for the homepage screenshots, with no real names or numbers. */

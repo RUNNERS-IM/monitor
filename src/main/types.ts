@@ -15,6 +15,8 @@ export type AppUse = {
   bundleId: string | null
   folder: string | null
   runningSecs: number | null
+  /** claude 를 세션 묶음 한 줄로 보일 때 그 세션 수, 다른 앱은 null. */
+  sessions?: number | null
 }
 
 export type Runner = {

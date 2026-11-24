@@ -457,7 +457,14 @@ async function sampleLoop(): Promise<void> {
       if (DEMO) {
         const demo = sampler!.demoSnapshot(currentLocale() === 'ko')
         latestDemo = demo
-          ? { ...withDemoNames(JSON.parse(demo) as Snapshot), slowHeat: snap.slowHeat }
+          ? {
+              ...withDemoNames(JSON.parse(demo) as Snapshot),
+              slowHeat: snap.slowHeat,
+              // Why: `MONITOR_TEST_HEAT=only` 는 데모의 메모리 · CPU 느림을 꺼서 발열 배지만 뜬 모습을 찍는다.
+              ...(process.env.MONITOR_TEST_HEAT === 'only'
+                ? { slowMemory: false, slowCpu: false }
+                : {})
+            }
           : null
       }
       // Why: in a demo run the menu-bar icon shows the made-up numbers too, so it matches the panel in a screenshot.
