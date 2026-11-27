@@ -66,7 +66,14 @@ module.exports = {
       LSUIElement: true,
       CFBundleShortVersionString: shownVersion,
       NSAppleEventsUsageDescription:
-        'Monitor asks an app to quit, like ⌘Q, when you press Quit in its panel.'
+        'Monitor asks an app to quit, like ⌘Q, when you press Quit in its panel.',
+      // Why: Electron ships these usage texts by default; Monitor never uses the camera, microphone, Bluetooth or
+      // audio capture, so null takes them out of Info.plist.
+      NSCameraUsageDescription: null,
+      NSMicrophoneUsageDescription: null,
+      NSBluetoothAlwaysUsageDescription: null,
+      NSBluetoothPeripheralUsageDescription: null,
+      NSAudioCaptureUsageDescription: null
     }
   },
   dmg: { artifactName: `Monitor-${tag}-mac-\${arch}.\${ext}` },
