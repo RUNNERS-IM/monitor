@@ -1084,7 +1084,9 @@ function start(): void {
   app.dock?.hide()
   // Why: Monitor's pages never need the camera, microphone, location or any other web permission, so every request
   // is refused at once without asking the user.
-  session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => callback(false))
+  session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) =>
+    callback(false)
+  )
   session.defaultSession.setPermissionCheckHandler(() => false)
   registerIpc()
   login.applyDefault()
