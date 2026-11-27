@@ -10,6 +10,7 @@ import {
   nativeTheme,
   Notification,
   powerMonitor,
+  session,
   shell,
   type Tray
 } from 'electron'
@@ -1081,6 +1082,12 @@ function openedAgain(): void {
 function start(): void {
   // Why: Monitor lives in the tray only, so it should not take a Dock slot on macOS.
   app.dock?.hide()
+  // Why: Monitor's pages never need the camera, microphone, location or any other web permission, so every request
+  // is refused at once without asking the user.
+  session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) =>
+    callback(false)
+  )
+  session.defaultSession.setPermissionCheckHandler(() => false)
   registerIpc()
   login.applyDefault()
   sampler = new native.Sampler()
